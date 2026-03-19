@@ -2,6 +2,15 @@ import { promises as fs } from "fs";
 import path from "path";
 import sharp from "sharp";
 
+const ext = path.extname(fileName).toLowerCase();
+
+if (ext === ".webp") {
+  console.log(`Skip (already webp): ${fileName}`);
+  return {
+    original: fileName,
+    converted: fileName,
+  };
+}
 const uploadsDir = path.resolve("images/uploads");
 const postsDir = path.resolve("content/posts");
 
