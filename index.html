@@ -1275,5 +1275,21 @@ ${error?.message || error}`);
     updateClock();
     setInterval(updateClock, 1000);
   </script>
+  <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+<script>
+  if (window.netlifyIdentity) {
+    window.netlifyIdentity.on("init", user => {
+      if (!user && (location.hash.includes("invite_token=") || location.hash.includes("recovery_token="))) {
+        window.netlifyIdentity.open();
+      }
+    });
+
+    window.netlifyIdentity.on("login", () => {
+      document.location.href = "/admin/";
+    });
+
+    window.netlifyIdentity.init();
+  }
+</script>
 </body>
 </html>
