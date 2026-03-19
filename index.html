@@ -540,37 +540,39 @@
     }
 
     async function loadSharedCounts() {
-      try {
-        const res = await fetch(`${COUNTS_API_BASE}/counts`, { cache: 'no-store' });
-        if (!res.ok) throw new Error(`counts fetch failed: ${res.status}`);
-        const data = await res.json();
-        return data && typeof data === 'object' ? data : {};
-      } catch (error) {
-        console.error('[counts] load failed:', error);
-        return {};
-      }
-    }
+  try {
+    const res = await fetch(`${COUNTS_API_BASE}/.netlify/functions/counts-get`, {
+      cache: 'no-store'
+    });
+    if (!res.ok) throw new Error(`counts fetch failed: ${res.status}`);
+    const data = await res.json();
+    return data && typeof data === 'object' ? data : {};
+  } catch (error) {
+    console.error('[counts] load failed:', error);
+    return {};
+  }
+}
 
     async function bumpSharedCounts(ids) {
-      try {
-        if (!ids.length) return {};
+  try {
+    if (!ids.length) return {};
 
-        const res = await fetch(`${COUNTS_API_BASE}/counts/bump`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ ids })
-        });
+    const res = await fetch(`${COUNTS_API_BASE}/.netlify/functions/count-bump`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ ids })
+    });
 
-        if (!res.ok) throw new Error(`counts bump failed: ${res.status}`);
-        const data = await res.json();
-        return data?.counts || {};
-      } catch (error) {
-        console.error('[counts] bump failed:', error);
-        return {};
-      }
-    }
+    if (!res.ok) throw new Error(`counts bump failed: ${res.status}`);
+    const data = await res.json();
+    return data?.counts || {};
+  } catch (error) {
+    console.error('[counts] bump failed:', error);
+    return {};
+  }
+}
 
     function getVisibleEntries(entries) {
       if (anchoredEntryId) {
