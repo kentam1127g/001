@@ -1,1 +1,16 @@
+<<<<<<< HEAD
 []
+=======
+[
+  {
+    "id": "2026-03-19-11-39-51",
+    "date": "2026-03-19",
+    "author": "A",
+    "image": "images/uploads/1000019997.webp",
+    "text": "人生",
+    "caption": "",
+    "createdAt": "2026-03-19T11:43:44.523Z",
+    "viewCount": 0
+  }
+]
+>>>>>>> b3ec6bbf749a382253d24c3008c892c54efec2c1
