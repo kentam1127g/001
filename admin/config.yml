@@ -5,6 +5,8 @@ backend:
 media_folder: "images/uploads"
 public_folder: "/images/uploads"
 
+publish_mode: simple
+
 collections:
   - name: "pages"
     label: "Pages"
@@ -14,3 +16,50 @@ collections:
         file: "index.html"
         fields:
           - { label: "Body", name: "body", widget: "text" }
+
+  - name: "posts"
+    label: "Posts"
+    label_singular: "Post"
+    folder: "content/posts"
+    create: true
+    delete: true
+    extension: "json"
+    format: "json"
+    slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
+    identifier_field: "id"
+    summary: "{{date}} {{author}}"
+    fields:
+      - label: "ID"
+        name: "id"
+        widget: "string"
+      - label: "日付"
+        name: "date"
+        widget: "datetime"
+        format: "YYYY-MM-DD"
+        date_format: "YYYY-MM-DD"
+        time_format: false
+      - label: "投稿者"
+        name: "author"
+        widget: "select"
+        options: ["A", "B"]
+      - label: "画像"
+        name: "image"
+        widget: "image"
+        required: false
+      - label: "テキスト"
+        name: "text"
+        widget: "text"
+        required: false
+      - label: "画像キャプション"
+        name: "caption"
+        widget: "string"
+        required: false
+      - label: "作成時刻"
+        name: "createdAt"
+        widget: "datetime"
+        format: "YYYY-MM-DDTHH:mm:ssXXX"
+      - label: "viewCount"
+        name: "viewCount"
+        widget: "number"
+        required: false
+        default: 0

@@ -1,12 +1,76 @@
 <!doctype html>
-<html>
+<html lang="ja">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Content Manager</title>
+  <title>Quiet Broadcast / Content Manager</title>
+  <meta name="robots" content="noindex" />
   <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+  <style>
+    :root {
+      --bg: #f4f0e8;
+      --paper: #fbfaf6;
+      --text: #202020;
+      --muted: #6f6a62;
+      --line: #d7d1c6;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Georgia, "Times New Roman", "Hiragino Mincho ProN", "Yu Mincho", serif;
+    }
+
+    .admin-shell {
+      padding: 18px 20px 0;
+      border-bottom: 1px solid rgba(215, 209, 198, 0.85);
+      background: rgba(244, 240, 232, 0.88);
+      backdrop-filter: blur(8px);
+    }
+
+    .admin-head {
+      max-width: 980px;
+      margin: 0 auto;
+      padding-bottom: 14px;
+    }
+
+    .admin-head h1 {
+      margin: 0;
+      font-size: 1.2rem;
+      font-weight: 400;
+      letter-spacing: 0.03em;
+    }
+
+    .admin-head p {
+      margin: 6px 0 0;
+      font-size: 0.9rem;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+  </style>
+  <link href="config.yml" type="text/yaml" rel="cms-config-url">
 </head>
 <body>
+  <header class="admin-shell">
+    <div class="admin-head">
+      <h1>Quiet Broadcast / Admin</h1>
+      <p>投稿と画像管理はここから行います。フロントページ側は閲覧専用です。</p>
+    </div>
+  </header>
+
+  <script>
+    if (window.netlifyIdentity) {
+      window.netlifyIdentity.on('init', (user) => {
+        if (!user) {
+          window.netlifyIdentity.on('login', () => {
+            document.location.href = '/admin/';
+          });
+        }
+      });
+    }
+  </script>
   <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
 </body>
 </html>
