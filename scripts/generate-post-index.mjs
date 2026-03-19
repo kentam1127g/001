@@ -38,7 +38,7 @@ async function main() {
         text: data.text ?? "",
         caption: data.caption ?? "",
         createdAt: created.toISOString(),
-        viewCount: 0,
+        viewCount: 0
       });
     } catch (error) {
       console.warn(`Skipping invalid JSON: ${file}`);

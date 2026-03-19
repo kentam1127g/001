@@ -6,7 +6,6 @@ on:
       - main
     paths:
       - "content/posts/*.json"
-      - "!content/posts/index.json"
       - "scripts/generate-post-index.mjs"
       - ".github/workflows/build-post-index.yml"
   workflow_dispatch:
