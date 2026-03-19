@@ -7,13 +7,13 @@
   <meta name="robots" content="index,follow" />
   <meta property="og:title" content="Quiet Broadcast" />
   <meta property="og:description" content="写真でも、文字でも。静かに積み重なっていく小さなログ。" />
-  <meta property="og:image" content="/images/ogp.jpg" />
+  <meta property="og:image" content="./images/ogp.jpg" />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Quiet Broadcast" />
   <meta name="twitter:description" content="写真でも、文字でも。静かに積み重なっていく小さなログ。" />
-  <meta name="twitter:image" content="/images/ogp.jpg" />
+  <meta name="twitter:image" content="./images/ogp.jpg" />
   <style>
     :root {
       --bg: #f4f0e8;
@@ -36,9 +36,7 @@
       line-height: 1.7;
     }
 
-    body {
-      min-height: 100vh;
-    }
+    body { min-height: 100vh; }
 
     img {
       max-width: 100%;
@@ -46,8 +44,7 @@
       height: auto;
     }
 
-    button,
-    a {
+    button, a {
       font: inherit;
     }
 
@@ -134,13 +131,8 @@
       justify-content: center;
     }
 
-    .load-older-wrap {
-      margin: 8px 0 18px;
-    }
-
-    .return-latest-wrap {
-      margin: 18px 0 8px;
-    }
+    .load-older-wrap { margin: 8px 0 18px; }
+    .return-latest-wrap { margin: 18px 0 8px; }
 
     .load-older-wrap[hidden],
     .return-latest-wrap[hidden] {
@@ -150,6 +142,28 @@
     .log-board {
       display: grid;
       gap: 12px;
+    }
+
+    .day-divider {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 6px 0 2px;
+      color: var(--muted);
+      font-size: 0.74rem;
+      letter-spacing: 0.06em;
+    }
+
+    .day-divider::before,
+    .day-divider::after {
+      content: "";
+      height: 1px;
+      background: var(--line);
+      flex: 1 1 auto;
+    }
+
+    .day-divider span {
+      white-space: nowrap;
     }
 
     .entry {
@@ -254,18 +268,9 @@
     }
 
     @keyframes floatPlus {
-      0% {
-        opacity: 0;
-        transform: translateY(4px);
-      }
-      20% {
-        opacity: 1;
-        transform: translateY(0);
-      }
-      100% {
-        opacity: 0;
-        transform: translateY(-8px);
-      }
+      0% { opacity: 0; transform: translateY(4px); }
+      20% { opacity: 1; transform: translateY(0); }
+      100% { opacity: 0; transform: translateY(-8px); }
     }
 
     .icon-btn {
@@ -332,9 +337,7 @@
     }
 
     @media (min-width: 1024px) {
-      :root {
-        --max: 720px;
-      }
+      :root { --max: 720px; }
     }
 
     @media (max-width: 720px) {
@@ -358,7 +361,7 @@
         <p>古いログほど上に積み重なる、小さな記録。</p>
       </div>
       <div class="top-actions">
-        <a class="buttonlike" href="/admin/">Admin</a>
+        <a class="buttonlike" href="./admin/">Admin</a>
       </div>
     </div>
   </div>
@@ -391,7 +394,7 @@
   </div>
 
   <script>
-    const CONTENT_INDEX_PATH = 'content/posts/index.json';
+    const CONTENT_INDEX_PATH = './content/posts/index.json';
     const VIEW_STORAGE_KEY = 'quiet-broadcast-view-counts-v1';
     const SEEN_STORAGE_KEY = 'quiet-broadcast-seen-entries-v1';
     const INITIAL_VISIBLE_COUNT = 12;
@@ -408,8 +411,8 @@
     let anchoredEntryId = null;
     let viewObserver = null;
 
-    document.getElementById('loadOlder').addEventListener('click', showMoreEntries);
-    document.getElementById('returnLatest').addEventListener('click', returnToLatest);
+    document.getElementById('loadOlder')?.addEventListener('click', showMoreEntries);
+    document.getElementById('returnLatest')?.addEventListener('click', returnToLatest);
     window.addEventListener('hashchange', handleHashChange);
 
     function escapeHtml(str = '') {
@@ -425,29 +428,82 @@
       return String(num).padStart(2, '0');
     }
 
-    function formatDate(dateStr, createdAt) {
-      if (!dateStr) return '';
-      let timePart = '';
-
-      if (createdAt) {
-        const d = new Date(createdAt);
-        if (!Number.isNaN(d.getTime())) {
-          let h = d.getHours();
-          const label = h < 12 ? '午前' : '午後';
-          h = h % 12;
-          if (h === 0) h = 12;
-          timePart = ` ${label}${h}時`;
-        }
-      }
-
-      return `${dateStr}${timePart}`;
-    }
-
     function updateClock() {
+      if (!clockEl) return;
       const now = new Date();
       clockEl.textContent =
         `${now.getFullYear()}.${pad(now.getMonth() + 1)}.${pad(now.getDate())} ` +
         `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+    }
+
+    function normalizeImagePath(path) {
+      if (!path) return '';
+      if (path.startsWith('/images/')) return `.${path}`;
+      return path;
+    }
+
+    function formatOnlyTime(createdAt) {
+      if (!createdAt) return '';
+      const d = new Date(createdAt);
+      if (Number.isNaN(d.getTime())) return '';
+
+      let h = d.getHours();
+      const label = h < 12 ? '午前' : '午後';
+      h = h % 12;
+      if (h === 0) h = 12;
+      return `${label}${h}時`;
+    }
+
+    function parseDateOnly(dateStr, createdAt) {
+      if (dateStr) {
+        const d = new Date(`${dateStr}T00:00:00`);
+        if (!Number.isNaN(d.getTime())) return d;
+      }
+      if (createdAt) {
+        const d = new Date(createdAt);
+        if (!Number.isNaN(d.getTime())) {
+          return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+        }
+      }
+      return null;
+    }
+
+    function formatDateOnly(date) {
+      return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+    }
+
+    function enumerateDayLabels(entries) {
+      if (!entries.length) return new Map();
+
+      const labels = new Map();
+      const parsedDates = entries.map((entry) => parseDateOnly(entry.date, entry.createdAt));
+
+      for (let i = 0; i < entries.length; i += 1) {
+        const current = parsedDates[i];
+        if (!current) continue;
+
+        const prev = i > 0 ? parsedDates[i - 1] : null;
+
+        if (!prev) {
+          labels.set(`before-${entries[i].id}`, [formatDateOnly(current)]);
+          continue;
+        }
+
+        const cursor = new Date(prev);
+        cursor.setDate(cursor.getDate() + 1);
+
+        const days = [];
+        while (cursor <= current) {
+          days.push(formatDateOnly(cursor));
+          cursor.setDate(cursor.getDate() + 1);
+        }
+
+        if (days.length) {
+          labels.set(`before-${entries[i].id}`, days);
+        }
+      }
+
+      return labels;
     }
 
     function loadViewCounts() {
@@ -477,20 +533,21 @@
     }
 
     async function loadEntriesFromContent() {
-      const res = await fetch(CONTENT_INDEX_PATH, { cache: 'no-store' });
-      if (!res.ok) throw new Error('index.json not found');
-      const data = await res.json();
-      if (!Array.isArray(data)) return [];
+      try {
+        const res = await fetch(CONTENT_INDEX_PATH, { cache: 'no-store' });
+        if (!res.ok) throw new Error(`Failed to fetch index.json: ${res.status}`);
+        const text = await res.text();
+        const data = JSON.parse(text);
+        if (!Array.isArray(data)) throw new Error('index.json is not an array');
 
-      return [...data].sort((a, b) => {
-        if (a.date !== b.date) return a.date < b.date ? -1 : 1;
-        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-      });
-    }
-
-    function updateOGP() {
-      const ogUrl = document.querySelector('meta[property="og:url"]');
-      if (ogUrl) ogUrl.setAttribute('content', location.href.split('#')[0]);
+        return [...data].sort((a, b) => {
+          if (a.date !== b.date) return a.date < b.date ? -1 : 1;
+          return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+        });
+      } catch (error) {
+        console.error('[load] failed:', error);
+        throw error;
+      }
     }
 
     function getVisibleEntries(entries) {
@@ -506,12 +563,12 @@
 
     function updateLoadOlderButton(totalCount, visibleCount, entries) {
       const button = document.getElementById('loadOlder');
+      if (!button || !loadOlderWrap) return;
 
       if (anchoredEntryId) {
         const anchorIndex = entries.findIndex(entry => entry.id === anchoredEntryId);
         const hiddenOlderCount = anchorIndex === -1 ? 0 : Math.max(anchorIndex - visibleCount + 1, 0);
         loadOlderWrap.hidden = hiddenOlderCount === 0;
-
         const nextCount = Math.min(hiddenOlderCount, LOAD_MORE_COUNT);
         button.textContent = hiddenOlderCount > 0
           ? `さらに古いログを ${nextCount} 件読む（あと ${hiddenOlderCount} 件）`
@@ -521,7 +578,6 @@
 
       const hiddenCount = Math.max(totalCount - visibleCount, 0);
       loadOlderWrap.hidden = hiddenCount === 0;
-
       const nextCount = Math.min(hiddenCount, LOAD_MORE_COUNT);
       button.textContent = hiddenCount > 0
         ? `さらに古いログを ${nextCount} 件読む（あと ${hiddenCount} 件）`
@@ -529,7 +585,9 @@
     }
 
     function updateReturnLatestButton() {
-      returnLatestWrap.hidden = !anchoredEntryId;
+      if (returnLatestWrap) {
+        returnLatestWrap.hidden = !anchoredEntryId;
+      }
     }
 
     function scrollToLatest(force = false) {
@@ -544,11 +602,9 @@
     function ensureHashedEntryVisible() {
       const hash = window.location.hash;
       if (!hash || !hash.startsWith('#entry-')) return;
-
       const id = hash.replace('#entry-', '');
       const index = allEntries.findIndex(item => item.id === id);
       if (index === -1) return;
-
       anchoredEntryId = id;
       visibleEntryCount = INITIAL_VISIBLE_COUNT;
     }
@@ -580,11 +636,7 @@
       const shareText = shareTitle;
 
       if (navigator.share) {
-        navigator.share({
-          title: shareTitle,
-          text: shareText,
-          url
-        }).catch(() => {});
+        navigator.share({ title: shareTitle, text: shareText, url }).catch(() => {});
       } else {
         const textToCopy = `${shareTitle}\n${url}`;
         navigator.clipboard.writeText(textToCopy).then(() => {
@@ -745,20 +797,32 @@
         ensureHashedEntryVisible();
 
         if (!allEntries.length) {
-          loadOlderWrap.hidden = true;
-          returnLatestWrap.hidden = true;
+          if (loadOlderWrap) loadOlderWrap.hidden = true;
+          if (returnLatestWrap) returnLatestWrap.hidden = true;
           entriesEl.innerHTML = '<div class="empty">まだ投稿がありません。</div>';
           return;
         }
 
         const visibleEntries = getVisibleEntries(allEntries);
+        const dayLabels = enumerateDayLabels(visibleEntries);
         const viewCounts = loadViewCounts();
 
         updateLoadOlderButton(allEntries.length, visibleEntries.length, allEntries);
         updateReturnLatestButton();
 
-        entriesEl.innerHTML = visibleEntries.map(entry => {
-          const imageSrc = entry.image || '';
+        const htmlParts = [];
+
+        visibleEntries.forEach((entry) => {
+          const labels = dayLabels.get(`before-${entry.id}`) || [];
+          labels.forEach((label) => {
+            htmlParts.push(`
+              <div class="day-divider">
+                <span>${escapeHtml(label)}</span>
+              </div>
+            `);
+          });
+
+          const imageSrc = normalizeImagePath(entry.image || '');
           const imageHtml = imageSrc
             ? `
               <div class="entry-media">
@@ -774,11 +838,11 @@
 
           const displayCount = Number(viewCounts[entry.id] ?? entry.viewCount ?? 0);
 
-          return `
+          htmlParts.push(`
             <article class="entry" id="entry-${escapeHtml(entry.id)}" data-entry-id="${escapeHtml(entry.id)}">
               <div class="bubble">
                 <div class="stamp">
-                  <div>${escapeHtml(formatDate(entry.date, entry.createdAt))}</div>
+                  <div>${escapeHtml(formatOnlyTime(entry.createdAt))}</div>
                 </div>
 
                 <div class="bubble-head">
@@ -805,22 +869,23 @@
                 </div>
               </div>
             </article>
-          `;
-        }).join('');
+          `);
+        });
+
+        entriesEl.innerHTML = htmlParts.join('');
 
         bindShareButtons();
         setupViewObservers();
         highlightEntryFromHash();
         scrollToLatest();
       } catch (error) {
-        console.error('render failed:', error);
+        console.error('[render] failed:', error);
         entriesEl.innerHTML = '<div class="empty">表示中にエラーが発生しました。コンソールを確認してください。</div>';
       }
     }
 
     async function init() {
       try {
-        updateOGP();
         updateClock();
         setInterval(updateClock, 1000);
 
@@ -833,8 +898,8 @@
         render();
         scrollToLatest(true);
       } catch (error) {
-        console.error('init failed:', error);
-        entriesEl.innerHTML = '<div class="empty">投稿の読み込みに失敗しました。</div>';
+        console.error('[init] failed:', error);
+        entriesEl.innerHTML = '<div class="empty">投稿の読み込みに失敗しました。コンソールを確認してください。</div>';
       }
     }
 
