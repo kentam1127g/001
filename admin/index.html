@@ -1,115 +1,118 @@
-<script>
-  const AUTHOR_MAP = {
-    "kentam1127g": "まつけん",
-    "wakako38-dev": "わかこ"
-  };
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin</title>
+  <link href="config.yml" type="text/yaml" rel="cms-config-url" />
+</head>
+<body>
+  <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
 
-  function getGithubLogin() {
-    try {
-      const raw = localStorage.getItem("decap-cms-user");
-      if (!raw) return "";
-      const user = JSON.parse(raw);
-      return user?.login || "";
-    } catch (e) {
-      console.error("failed to read decap-cms-user:", e);
-      return "";
-    }
-  }
-
-  function getJSTNowParts() {
-    const now = new Date();
-
-    const formatter = new Intl.DateTimeFormat("sv-SE", {
-      timeZone: "Asia/Tokyo",
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-      hour12: false
-    });
-
-    const parts = formatter.formatToParts(now);
-    const map = Object.fromEntries(
-      parts.filter(p => p.type !== "literal").map(p => [p.type, p.value])
-    );
-
-    return {
-      year: map.year,
-      month: map.month,
-      day: map.day,
-      hour: map.hour,
-      minute: map.minute,
-      second: map.second
+  <script>
+    const AUTHOR_MAP = {
+      "kentam1127g": "まつけん",
+      "wakako38-dev": "わかこ"
     };
-  }
 
-  function getJSTDate() {
-    const p = getJSTNowParts();
-    return `${p.year}-${p.month}-${p.day}`;
-  }
-
-  function getJSTISOString() {
-    const p = getJSTNowParts();
-    return `${p.year}-${p.month}-${p.day}T${p.hour}:${p.minute}:${p.second}+09:00`;
-  }
-
-  function createEntryID() {
-    const now = new Date();
-    const ms = String(now.getMilliseconds()).padStart(3, "0");
-    const rand = Math.random().toString(36).slice(2, 8);
-    const p = getJSTNowParts();
-    return `${p.year}${p.month}${p.day}${p.hour}${p.minute}${p.second}${ms}-${rand}`;
-  }
-
-  function isInvalidAutoValue(value) {
-    if (value == null) return true;
-    const s = String(value).trim();
-    return !s || s === "{{now}}" || s === "Invalid Date";
-  }
-
-  CMS.registerEventListener({
-    name: "preSave",
-    handler: ({ entry }) => {
+    function getGithubLogin() {
       try {
-        const login = getGithubLogin();
-        const author = AUTHOR_MAP[login] || "";
-        const nowDate = getJSTDate();
-        const nowCreatedAt = getJSTISOString();
-
-        let data = entry.get("data");
-
-        const currentDate = data.get("date");
-        const currentCreatedAt = data.get("createdAt");
-        const currentEntryID = data.get("entryID");
-
-        data = data.set("author", author);
-
-        if (isInvalidAutoValue(currentCreatedAt)) {
-          data = data.set("createdAt", nowCreatedAt);
-        }
-
-        const finalCreatedAt = data.get("createdAt");
-
-        if (isInvalidAutoValue(currentDate)) {
-          const derivedDate =
-            typeof finalCreatedAt === "string" && finalCreatedAt.length >= 10
-              ? finalCreatedAt.slice(0, 10)
-              : nowDate;
-
-          data = data.set("date", derivedDate);
-        }
-
-        if (!currentEntryID || String(currentEntryID).trim() === "319") {
-          data = data.set("entryID", createEntryID());
-        }
-
-        return entry.set("data", data);
+        const raw = localStorage.getItem("decap-cms-user");
+        if (!raw) return "";
+        const user = JSON.parse(raw);
+        return user?.login || "";
       } catch (e) {
-        console.error("preSave failed:", e);
-        return entry;
+        console.error("failed to read decap-cms-user:", e);
+        return "";
       }
     }
-  });
-</script>
+
+    function getJSTNowParts() {
+      const now = new Date();
+
+      const formatter = new Intl.DateTimeFormat("sv-SE", {
+        timeZone: "Asia/Tokyo",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false
+      });
+
+      const parts = formatter.formatToParts(now);
+      const map = Object.fromEntries(
+        parts
+          .filter(part => part.type !== "literal")
+          .map(part => [part.type, part.value])
+      );
+
+      return {
+        year: map.year,
+        month: map.month,
+        day: map.day,
+        hour: map.hour,
+        minute: map.minute,
+        second: map.second
+      };
+    }
+
+    function getJSTDate() {
+      const p = getJSTNowParts();
+      return `${p.year}-${p.month}-${p.day}`;
+    }
+
+    function getJSTISOString() {
+      const p = getJSTNowParts();
+      return `${p.year}-${p.month}-${p.day}T${p.hour}:${p.minute}:${p.second}+09:00`;
+    }
+
+    function isInvalidAutoValue(value) {
+      if (value == null) return true;
+      const s = String(value).trim();
+      return !s || s === "{{now}}" || s === "Invalid Date";
+    }
+
+    CMS.registerEventListener({
+      name: "preSave",
+      handler: ({ entry }) => {
+        try {
+          const login = getGithubLogin();
+          const author = AUTHOR_MAP[login] || "";
+          const nowDate = getJSTDate();
+          const nowCreatedAt = getJSTISOString();
+
+          let data = entry.get("data");
+
+          const currentAuthor = data.get("author");
+          const currentDate = data.get("date");
+          const currentCreatedAt = data.get("createdAt");
+
+          data = data.set("author", author || currentAuthor || "");
+
+          if (isInvalidAutoValue(currentCreatedAt)) {
+            data = data.set("createdAt", nowCreatedAt);
+          }
+
+          const finalCreatedAt = data.get("createdAt");
+
+          if (isInvalidAutoValue(currentDate)) {
+            const derivedDate =
+              typeof finalCreatedAt === "string" && finalCreatedAt.length >= 10
+                ? finalCreatedAt.slice(0, 10)
+                : nowDate;
+
+            data = data.set("date", derivedDate);
+          }
+
+          return entry.set("data", data);
+        } catch (e) {
+          console.error("preSave failed:", e);
+          return entry;
+        }
+      }
+    });
+  </script>
+</body>
+</html>
