@@ -1,6 +1,8 @@
 backend:
-  name: git-gateway
+  name: github
+  repo: kentam1127g/001
   branch: main
+  base_url: https://enpitumark-oath.netlify.app
 
 media_folder: "images/uploads"
 public_folder: "/images/uploads"
@@ -17,6 +19,7 @@ collections:
     extension: "json"
     format: "json"
     slug: "{{slug}}"
+    identifier_field: "id"
     summary: "{{author}}"
 
     fields:
