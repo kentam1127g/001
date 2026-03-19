@@ -657,78 +657,71 @@
     }
 
     function setupViewObservers() {
-      if (!('IntersectionObserver' in window)) return;
+  if (!("IntersectionObserver" in window)) return;
 
-      if (viewObserver) {
-        viewObserver.disconnect();
+  if (viewObserver) {
+    viewObserver.disconnect();
+  }
+
+  const seenIds = new Set(loadSeenEntries());
+  const pendingTimers = new Map();
+
+  viewObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      const target = entry.target;
+      const entryIdValue = target.dataset.entryId;
+      if (!entryIdValue || seenIds.has(entryIdValue)) return;
+
+      if (entry.isIntersecting && entry.intersectionRatio >= 0.6) {
+        if (pendingTimers.has(entryIdValue)) return;
+
+        const timerId = window.setTimeout(async () => {
+          if (seenIds.has(entryIdValue)) return;
+
+          seenIds.add(entryIdValue);
+          saveSeenEntries([...seenIds]);
+
+          // ローカル演出用
+          const localCounts = loadViewCounts();
+          localCounts[entryIdValue] = Number(localCounts[entryIdValue] || 0) + 1;
+          saveViewCounts(localCounts);
+
+          // 共有カウント加算
+          const changed = await bumpSharedCounts([entryIdValue]);
+          if (changed[entryIdValue] != null) {
+            sharedCounts[entryIdValue] = Number(changed[entryIdValue]);
+            syncViewCountsToDOM(entryIdValue, sharedCounts[entryIdValue]);
+          } else {
+            syncViewCountsToDOM(entryIdValue, localCounts[entryIdValue]);
+          }
+
+          if (viewObserver) {
+            viewObserver.unobserve(target);
+          }
+
+          pendingTimers.delete(entryIdValue);
+        }, VIEW_COUNT_DELAY_MS);
+
+        pendingTimers.set(entryIdValue, timerId);
+        return;
       }
 
-      const seenIds = new Set(loadSeenEntries());
-      const pendingTimers = new Map();
+      if (pendingTimers.has(entryIdValue)) {
+        clearTimeout(pendingTimers.get(entryIdValue));
+        pendingTimers.delete(entryIdValue);
+      }
+    });
+  }, {
+    threshold: [0.6]
+  });
 
-      viewObserver = new IntersectionObserver((entries) => {
-        const counts = loadViewCounts();
-
-        entries.forEach(entry => {
-          const target = entry.target;
-          const entryIdValue = target.dataset.entryId;
-          if (!entryIdValue || seenIds.has(entryIdValue)) return;
-
-          if (entry.isIntersecting && entry.intersectionRatio >= 0.6) {
-            if (pendingTimers.has(entryIdValue)) return;
-
-            const timerId = window.setTimeout(() => {
-              if (seenIds.has(entryIdValue)) return;
-
-              seenIds.add(entryIdValue);
-              counts[entryIdValue] = Number(counts[entryIdValue] || 0) + 1;
-
-              saveViewCounts(counts);
-              saveSeenEntries([...seenIds]);
-              syncViewCountsToDOM(entryIdValue, counts[entryIdValue]);
-
-              if (viewObserver) {
-                viewObserver.unobserve(target);
-              }
-
-              pendingTimers.delete(entryIdValue);
-            }, VIEW_COUNT_DELAY_MS);
-
-            pendingTimers.set(entryIdValue, timerId);
-            return;
-          }
-
-          if (pendingTimers.has(entryIdValue)) {
-            clearTimeout(pendingTimers.get(entryIdValue));
-            pendingTimers.delete(entryIdValue);
-          }
-        });
-      }, {
-        threshold: [0.6]
-      });
-
-      document.querySelectorAll('.entry[data-entry-id]').forEach(entryEl => {
-        const entryIdValue = entryEl.dataset.entryId;
-        if (!seenIds.has(entryIdValue)) {
-          viewObserver.observe(entryEl);
-        }
-      });
+  document.querySelectorAll(".entry[data-entry-id]").forEach(entryEl => {
+    const entryIdValue = entryEl.dataset.entryId;
+    if (!seenIds.has(entryIdValue)) {
+      viewObserver.observe(entryEl);
     }
-
-    function animateEntriesInOrder() {
-      const entryNodes = [...document.querySelectorAll('.entry')];
-      if (!entryNodes.length) return;
-
-      const newestFirst = [...entryNodes].reverse();
-
-      newestFirst.forEach((node, index) => {
-        node.classList.remove('is-visible');
-        const delay = index * 110;
-        window.setTimeout(() => {
-          node.classList.add('is-visible');
-        }, delay);
-      });
-    }
+  });
+}
 
     function showMoreEntries() {
       const beforeHeight = document.documentElement.scrollHeight;
@@ -805,7 +798,11 @@
 
         const visibleEntries = getVisibleEntries(allEntries);
         const dayLabels = enumerateDayLabels(visibleEntries);
+        let sharedCounts = {};
         const viewCounts = loadViewCounts();
+        const displayCount = Number(
+  sharedCounts[entry.id] ?? viewCounts[entry.id] ?? entry.viewCount ?? 0
+);
 
         updateLoadOlderButton(allEntries.length, visibleEntries.length, allEntries);
         updateReturnLatestButton();
@@ -893,32 +890,58 @@
     }
 
     async function init() {
-      try {
-        updateClock();
-        setInterval(updateClock, 1000);
+  try {
+    updateClock();
+    setInterval(updateClock, 1000);
 
-        if (window.location.hash && window.location.hash.startsWith('#entry-')) {
-          anchoredEntryId = window.location.hash.replace('#entry-', '');
-          visibleEntryCount = INITIAL_VISIBLE_COUNT;
-        }
-
-        allEntries = await loadEntriesFromContent();
-        render();
-
-        if (!anchoredEntryId) {
-          requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-              window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'auto' });
-            });
-          });
-        }
-      } catch (error) {
-        console.error('[init] failed:', error);
-        entriesEl.innerHTML = '<div class="empty">投稿の読み込みに失敗しました。コンソールを確認してください。</div>';
-      }
+    if (window.location.hash && window.location.hash.startsWith("#entry-")) {
+      anchoredEntryId = window.location.hash.replace("#entry-", "");
+      visibleEntryCount = INITIAL_VISIBLE_COUNT;
     }
 
+    sharedCounts = await loadSharedCounts();
+    allEntries = await loadEntriesFromContent();
+    render();
+
+    if (!anchoredEntryId) {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          window.scrollTo({ top: document.documentElement.scrollHeight, behavior: "auto" });
+        });
+      });
+    }
+  } catch (error) {
+    console.error("[init] failed:", error);
+    entriesEl.innerHTML = '<div class="empty">投稿の読み込みに失敗しました。コンソールを確認してください。</div>';
+  }
+}
+
     init();
+
+    const COUNTS_API_BASE = "https://enpitumark-oath.netlify.app";
+    async function loadSharedCounts() {
+  try {
+    const res = await fetch(`${COUNTS_API_BASE}/counts`, { cache: "no-store" });
+    if (!res.ok) throw new Error(`counts fetch failed: ${res.status}`);
+    const data = await res.json();
+    return data && typeof data === "object" ? data : {};
+  } catch (error) {
+    console.error("[counts] load failed:", error);
+    return {};
+  }
+}
+async function loadSharedCounts() {
+  try {
+    const res = await fetch(`${COUNTS_API_BASE}/counts`, { cache: "no-store" });
+    if (!res.ok) throw new Error(`counts fetch failed: ${res.status}`);
+    const data = await res.json();
+    return data && typeof data === "object" ? data : {};
+  } catch (error) {
+    console.error("[counts] load failed:", error);
+    return {};
+  }
+}
+
   </script>
 </body>
 </html>
