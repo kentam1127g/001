@@ -7,47 +7,45 @@
   <link href="config.yml" type="text/yaml" rel="cms-config-url" />
 </head>
 <body>
+  <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
 
-<script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
+  <script>
+    const AUTHOR_MAP = {
+      "kentam1127g": "A",
+      "friend-github-name": "B"
+    };
 
-<script>
-  // GitHubユーザー名 → A / B の対応
-  const AUTHOR_MAP = {
-    "kentam1127g": "A",
-    "friend-github-name": "B"
-  };
-
-  // 保存直前に author を自動セット
-  CMS.registerEventListener({
-    name: "preSave",
-    handler: ({ entry }) => {
+    function getGithubLogin() {
       try {
-        const user = JSON.parse(localStorage.getItem("netlify-cms-user") || "{}");
-        const login = user?.user_metadata?.full_name || user?.email || "";
-
-        console.log("login user:", user);
-
-        let author = "";
-
-        // GitHub OAuthの場合、emailやnameに入ることがある
-        for (const key in AUTHOR_MAP) {
-          if (login.includes(key)) {
-            author = AUTHOR_MAP[key];
-          }
-        }
-
-        // fallback（判定できない場合）
-        if (!author) author = "A";
-
-        return entry.get("data").set("author", author);
-
+        const raw = localStorage.getItem("decap-cms-user");
+        if (!raw) return "";
+        const user = JSON.parse(raw);
+        return user?.login || "";
       } catch (e) {
-        console.error("author set error:", e);
-        return entry;
+        console.error("failed to read decap-cms-user:", e);
+        return "";
       }
     }
-  });
-</script>
 
+    CMS.registerEventListener({
+      name: "preSave",
+      handler: ({ entry }) => {
+        try {
+          const login = getGithubLogin();
+          console.log("github login:", login);
+
+          const author = AUTHOR_MAP[login] || "";
+
+          // entry.get("data").set(...) だけだと data Map を返してしまうので、
+          // entry 全体へ set し直す
+          const nextData = entry.get("data").set("author", author);
+          return entry.set("data", nextData);
+        } catch (e) {
+          console.error("author auto set failed:", e);
+          return entry;
+        }
+      }
+    });
+  </script>
 </body>
 </html>
