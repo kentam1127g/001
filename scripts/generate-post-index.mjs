@@ -14,13 +14,13 @@ function formatDate(date) {
 function safeDate(value, fallback) {
   if (!value) return fallback;
   const d = new Date(value);
-  return isNaN(d.getTime()) ? fallback : formatDate(d);
+  return Number.isNaN(d.getTime()) ? fallback : formatDate(d);
 }
 
 function safeISO(value, fallback) {
   if (!value) return fallback;
   const d = new Date(value);
-  return isNaN(d.getTime()) ? fallback : d.toISOString();
+  return Number.isNaN(d.getTime()) ? fallback : d.toISOString();
 }
 
 async function readExistingIndex() {
@@ -37,11 +37,11 @@ async function main() {
   await fs.mkdir(postsDir, { recursive: true });
 
   const existingIndex = await readExistingIndex();
-  const existingMap = new Map(existingIndex.map(p => [p.id, p]));
+  const existingMap = new Map(existingIndex.map((p) => [p.id, p]));
 
   const files = await fs.readdir(postsDir);
   const postFiles = files.filter(
-    f => f.endsWith(".json") && f !== "index.json"
+    (f) => f.endsWith(".json") && f !== "index.json"
   );
 
   const posts = [];
@@ -60,8 +60,8 @@ async function main() {
       const fallbackDate = formatDate(stat.mtime);
       const fallbackCreated = stat.mtime.toISOString();
 
-      const date = existing?.date ?? safeDate(data.date || data.createdAt, fallbackDate);
-      const createdAt = existing?.createdAt ?? safeISO(data.createdAt, fallbackCreated);
+      const createdAt = safeISO(data.createdAt, fallbackCreated);
+      const date = safeDate(data.date || createdAt, fallbackDate);
 
       const image = typeof data.image === "string" ? data.image : "";
 
@@ -69,19 +69,17 @@ async function main() {
         id,
         date,
         author: data.author || "",
-        image, // ← WebPでもそのまま通す
+        image,
         text: data.text || "",
         caption: data.caption || "",
         createdAt,
         viewCount: existing?.viewCount ?? Number(data.viewCount || 0)
       });
-
     } catch (err) {
       console.warn(`⚠️ skip: ${file}`, err.message);
     }
   }
 
-  // 並び替え（古い→新しい）
   posts.sort((a, b) => {
     if (a.date !== b.date) return a.date < b.date ? -1 : 1;
     return new Date(a.createdAt) - new Date(b.createdAt);
@@ -96,7 +94,7 @@ async function main() {
   console.log(`✅ index.json updated (${posts.length} posts)`);
 }
 
-main().catch(err => {
+main().catch((err) => {
   console.error(err);
   process.exit(1);
 });
