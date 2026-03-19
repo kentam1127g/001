@@ -3,7 +3,17 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Quiet Broadcast / Log Board</title>
+  <title>Quiet Broadcast</title>
+  <meta name="robots" content="index,follow" />
+  <meta property="og:title" content="Quiet Broadcast" />
+  <meta property="og:description" content="写真でも、文字でも。静かに積み重なっていく小さなログ。" />
+  <meta property="og:image" content="/images/ogp.jpg" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Quiet Broadcast" />
+  <meta name="twitter:description" content="写真でも、文字でも。静かに積み重なっていく小さなログ。" />
+  <meta name="twitter:image" content="/images/ogp.jpg" />
   <style>
     :root {
       --bg: #f4f0e8;
@@ -12,7 +22,6 @@
       --muted: #6f6a62;
       --line: #d7d1c6;
       --max: 460px;
-      --device-pad: 18px;
       --shadow: 0 10px 24px rgba(0, 0, 0, 0.05);
     }
 
@@ -29,7 +38,6 @@
 
     body {
       min-height: 100vh;
-      padding: 18px 0 0;
     }
 
     img {
@@ -39,9 +47,7 @@
     }
 
     button,
-    input,
-    textarea,
-    select {
+    a {
       font: inherit;
     }
 
@@ -51,20 +57,10 @@
       padding: 24px 0 120px;
     }
 
-    .device-shell {
-      width: min(calc(100% - 24px), calc(var(--max) + var(--device-pad) * 2));
-      margin: 0 auto;
-      padding: 0 var(--device-pad) 18px;
-      border: 1px solid rgba(215, 209, 198, 0.95);
-      background: rgba(251, 250, 246, 0.56);
-      box-shadow: 0 22px 48px rgba(0, 0, 0, 0.08);
-      border-radius: 28px;
-    }
-
     .topbar {
       position: sticky;
       top: 0;
-      z-index: 5;
+      z-index: 20;
       backdrop-filter: blur(8px);
       background: rgba(244, 240, 232, 0.82);
       border-bottom: 1px solid rgba(215, 209, 198, 0.85);
@@ -79,10 +75,6 @@
       justify-content: space-between;
       gap: 16px;
       padding: 12px 0;
-    }
-
-    .title {
-      min-width: 0;
     }
 
     .title h1 {
@@ -101,12 +93,12 @@
     .top-actions {
       display: flex;
       gap: 8px;
-      flex-wrap: wrap;
       justify-content: flex-end;
+      flex-wrap: wrap;
     }
 
-    button,
-    .buttonlike {
+    .buttonlike,
+    button {
       appearance: none;
       border: 1px solid var(--line);
       background: var(--paper);
@@ -117,8 +109,8 @@
       box-shadow: 0 1px 0 rgba(255,255,255,0.6) inset;
     }
 
-    button:hover,
-    .buttonlike:hover {
+    .buttonlike:hover,
+    button:hover {
       background: #ffffff;
     }
 
@@ -136,6 +128,25 @@
       font-size: 0.95rem;
     }
 
+    .load-older-wrap,
+    .return-latest-wrap {
+      display: flex;
+      justify-content: center;
+    }
+
+    .load-older-wrap {
+      margin: 8px 0 18px;
+    }
+
+    .return-latest-wrap {
+      margin: 18px 0 8px;
+    }
+
+    .load-older-wrap[hidden],
+    .return-latest-wrap[hidden] {
+      display: none;
+    }
+
     .log-board {
       display: grid;
       gap: 12px;
@@ -151,19 +162,19 @@
       background: #fffdf8;
     }
 
+    .bubble {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      padding: 14px;
+    }
+
     .stamp {
       color: var(--muted);
       font-size: 0.78rem;
       line-height: 1.45;
       margin-bottom: 10px;
       word-break: break-word;
-    }
-
-    .bubble {
-      background: var(--paper);
-      border: 1px solid var(--line);
-      box-shadow: var(--shadow);
-      padding: 14px;
     }
 
     .bubble-head {
@@ -181,10 +192,6 @@
       text-transform: uppercase;
     }
 
-    .kind {
-      display: none;
-    }
-
     .entry-text {
       margin: 0;
       white-space: pre-wrap;
@@ -193,7 +200,6 @@
     }
 
     .entry-media {
-      margin-top: 10px;
       border: 1px solid var(--line);
       background: #ebe6dc;
     }
@@ -210,35 +216,11 @@
       justify-content: flex-end;
       gap: 6px;
       flex-wrap: wrap;
-    }
-
-    .icon-btn {
-      display: inline-flex;
       align-items: center;
-      justify-content: center;
-      width: 28px;
-      height: 28px;
-      padding: 0;
-      border: 1px solid transparent;
-      background: transparent;
-      cursor: pointer;
-      color: var(--muted);
-    }
-
-    .icon-btn:hover {
-      background: rgba(0,0,0,0.04);
-      border-color: rgba(0,0,0,0.06);
-    }
-
-    .icon-btn svg {
-      width: 16px;
-      height: 16px;
-      stroke: currentColor;
-      fill: none;
-      stroke-width: 1.6;
     }
 
     .view-count {
+      margin-right: auto;
       display: inline-flex;
       align-items: center;
       gap: 4px;
@@ -286,9 +268,30 @@
       }
     }
 
-    .tiny {
-      font-size: 0.82rem;
+    .icon-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      padding: 0;
+      border: 1px solid transparent;
+      background: transparent;
+      cursor: pointer;
       color: var(--muted);
+    }
+
+    .icon-btn:hover {
+      background: rgba(0,0,0,0.04);
+      border-color: rgba(0,0,0,0.06);
+    }
+
+    .icon-btn svg {
+      width: 16px;
+      height: 16px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.6;
     }
 
     .empty {
@@ -299,84 +302,11 @@
       color: var(--muted);
     }
 
-    .panel {
-      position: fixed;
-      right: 16px;
-      bottom: 16px;
-      z-index: 9;
-      width: min(430px, calc(100vw - 24px));
-      max-height: 84vh;
-      overflow: auto;
-      background: var(--paper);
-      border: 1px solid var(--line);
-      box-shadow: 0 18px 42px rgba(0,0,0,0.12);
-      padding: 16px;
-      display: none;
-    }
-
-    .panel.open {
-      display: block;
-    }
-
-    .panel h2 {
-      margin: 0 0 12px;
-      font-size: 1.06rem;
-      font-weight: 400;
-    }
-
-    .field {
-      display: grid;
-      gap: 6px;
-      margin-bottom: 12px;
-    }
-
-    .field input,
-    .field textarea,
-    .field select {
-      width: 100%;
-      border: 1px solid var(--line);
-      background: #fff;
-      color: var(--text);
-      padding: 9px 10px;
-    }
-
-    .field textarea {
-      resize: vertical;
-      min-height: 120px;
-    }
-
-    .panel-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 12px;
-    }
-
     .footer-note {
       margin-top: 22px;
       color: var(--muted);
       font-size: 0.86rem;
       text-align: center;
-    }
-
-    .load-older-wrap {
-      display: flex;
-      justify-content: center;
-      margin: 8px 0 18px;
-    }
-
-    .load-older-wrap[hidden] {
-      display: none;
-    }
-
-    .return-latest-wrap {
-      display: flex;
-      justify-content: center;
-      margin: 18px 0 8px;
-    }
-
-    .return-latest-wrap[hidden] {
-      display: none;
     }
 
     .clock-wrap {
@@ -405,12 +335,6 @@
       :root {
         --max: 720px;
       }
-
-      .device-shell {
-        border-radius: 32px;
-        padding-left: calc(var(--device-pad) * 1.2);
-        padding-right: calc(var(--device-pad) * 1.2);
-      }
     }
 
     @media (max-width: 720px) {
@@ -430,14 +354,11 @@
   <div class="topbar">
     <div class="topbar-inner">
       <div class="title">
-        <h1>Quiet Broadcast / Log Board</h1>
-        <p>古いログほど上に積み重なる、昔の掲示板みたいな小さな記録。</p>
+        <h1>Quiet Broadcast</h1>
+        <p>古いログほど上に積み重なる、小さな記録。</p>
       </div>
       <div class="top-actions">
-        <button id="openEditor">投稿する</button>
-        <button id="exportJson">JSON書き出し</button>
-        <label class="buttonlike" for="importJson">JSON読み込み</label>
-        <input id="importJson" type="file" accept="application/json" hidden>
+        <a class="buttonlike" href="/admin/">Admin</a>
       </div>
     </div>
   </div>
@@ -445,13 +366,13 @@
   <main class="wrap">
     <section class="intro-card">
       <p>
-        写真でも、文字でも、両方でも。<br>
-        検索やカレンダーより、ただ積み重なっていく感じを優先した試作です。
+        写真でも、文字でも。<br>
+        ただ積み重なっていく感じを優先した、静かなログ。
       </p>
     </section>
 
     <div id="loadOlderWrap" class="load-older-wrap" hidden>
-      <button id="loadOlder">かなり昔のログを読み込む</button>
+      <button id="loadOlder">さらに古いログを読む</button>
     </div>
 
     <section id="entries" class="log-board"></section>
@@ -461,7 +382,7 @@
     </div>
 
     <p class="footer-note">
-      保存先はブラウザの localStorage。軽い試作としてそのまま開いて動きます。
+      写真でも、文字でも、両方でも。
     </p>
   </main>
 
@@ -469,129 +390,64 @@
     <div id="clock" class="clock">----.--.-- --:--:--</div>
   </div>
 
-  <aside id="panel" class="panel" aria-hidden="true">
-    <h2>新規投稿</h2>
-    <form id="entryForm">
-      <input type="hidden" id="entryId" value="">
-
-      <div class="field">
-        <label for="entryDate">日付</label>
-        <input id="entryDate" name="date" type="date" required>
-      </div>
-
-      <div class="field">
-        <label for="entryAuthor">投稿者</label>
-        <select id="entryAuthor" name="author">
-          <option value="A">A</option>
-          <option value="B">B</option>
-        </select>
-      </div>
-
-      <div class="field">
-        <label for="entryImage">画像</label>
-        <input id="entryImage" name="image" type="file" accept="image/*">
-        <div class="tiny">画像は base64 でブラウザ内に保存されます。</div>
-      </div>
-
-      <div class="field">
-        <label for="entryText">テキスト</label>
-        <textarea id="entryText" name="text" maxlength="500" placeholder="写真があればその下に文字が入ります。文字だけの投稿も可。"></textarea>
-        <div class="tiny">空でも可。画像だけの投稿もできます。</div>
-      </div>
-
-      <div class="field">
-        <label for="entryCaption">画像キャプション</label>
-        <input id="entryCaption" name="caption" type="text" maxlength="100" placeholder="任意">
-      </div>
-
-      <div class="panel-actions">
-        <button type="submit">保存</button>
-        <button type="button" id="closeEditor">閉じる</button>
-        <button type="button" id="seedDemo">サンプル投入</button>
-        <button type="button" id="clearAll">全削除</button>
-      </div>
-    </form>
-  </aside>
-
   <script>
-    const STORAGE_KEY = 'quiet-broadcast-board-v2';
     const CONTENT_INDEX_PATH = 'content/posts/index.json';
-    const VIEW_STORAGE_KEY = 'quiet-broadcast-board-view-counts-v1';
-    const SEEN_STORAGE_KEY = 'quiet-broadcast-board-seen-entries-v1';
+    const VIEW_STORAGE_KEY = 'quiet-broadcast-view-counts-v1';
+    const SEEN_STORAGE_KEY = 'quiet-broadcast-seen-entries-v1';
     const INITIAL_VISIBLE_COUNT = 12;
     const LOAD_MORE_COUNT = 12;
     const VIEW_COUNT_DELAY_MS = 900;
 
     const entriesEl = document.getElementById('entries');
-    const panel = document.getElementById('panel');
-    const form = document.getElementById('entryForm');
-    const importJsonInput = document.getElementById('importJson');
-
-    const entryId = document.getElementById('entryId');
-    const entryDate = document.getElementById('entryDate');
-    const entryAuthor = document.getElementById('entryAuthor');
-    const entryText = document.getElementById('entryText');
-    const entryImage = document.getElementById('entryImage');
-    const entryCaption = document.getElementById('entryCaption');
     const loadOlderWrap = document.getElementById('loadOlderWrap');
-    const clockEl = document.getElementById('clock');
     const returnLatestWrap = document.getElementById('returnLatestWrap');
+    const clockEl = document.getElementById('clock');
 
+    let allEntries = [];
     let visibleEntryCount = INITIAL_VISIBLE_COUNT;
     let anchoredEntryId = null;
+    let viewObserver = null;
 
-    document.getElementById('openEditor').addEventListener('click', openPanel);
-    document.getElementById('closeEditor').addEventListener('click', closePanel);
-    document.getElementById('exportJson').addEventListener('click', exportJson);
-    document.getElementById('seedDemo').addEventListener('click', seedDemo);
-    document.getElementById('clearAll').addEventListener('click', clearAll);
     document.getElementById('loadOlder').addEventListener('click', showMoreEntries);
     document.getElementById('returnLatest').addEventListener('click', returnToLatest);
-    importJsonInput.addEventListener('change', importJson);
-    form.addEventListener('submit', handleSubmit);
     window.addEventListener('hashchange', handleHashChange);
 
-    entryDate.value = new Date().toISOString().slice(0, 10);
-
-    function loadEntries() {
-      try {
-        const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY));
-        return Array.isArray(parsed) ? parsed : [];
-      } catch {
-        return [];
-      }
+    function escapeHtml(str = '') {
+      return String(str)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
     }
 
-    async function loadEntriesFromContent() {
-      try {
-        const response = await fetch(CONTENT_INDEX_PATH, { cache: 'no-store' });
-        if (!response.ok) throw new Error('content index not found');
-        const parsed = await response.json();
-        return Array.isArray(parsed) ? parsed : [];
-      } catch (error) {
-        console.warn('content load failed, fallback to localStorage:', error);
-        return loadEntries();
-      }
+    function pad(num) {
+      return String(num).padStart(2, '0');
     }
 
-    function saveEntries(entries) {
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
-      } catch (e) {
-        // quota対策：古い投稿から削除して再トライ
-        console.warn('Quota exceeded. Pruning old entries...');
-        let pruned = [...entries];
-        while (pruned.length > 0) {
-          pruned.shift(); // 一番古いもの削除
-          try {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(pruned));
-            alert('容量上限のため古い投稿を削除しました');
-            return;
-          } catch {}
+    function formatDate(dateStr, createdAt) {
+      if (!dateStr) return '';
+      let timePart = '';
+
+      if (createdAt) {
+        const d = new Date(createdAt);
+        if (!Number.isNaN(d.getTime())) {
+          let h = d.getHours();
+          const label = h < 12 ? '午前' : '午後';
+          h = h % 12;
+          if (h === 0) h = 12;
+          timePart = ` ${label}${h}時`;
         }
-        alert('保存容量を超えました。これ以上保存できません。');
-        throw e;
       }
+
+      return `${dateStr}${timePart}`;
+    }
+
+    function updateClock() {
+      const now = new Date();
+      clockEl.textContent =
+        `${now.getFullYear()}.${pad(now.getMonth() + 1)}.${pad(now.getDate())} ` +
+        `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
     }
 
     function loadViewCounts() {
@@ -620,46 +476,21 @@
       sessionStorage.setItem(SEEN_STORAGE_KEY, JSON.stringify(ids));
     }
 
-    function escapeHtml(str = '') {
-      return str
-        .replaceAll('&', '&amp;')
-        .replaceAll('<', '&lt;')
-        .replaceAll('>', '&gt;')
-        .replaceAll('"', '&quot;')
-        .replaceAll("'", '&#39;');
-    }
+    async function loadEntriesFromContent() {
+      const res = await fetch(CONTENT_INDEX_PATH, { cache: 'no-store' });
+      if (!res.ok) throw new Error('index.json not found');
+      const data = await res.json();
+      if (!Array.isArray(data)) return [];
 
-    function formatDate(dateStr, createdAt) {
-      if (!dateStr) return '';
-
-      let timePart = '';
-      if (createdAt) {
-        const d = new Date(createdAt);
-        let h = d.getHours();
-        const isAM = h < 12;
-        const label = isAM ? '午前' : '午後';
-        h = h % 12;
-        if (h === 0) h = 12;
-        timePart = ` ${label}${h}時`;
-      }
-
-      return dateStr + timePart;
-    }
-
-    function kindLabel(entry) {
-      const hasText = !!(entry.text && entry.text.trim());
-      const hasImage = !!entry.imageDataUrl;
-      if (hasText && hasImage) return 'photo + text';
-      if (hasImage) return 'photo';
-      if (hasText) return 'text';
-      return 'blank';
-    }
-
-    function sortedEntries() {
-      return [...loadEntries()].sort((a, b) => {
+      return [...data].sort((a, b) => {
         if (a.date !== b.date) return a.date < b.date ? -1 : 1;
-        return a.createdAt - b.createdAt;
+        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
       });
+    }
+
+    function updateOGP() {
+      const ogUrl = document.querySelector('meta[property="og:url"]');
+      if (ogUrl) ogUrl.setAttribute('content', location.href.split('#')[0]);
     }
 
     function getVisibleEntries(entries) {
@@ -680,23 +511,21 @@
         const anchorIndex = entries.findIndex(entry => entry.id === anchoredEntryId);
         const hiddenOlderCount = anchorIndex === -1 ? 0 : Math.max(anchorIndex - visibleCount + 1, 0);
         loadOlderWrap.hidden = hiddenOlderCount === 0;
-        if (button) {
-          const nextCount = Math.min(hiddenOlderCount, LOAD_MORE_COUNT);
-          button.textContent = hiddenOlderCount > 0
-            ? `さらに古いログを ${nextCount} 件読む（あと ${hiddenOlderCount} 件）`
-            : 'さらに古いログを読む';
-        }
+
+        const nextCount = Math.min(hiddenOlderCount, LOAD_MORE_COUNT);
+        button.textContent = hiddenOlderCount > 0
+          ? `さらに古いログを ${nextCount} 件読む（あと ${hiddenOlderCount} 件）`
+          : 'さらに古いログを読む';
         return;
       }
 
       const hiddenCount = Math.max(totalCount - visibleCount, 0);
       loadOlderWrap.hidden = hiddenCount === 0;
-      if (button) {
-        const nextCount = Math.min(hiddenCount, LOAD_MORE_COUNT);
-        button.textContent = hiddenCount > 0
-          ? `さらに古いログを ${nextCount} 件読む（あと ${hiddenCount} 件）`
-          : 'さらに古いログを読む';
-      }
+
+      const nextCount = Math.min(hiddenCount, LOAD_MORE_COUNT);
+      button.textContent = hiddenCount > 0
+        ? `さらに古いログを ${nextCount} 件読む（あと ${hiddenCount} 件）`
+        : 'さらに古いログを読む';
     }
 
     function updateReturnLatestButton() {
@@ -706,184 +535,22 @@
     function scrollToLatest(force = false) {
       if (anchoredEntryId) return;
       if (!force && visibleEntryCount > INITIAL_VISIBLE_COUNT) return;
+
       requestAnimationFrame(() => {
         window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'auto' });
       });
     }
 
-    function showMoreEntries() {
-      const entries = sortedEntries();
-      const beforeHeight = document.documentElement.scrollHeight;
-      const beforeScrollY = window.scrollY;
-
-      if (anchoredEntryId) {
-        const anchorIndex = entries.findIndex(entry => entry.id === anchoredEntryId);
-        if (anchorIndex === -1) return;
-
-        const currentStart = Math.max(anchorIndex - visibleEntryCount + 1, 0);
-        const nextStart = Math.max(currentStart - LOAD_MORE_COUNT, 0);
-
-        visibleEntryCount = anchorIndex - nextStart + 1;
-        render();
-
-        requestAnimationFrame(() => {
-          const afterHeight = document.documentElement.scrollHeight;
-          window.scrollTo({ top: beforeScrollY + (afterHeight - beforeHeight), behavior: 'auto' });
-        });
-        return;
-      }
-
-      const total = entries.length;
-      visibleEntryCount = Math.min(visibleEntryCount + LOAD_MORE_COUNT, total);
-      render();
-
-      requestAnimationFrame(() => {
-        const afterHeight = document.documentElement.scrollHeight;
-        window.scrollTo({ top: beforeScrollY + (afterHeight - beforeHeight), behavior: 'auto' });
-      });
-    }
-
-    function returnToLatest() {
-      anchoredEntryId = null;
-      visibleEntryCount = INITIAL_VISIBLE_COUNT;
-      if (history.replaceState) {
-        history.replaceState(null, '', location.pathname + location.search);
-      }
-      render();
-      scrollToLatest(true);
-    }
-
-    function handleHashChange() {
+    function ensureHashedEntryVisible() {
       const hash = window.location.hash;
-      if (hash && hash.startsWith('#entry-')) {
-        anchoredEntryId = hash.replace('#entry-', '');
-        visibleEntryCount = INITIAL_VISIBLE_COUNT;
-      } else {
-        anchoredEntryId = null;
-        visibleEntryCount = INITIAL_VISIBLE_COUNT;
-      }
-      render();
-    }
+      if (!hash || !hash.startsWith('#entry-')) return;
 
-    async function render() {
-      try {
-        ensureHashedEntryVisible();
-        const entries = [...(await loadEntriesFromContent())].sort((a, b) => {
-          if (a.date !== b.date) return a.date < b.date ? -1 : 1;
-          return a.createdAt - b.createdAt;
-        });
+      const id = hash.replace('#entry-', '');
+      const index = allEntries.findIndex(item => item.id === id);
+      if (index === -1) return;
 
-        if (!entries.length) {
-          loadOlderWrap.hidden = true;
-          returnLatestWrap.hidden = true;
-          entriesEl.innerHTML = '<div class="empty">まだログがありません。最初の一枚、最初の一言をどうぞ。</div>';
-          return;
-        }
-
-        const visibleEntries = getVisibleEntries(entries);
-        updateLoadOlderButton(entries.length, visibleEntries.length, entries);
-        updateReturnLatestButton();
-
-        entriesEl.innerHTML = visibleEntries.map(entry => {
-          const textHtml = entry.text
-            ? `<p class="entry-text">${escapeHtml(entry.text)}</p>`
-            : '';
-
-          const imageHtml = entry.image || entry.imageDataUrl
-            ? `
-              <div class="entry-media">
-                <img src="${entry.image || entry.imageDataUrl}" alt="${escapeHtml(entry.caption || entry.text || entry.date || 'image')}" />
-              </div>
-              ${entry.caption ? `<div class="entry-caption">${escapeHtml(entry.caption)}</div>` : ''}
-            `
-            : '';
-
-          return `
-            <article class="entry" id="entry-${entry.id}" data-entry-id="${entry.id}">
-              <div class="bubble">
-                <div class="stamp">
-                  <div>${escapeHtml(formatDate(entry.date, entry.createdAt))}</div>
-                </div>
-                <div class="bubble-head">
-                  <span class="author">${escapeHtml(entry.author || 'A')}</span>
-                </div>
-                ${imageHtml}
-                ${imageHtml && textHtml ? '<div style="height:10px"></div>' : ''}
-                ${textHtml}
-                <div class="entry-actions">
-                  <span class="view-count" data-view-count-id="${entry.id}" aria-label="既読カウント">
-                    <span class="view-count-label">既読：</span>
-                    <span class="view-count-number">${Number(entry.viewCount || 0)}</span>
-                    <span class="view-count-plus">+1</span>
-                  </span>
-                  <button class="icon-btn" type="button" data-share-id="${entry.id}" aria-label="共有">
-                    <svg viewBox="0 0 24 24">
-                      <path d="M22 2L11 13"/>
-                      <path d="M22 2l-7 20-4-9-9-4z"/>
-                    </svg>
-                  </button>
-                  <button class="icon-btn" type="button" data-edit-id="${entry.id}" aria-label="編集">
-                    <svg viewBox="0 0 24 24"><path d="M4 20l4-1 10-10-3-3L5 16l-1 4z"/><path d="M14 6l3 3"/></svg>
-                  </button>
-                  <button class="icon-btn" type="button" data-delete-id="${entry.id}" aria-label="削除">
-                    <svg viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M6 6l1 14h10l1-14"/></svg>
-                  </button>
-                </div>
-              </div>
-            </article>
-          `;
-        }).join('');
-
-        bindEntryButtons();
-        bindShareButtons();
-        setupViewObservers();
-        highlightEntryFromHash();
-        scrollToLatest();
-      } catch (error) {
-        console.error('render failed:', error);
-        entriesEl.innerHTML = '<div class="empty">表示中にエラーが発生しました。コンソールを確認してください。</div>';
-      }
-    }
-
-    function bindEntryButtons() {
-      document.querySelectorAll('[data-delete-id]').forEach(button => {
-        button.addEventListener('click', () => deleteEntry(button.dataset.deleteId));
-      });
-
-      document.querySelectorAll('[data-edit-id]').forEach(button => {
-        button.addEventListener('click', () => editEntry(button.dataset.editId));
-      });
-    }
-
-    function bindShareButtons() {
-      document.querySelectorAll('[data-share-id]').forEach(button => {
-        button.addEventListener('click', () => shareEntry(button.dataset.shareId));
-      });
-    }
-
-    function shareEntry(id) {
-      const entry = loadEntries().find(item => item.id === id);
-      if (!entry) return;
-
-      const url = location.origin + location.pathname + '#entry-' + id;
-      const shareTitle = `Quiet Broadcast / ${entry.date || ''}`.trim();
-      const shareText = shareTitle;
-
-      if (navigator.share) {
-        navigator.share({
-          title: shareTitle,
-          text: shareText,
-          url
-        }).catch(() => {});
-      } else {
-        navigator.clipboard.writeText(`${shareTitle}
-${url}`).then(() => {
-          alert('共有テキストをコピーしました');
-        }).catch(() => {
-          prompt('この内容をコピーしてください', `${shareTitle}
-${url}`);
-        });
-      }
+      anchoredEntryId = id;
+      visibleEntryCount = INITIAL_VISIBLE_COUNT;
     }
 
     function highlightEntryFromHash() {
@@ -898,59 +565,59 @@ ${url}`);
       if (!target) return;
 
       target.classList.add('is-highlighted');
+
       requestAnimationFrame(() => {
         target.scrollIntoView({ block: 'center', behavior: 'smooth' });
       });
     }
 
-    function ensureHashedEntryVisible() {
-      const hash = window.location.hash;
-      if (!hash || !hash.startsWith('#entry-')) return;
-      const id = hash.replace('#entry-', '');
-      const entries = sortedEntries();
-      const index = entries.findIndex(item => item.id === id);
-      if (index === -1) return;
-      anchoredEntryId = id;
-      visibleEntryCount = INITIAL_VISIBLE_COUNT;
-    }
+    function shareEntry(id) {
+      const entry = allEntries.find(item => item.id === id);
+      if (!entry) return;
 
-    function updateOGP() {
-      const title = 'Quiet Broadcast';
-      const description = '写真でも、文字でも、両方でも。静かに積み重なっていく二人のログ。';
-      const image = 'ogp.jpg';
+      const url = `${location.origin}${location.pathname}#entry-${id}`;
+      const shareTitle = `Quiet Broadcast / ${entry.date || ''}`.trim();
+      const shareText = shareTitle;
 
-      setMetaProperty('og:title', title);
-      setMetaProperty('og:description', description);
-      setMetaProperty('og:image', image);
-      setMetaProperty('og:type', 'website');
-      setMetaProperty('og:url', location.href);
-      setMetaName('twitter:card', 'summary_large_image');
-      setMetaName('twitter:title', title);
-      setMetaName('twitter:description', description);
-      setMetaName('twitter:image', image);
-    }
-
-    function setMetaProperty(property, content) {
-      let meta = document.head.querySelector(`meta[property="${property}"]`);
-      if (!meta) {
-        meta = document.createElement('meta');
-        meta.setAttribute('property', property);
-        document.head.appendChild(meta);
+      if (navigator.share) {
+        navigator.share({
+          title: shareTitle,
+          text: shareText,
+          url
+        }).catch(() => {});
+      } else {
+        const textToCopy = `${shareTitle}\n${url}`;
+        navigator.clipboard.writeText(textToCopy).then(() => {
+          alert('共有テキストをコピーしました');
+        }).catch(() => {
+          prompt('この内容をコピーしてください', textToCopy);
+        });
       }
-      meta.setAttribute('content', content);
     }
 
-    function setMetaName(name, content) {
-      let meta = document.head.querySelector(`meta[name="${name}"]`);
-      if (!meta) {
-        meta = document.createElement('meta');
-        meta.setAttribute('name', name);
-        document.head.appendChild(meta);
-      }
-      meta.setAttribute('content', content);
+    function bindShareButtons() {
+      document.querySelectorAll('[data-share-id]').forEach(button => {
+        button.addEventListener('click', () => {
+          shareEntry(button.dataset.shareId);
+        });
+      });
     }
 
-    let viewObserver = null;
+    function syncViewCountsToDOM(entryId, count) {
+      const badge = document.querySelector(`[data-view-count-id="${entryId}"]`);
+      if (!badge) return;
+
+      const numberEl = badge.querySelector('.view-count-number');
+      if (numberEl) numberEl.textContent = String(count);
+
+      badge.classList.remove('is-bumped');
+      void badge.offsetWidth;
+      badge.classList.add('is-bumped');
+
+      setTimeout(() => {
+        badge.classList.remove('is-bumped');
+      }, 1000);
+    }
 
     function setupViewObservers() {
       if (!('IntersectionObserver' in window)) return;
@@ -961,6 +628,7 @@ ${url}`);
 
       const seenIds = new Set(loadSeenEntries());
       const pendingTimers = new Map();
+
       viewObserver = new IntersectionObserver((entries) => {
         const counts = loadViewCounts();
 
@@ -978,26 +646,14 @@ ${url}`);
               seenIds.add(entryIdValue);
               counts[entryIdValue] = Number(counts[entryIdValue] || 0) + 1;
 
-              const badge = target.querySelector(`[data-view-count-id="${entryIdValue}"]`);
-              if (badge) {
-                const numberEl = badge.querySelector('.view-count-number');
-                if (numberEl) {
-                  numberEl.textContent = String(counts[entryIdValue]);
-                }
-                badge.classList.remove('is-bumped');
-                void badge.offsetWidth;
-                badge.classList.add('is-bumped');
-                setTimeout(() => {
-                  badge.classList.remove('is-bumped');
-                }, 1000);
-              }
-
               saveViewCounts(counts);
               saveSeenEntries([...seenIds]);
-              syncViewCountsToEntries(counts);
+              syncViewCountsToDOM(entryIdValue, counts[entryIdValue]);
+
               if (viewObserver) {
                 viewObserver.unobserve(target);
               }
+
               pendingTimers.delete(entryIdValue);
             }, VIEW_COUNT_DELAY_MS);
 
@@ -1022,258 +678,167 @@ ${url}`);
       });
     }
 
-    function syncViewCountsToEntries(counts) {
-      const entries = loadEntries();
-      const nextEntries = entries.map(entry => ({
-        ...entry,
-        viewCount: Number(counts[entry.id] || entry.viewCount || 0)
-      }));
-      saveEntries(nextEntries);
-    }
+    function showMoreEntries() {
+      const beforeHeight = document.documentElement.scrollHeight;
+      const beforeScrollY = window.scrollY;
 
-    function openPanel() {
-      panel.classList.add('open');
-      panel.setAttribute('aria-hidden', 'false');
-    }
+      if (anchoredEntryId) {
+        const anchorIndex = allEntries.findIndex(entry => entry.id === anchoredEntryId);
+        if (anchorIndex === -1) return;
 
-    function closePanel() {
-      panel.classList.remove('open');
-      panel.setAttribute('aria-hidden', 'true');
-      resetForm();
-    }
+        const currentStart = Math.max(anchorIndex - visibleEntryCount + 1, 0);
+        const nextStart = Math.max(currentStart - LOAD_MORE_COUNT, 0);
+        visibleEntryCount = anchorIndex - nextStart + 1;
 
-    function resetForm() {
-      form.reset();
-      entryId.value = '';
-      entryDate.value = new Date().toISOString().slice(0, 10);
-      entryAuthor.value = 'A';
-    }
+        render();
 
-    function readFileAsDataUrl(file) {
-      return new Promise((resolve, reject) => {
-        if (!file) return resolve('');
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
-    }
-
-    function loadImageElement(src) {
-      return new Promise((resolve, reject) => {
-        const img = new Image();
-        img.onload = () => resolve(img);
-        img.onerror = reject;
-        img.src = src;
-      });
-    }
-
-    async function resizeImageForStorage(file) {
-      const originalDataUrl = await readFileAsDataUrl(file);
-      const image = await loadImageElement(originalDataUrl);
-
-      const maxWidth = 1600;
-      const maxHeight = 1600;
-      let { width, height } = image;
-
-      const scale = Math.min(maxWidth / width, maxHeight / height, 1);
-      const targetWidth = Math.max(1, Math.round(width * scale));
-      const targetHeight = Math.max(1, Math.round(height * scale));
-
-      const canvas = document.createElement('canvas');
-      canvas.width = targetWidth;
-      canvas.height = targetHeight;
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return originalDataUrl;
-
-      ctx.drawImage(image, 0, 0, targetWidth, targetHeight);
-
-      let quality = 0.86;
-      let result = canvas.toDataURL('image/jpeg', quality);
-
-      while (result.length > 1_200_000 && quality > 0.45) {
-        quality -= 0.08;
-        result = canvas.toDataURL('image/jpeg', quality);
+        requestAnimationFrame(() => {
+          const afterHeight = document.documentElement.scrollHeight;
+          window.scrollTo({
+            top: beforeScrollY + (afterHeight - beforeHeight),
+            behavior: 'auto'
+          });
+        });
+        return;
       }
 
-      return result;
+      const total = allEntries.length;
+      visibleEntryCount = Math.min(visibleEntryCount + LOAD_MORE_COUNT, total);
+
+      render();
+
+      requestAnimationFrame(() => {
+        const afterHeight = document.documentElement.scrollHeight;
+        window.scrollTo({
+          top: beforeScrollY + (afterHeight - beforeHeight),
+          behavior: 'auto'
+        });
+      });
     }
 
-    async function handleSubmit(e) {
-      e.preventDefault();
+    function returnToLatest() {
+      anchoredEntryId = null;
+      visibleEntryCount = INITIAL_VISIBLE_COUNT;
 
+      if (history.replaceState) {
+        history.replaceState(null, '', location.pathname + location.search);
+      }
+
+      render();
+      scrollToLatest(true);
+    }
+
+    function handleHashChange() {
+      const hash = window.location.hash;
+      if (hash && hash.startsWith('#entry-')) {
+        anchoredEntryId = hash.replace('#entry-', '');
+        visibleEntryCount = INITIAL_VISIBLE_COUNT;
+      } else {
+        anchoredEntryId = null;
+        visibleEntryCount = INITIAL_VISIBLE_COUNT;
+      }
+      render();
+    }
+
+    function render() {
       try {
-        const entries = loadEntries();
-        const existingId = entryId.value;
-        const editingEntry = entries.find(item => item.id === existingId);
+        ensureHashedEntryVisible();
 
-        const uploadedImage = entryImage.files[0]
-          ? await resizeImageForStorage(entryImage.files[0])
-          : '';
-
-        const payload = {
-          id: existingId || crypto.randomUUID(),
-          date: entryDate.value,
-          author: entryAuthor.value,
-          text: entryText.value.trim(),
-          caption: entryCaption.value.trim(),
-          imageDataUrl: uploadedImage || editingEntry?.imageDataUrl || '',
-          createdAt: editingEntry?.createdAt || Date.now(),
-          viewCount: editingEntry?.viewCount || 0
-        };
-
-        if (!payload.text && !payload.imageDataUrl) {
-          alert('文字か画像のどちらかを入れてください。');
+        if (!allEntries.length) {
+          loadOlderWrap.hidden = true;
+          returnLatestWrap.hidden = true;
+          entriesEl.innerHTML = '<div class="empty">まだ投稿がありません。</div>';
           return;
         }
 
-        let nextEntries;
-        if (existingId) {
-          nextEntries = entries.map(item => item.id === existingId ? payload : item);
-        } else {
-          nextEntries = [...entries, payload];
+        const visibleEntries = getVisibleEntries(allEntries);
+        const viewCounts = loadViewCounts();
+
+        updateLoadOlderButton(allEntries.length, visibleEntries.length, allEntries);
+        updateReturnLatestButton();
+
+        entriesEl.innerHTML = visibleEntries.map(entry => {
+          const imageSrc = entry.image || '';
+          const imageHtml = imageSrc
+            ? `
+              <div class="entry-media">
+                <img src="${escapeHtml(imageSrc)}" alt="${escapeHtml(entry.caption || entry.text || entry.date || 'image')}" />
+              </div>
+              ${entry.caption ? `<div class="entry-caption">${escapeHtml(entry.caption)}</div>` : ''}
+            `
+            : '';
+
+          const textHtml = entry.text
+            ? `<p class="entry-text">${escapeHtml(entry.text)}</p>`
+            : '';
+
+          const displayCount = Number(viewCounts[entry.id] ?? entry.viewCount ?? 0);
+
+          return `
+            <article class="entry" id="entry-${escapeHtml(entry.id)}" data-entry-id="${escapeHtml(entry.id)}">
+              <div class="bubble">
+                <div class="stamp">
+                  <div>${escapeHtml(formatDate(entry.date, entry.createdAt))}</div>
+                </div>
+
+                <div class="bubble-head">
+                  <span class="author">${escapeHtml(entry.author || '')}</span>
+                </div>
+
+                ${imageHtml}
+                ${imageHtml && textHtml ? '<div style="height:10px"></div>' : ''}
+                ${textHtml}
+
+                <div class="entry-actions">
+                  <span class="view-count" data-view-count-id="${escapeHtml(entry.id)}" aria-label="既読カウント">
+                    <span class="view-count-label">既読：</span>
+                    <span class="view-count-number">${displayCount}</span>
+                    <span class="view-count-plus">+1</span>
+                  </span>
+
+                  <button class="icon-btn" type="button" data-share-id="${escapeHtml(entry.id)}" aria-label="共有">
+                    <svg viewBox="0 0 24 24">
+                      <path d="M22 2L11 13"></path>
+                      <path d="M22 2l-7 20-4-9-9-4z"></path>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </article>
+          `;
+        }).join('');
+
+        bindShareButtons();
+        setupViewObservers();
+        highlightEntryFromHash();
+        scrollToLatest();
+      } catch (error) {
+        console.error('render failed:', error);
+        entriesEl.innerHTML = '<div class="empty">表示中にエラーが発生しました。コンソールを確認してください。</div>';
+      }
+    }
+
+    async function init() {
+      try {
+        updateOGP();
+        updateClock();
+        setInterval(updateClock, 1000);
+
+        if (window.location.hash && window.location.hash.startsWith('#entry-')) {
+          anchoredEntryId = window.location.hash.replace('#entry-', '');
+          visibleEntryCount = INITIAL_VISIBLE_COUNT;
         }
 
-        saveEntries(nextEntries);
-        anchoredEntryId = null;
-        visibleEntryCount = INITIAL_VISIBLE_COUNT;
-        if (history.replaceState) {
-          history.replaceState(null, '', location.pathname + location.search);
-        }
-        closePanel();
+        allEntries = await loadEntriesFromContent();
         render();
         scrollToLatest(true);
       } catch (error) {
-        console.error('handleSubmit failed:', error);
-        alert(`投稿の保存に失敗しました。
-${error?.message || error}`);
+        console.error('init failed:', error);
+        entriesEl.innerHTML = '<div class="empty">投稿の読み込みに失敗しました。</div>';
       }
     }
 
-    function deleteEntry(id) {
-      const ok = confirm('この投稿を削除しますか？');
-      if (!ok) return;
-      const nextEntries = loadEntries().filter(item => item.id !== id);
-      saveEntries(nextEntries);
-      anchoredEntryId = null;
-      visibleEntryCount = INITIAL_VISIBLE_COUNT;
-      if (history.replaceState) {
-        history.replaceState(null, '', location.pathname + location.search);
-      }
-      render();
-      scrollToLatest(true);
-    }
-
-    function editEntry(id) {
-      const entry = loadEntries().find(item => item.id === id);
-      if (!entry) return;
-      entryId.value = entry.id;
-      entryDate.value = entry.date || '';
-      entryAuthor.value = entry.author || 'A';
-      entryText.value = entry.text || '';
-      entryCaption.value = entry.caption || '';
-      openPanel();
-    }
-
-    function exportJson() {
-      const blob = new Blob([JSON.stringify(loadEntries(), null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'quiet-broadcast-board.json';
-      a.click();
-      URL.revokeObjectURL(url);
-    }
-
-    async function importJson(e) {
-      const file = e.target.files[0];
-      if (!file) return;
-      try {
-        const text = await file.text();
-        const parsed = JSON.parse(text);
-        if (!Array.isArray(parsed)) throw new Error('invalid');
-        saveEntries(parsed);
-        anchoredEntryId = null;
-        visibleEntryCount = INITIAL_VISIBLE_COUNT;
-        if (history.replaceState) {
-          history.replaceState(null, '', location.pathname + location.search);
-        }
-        render();
-        scrollToLatest(true);
-        alert('JSONを読み込みました。');
-      } catch {
-        alert('JSONの読み込みに失敗しました。');
-      }
-      importJsonInput.value = '';
-    }
-
-    function pad(num) {
-      return String(num).padStart(2, '0');
-    }
-
-    function updateClock() {
-      if (!clockEl) return;
-      const now = new Date();
-      const y = now.getFullYear();
-      const m = pad(now.getMonth() + 1);
-      const d = pad(now.getDate());
-      const h = pad(now.getHours());
-      const min = pad(now.getMinutes());
-      const s = pad(now.getSeconds());
-      clockEl.textContent = `${y}.${m}.${d} ${h}:${min}:${s}`;
-    }
-
-    function seedDemo() {
-      const now = Date.now();
-      const demo = [
-        {
-          id: crypto.randomUUID(),
-          date: '2026-03-14',
-          author: 'A',
-          text: '帰り道、信号待ちのあいだだけ街が静かだった。',
-          caption: '',
-          imageDataUrl: '',
-          createdAt: now - 3000
-        },
-        {
-          id: crypto.randomUUID(),
-          date: '2026-03-15',
-          author: 'B',
-          text: '今日は写真だけ置いていく、みたいな日があってもいい。',
-          caption: '駅前の光',
-          imageDataUrl: '',
-          createdAt: now - 2000
-        },
-        {
-          id: crypto.randomUUID(),
-          date: '2026-03-16',
-          author: 'A',
-          text: '昔の掲示板みたいに、上へ上へ積もっていく感じ。',
-          caption: '',
-          imageDataUrl: '',
-          createdAt: now - 1000
-        }
-      ];
-      saveEntries(demo);
-      anchoredEntryId = null;
-      visibleEntryCount = INITIAL_VISIBLE_COUNT;
-      if (history.replaceState) {
-        history.replaceState(null, '', location.pathname + location.search);
-      }
-      render();
-      scrollToLatest(true);
-    }
-
-    if (window.location.hash && window.location.hash.startsWith('#entry-')) {
-      anchoredEntryId = window.location.hash.replace('#entry-', '');
-      visibleEntryCount = INITIAL_VISIBLE_COUNT;
-    }
-
-    updateOGP();
-    render();
-    scrollToLatest(true);
-    updateClock();
-    setInterval(updateClock, 1000);
+    init();
   </script>
 </body>
 </html>
