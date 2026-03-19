@@ -7,19 +7,6 @@ const postsDir = path.resolve("content/posts");
 
 const IMAGE_EXT_RE = /\.(png|webp|jpeg|jpg)$/i;
 
-function toPosix(p) {
-  return p.split(path.sep).join("/");
-}
-
-async function fileExists(filePath) {
-  try {
-    await fs.access(filePath);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
 async function optimizeImage(fileName) {
   const inputPath = path.join(uploadsDir, fileName);
   const ext = path.extname(fileName).toLowerCase();
@@ -45,7 +32,7 @@ async function optimizeImage(fileName) {
     .toFile(outputPath);
 
   // 元画像が jpg 以外なら削除
-  if (outputPath !== inputPath) {
+  if (path.resolve(outputPath) !== path.resolve(inputPath)) {
     await fs.unlink(inputPath);
   }
 
@@ -75,14 +62,12 @@ async function rewritePostJsonImagePaths(rewrites) {
       const originalRelative = `images/uploads/${original}`;
       const originalAbsolute = `/images/uploads/${original}`;
       const convertedRelative = `images/uploads/${converted}`;
-      const convertedAbsolute = `/images/uploads/${converted}`;
 
       if (data.image === originalRelative) nextImage = convertedRelative;
       if (data.image === originalAbsolute) nextImage = convertedRelative;
-      if (data.image === `./${originalAbsolute}`) nextImage = convertedRelative;
+      if (data.image === `./images/uploads/${original}`) nextImage = convertedRelative;
 
-      // すでに relative の場合にも対応
-      if (data.image.endsWith(`/images/uploads/${original}`)) {
+      if (typeof data.image === "string" && data.image.endsWith(`/images/uploads/${original}`)) {
         nextImage = convertedRelative;
       }
     }
@@ -96,13 +81,14 @@ async function rewritePostJsonImagePaths(rewrites) {
 }
 
 async function main() {
+  await fs.mkdir(uploadsDir, { recursive: true });
+
   const files = await fs.readdir(uploadsDir);
   const targets = files.filter((file) => IMAGE_EXT_RE.test(file));
 
   const rewrites = [];
 
   for (const file of targets) {
-    // すでに .jpg でも縮小圧縮し直す
     const result = await optimizeImage(file);
     rewrites.push(result);
     console.log(`Optimized: ${result.original} -> ${result.converted}`);

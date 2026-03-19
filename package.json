@@ -1,16 +1,25 @@
 {
-  "dependencies": {
-    "sharp": "^0.34.5"
-  },
-  "name": "kenta",
+  "name": "quiet-broadcast",
   "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "sharp": "^0.33.5"
+  },
   "description": "",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kentam1127g/001.git"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs"
+  "bugs": {
+    "url": "https://github.com/kentam1127g/001/issues"
+  },
+  "homepage": "https://github.com/kentam1127g/001#readme"
 }

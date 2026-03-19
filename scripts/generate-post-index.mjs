@@ -61,11 +61,13 @@ async function main() {
       const fallbackCreatedAt = stat.mtime.toISOString();
       const fallbackDate = formatDate(stat.mtime);
 
-      const createdAt = existing?.createdAt
-        ?? normalizeCreatedAt(data.createdAt, fallbackCreatedAt);
+      const createdAt =
+        existing?.createdAt ??
+        normalizeCreatedAt(data.createdAt, fallbackCreatedAt);
 
-      const date = existing?.date
-        ?? normalizeDate(data.date || data.createdAt, fallbackDate);
+      const date =
+        existing?.date ??
+        normalizeDate(data.date || data.createdAt, fallbackDate);
 
       posts.push({
         id,
