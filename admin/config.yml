@@ -8,14 +8,7 @@ public_folder: "/images/uploads"
 publish_mode: simple
 
 collections:
-  - name: "pages"
-    label: "Pages"
-    files:
-      - label: "Top Page"
-        name: "top"
-        file: "index.html"
-        fields:
-          - { label: "Body", name: "body", widget: "text" }
+  
 
   - name: "posts"
     label: "Posts"
