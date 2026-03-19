@@ -2,15 +2,6 @@ import { promises as fs } from "fs";
 import path from "path";
 import sharp from "sharp";
 
-const ext = path.extname(fileName).toLowerCase();
-
-if (ext === ".webp") {
-  console.log(`Skip (already webp): ${fileName}`);
-  return {
-    original: fileName,
-    converted: fileName,
-  };
-}
 const uploadsDir = path.resolve("images/uploads");
 const postsDir = path.resolve("content/posts");
 
@@ -19,6 +10,17 @@ const IMAGE_EXT_RE = /\.(png|webp|jpeg|jpg)$/i;
 async function optimizeImage(fileName) {
   const inputPath = path.join(uploadsDir, fileName);
   const ext = path.extname(fileName).toLowerCase();
+
+  // すでに webp なら再変換しない
+  if (ext === ".webp") {
+    console.log(`Skip (already webp): ${fileName}`);
+    return {
+      original: fileName,
+      converted: fileName,
+      skipped: true,
+    };
+  }
+
   const base = path.basename(fileName, ext);
   const outputName = `${base}.webp`;
   const outputPath = path.join(uploadsDir, outputName);
@@ -50,6 +52,7 @@ async function optimizeImage(fileName) {
     converted: outputName,
     width: metadata.width,
     height: metadata.height,
+    skipped: false,
   };
 }
 
@@ -70,13 +73,18 @@ async function rewritePostJsonImagePaths(rewrites) {
     for (const { original, converted } of rewrites) {
       const originalRelative = `images/uploads/${original}`;
       const originalAbsolute = `/images/uploads/${original}`;
+      const originalDotRelative = `./images/uploads/${original}`;
+
       const convertedRelative = `images/uploads/${converted}`;
 
       if (data.image === originalRelative) nextImage = convertedRelative;
       if (data.image === originalAbsolute) nextImage = convertedRelative;
-      if (data.image === `./images/uploads/${original}`) nextImage = convertedRelative;
+      if (data.image === originalDotRelative) nextImage = convertedRelative;
 
-      if (typeof data.image === "string" && data.image.endsWith(`/images/uploads/${original}`)) {
+      if (
+        typeof data.image === "string" &&
+        data.image.endsWith(`/images/uploads/${original}`)
+      ) {
         nextImage = convertedRelative;
       }
     }
@@ -91,6 +99,7 @@ async function rewritePostJsonImagePaths(rewrites) {
 
 async function main() {
   await fs.mkdir(uploadsDir, { recursive: true });
+  await fs.mkdir(postsDir, { recursive: true });
 
   const files = await fs.readdir(uploadsDir);
   const targets = files.filter((file) => IMAGE_EXT_RE.test(file));
@@ -100,7 +109,12 @@ async function main() {
   for (const file of targets) {
     const result = await optimizeImage(file);
     rewrites.push(result);
-    console.log(`Optimized: ${result.original} -> ${result.converted}`);
+
+    if (result.skipped) {
+      console.log(`Skipped: ${result.original}`);
+    } else {
+      console.log(`Optimized: ${result.original} -> ${result.converted}`);
+    }
   }
 
   await rewritePostJsonImagePaths(rewrites);
