@@ -11,8 +11,35 @@ function formatDate(date) {
   return `${y}-${m}-${d}`;
 }
 
+function normalizeDate(value, fallbackDate) {
+  if (!value) return fallbackDate;
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return fallbackDate;
+  return formatDate(d);
+}
+
+function normalizeCreatedAt(value, fallbackIso) {
+  if (!value) return fallbackIso;
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return fallbackIso;
+  return d.toISOString();
+}
+
+async function readExistingIndex() {
+  try {
+    const raw = await fs.readFile(indexPath, "utf8");
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
 async function main() {
   await fs.mkdir(postsDir, { recursive: true });
+
+  const existingIndex = await readExistingIndex();
+  const existingMap = new Map(existingIndex.map((post) => [post.id, post]));
 
   const files = await fs.readdir(postsDir);
   const postFiles = files.filter(
@@ -28,17 +55,27 @@ async function main() {
 
     try {
       const data = JSON.parse(raw);
-      const created = stat.mtime;
+      const id = path.basename(file, ".json");
+      const existing = existingMap.get(id);
+
+      const fallbackCreatedAt = stat.mtime.toISOString();
+      const fallbackDate = formatDate(stat.mtime);
+
+      const createdAt = existing?.createdAt
+        ?? normalizeCreatedAt(data.createdAt, fallbackCreatedAt);
+
+      const date = existing?.date
+        ?? normalizeDate(data.date || data.createdAt, fallbackDate);
 
       posts.push({
-        id: path.basename(file, ".json"),
-        date: formatDate(created),
-        author: data.author ?? "",
-        image: data.image ?? "",
-        text: data.text ?? "",
-        caption: data.caption ?? "",
-        createdAt: created.toISOString(),
-        viewCount: 0
+        id,
+        date,
+        author: data.author ?? existing?.author ?? "",
+        image: data.image ?? existing?.image ?? "",
+        text: data.text ?? existing?.text ?? "",
+        caption: data.caption ?? existing?.caption ?? "",
+        createdAt,
+        viewCount: existing?.viewCount ?? Number(data.viewCount ?? 0),
       });
     } catch (error) {
       console.warn(`Skipping invalid JSON: ${file}`);
