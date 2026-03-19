@@ -27,10 +27,6 @@
       }
     }
 
-    function pad(num) {
-      return String(num).padStart(2, "0");
-    }
-
     function getJSTNowParts() {
       const now = new Date();
 
@@ -72,6 +68,12 @@
       return `${p.year}-${p.month}-${p.day}T${p.hour}:${p.minute}:${p.second}+09:00`;
     }
 
+    function isInvalidAutoValue(value) {
+      if (value == null) return true;
+      const s = String(value).trim();
+      return !s || s === "{{now}}" || s === "Invalid Date";
+    }
+
     CMS.registerEventListener({
       name: "preSave",
       handler: ({ entry }) => {
@@ -83,22 +85,25 @@
 
           let data = entry.get("data");
 
-          const currentCreatedAt = data.get("createdAt");
+          const currentAuthor = data.get("author");
           const currentDate = data.get("date");
+          const currentCreatedAt = data.get("createdAt");
 
-          data = data.set("author", author);
+          data = data.set("author", author || currentAuthor || "");
 
-          // createdAt は未設定なら初回だけ入れる
-          if (!currentCreatedAt) {
+          if (isInvalidAutoValue(currentCreatedAt)) {
             data = data.set("createdAt", nowCreatedAt);
           }
 
-          // date は未設定なら createdAt 由来、なければ今日
-          if (!currentDate) {
-            const baseDate = currentCreatedAt
-              ? String(currentCreatedAt).slice(0, 10)
-              : nowDate;
-            data = data.set("date", baseDate);
+          const finalCreatedAt = data.get("createdAt");
+
+          if (isInvalidAutoValue(currentDate)) {
+            const derivedDate =
+              typeof finalCreatedAt === "string" && finalCreatedAt.length >= 10
+                ? finalCreatedAt.slice(0, 10)
+                : nowDate;
+
+            data = data.set("date", derivedDate);
           }
 
           return entry.set("data", data);

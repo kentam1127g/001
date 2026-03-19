@@ -45,12 +45,12 @@ collections:
       - label: "日付"
         name: "date"
         widget: "hidden"
-        default: "{{now}}"
+        default: ""
 
       - label: "作成日時"
         name: "createdAt"
         widget: "hidden"
-        default: "{{now}}"
+        default: ""
 
       - label: "既読数"
         name: "viewCount"
