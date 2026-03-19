@@ -3,16 +3,16 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Quiet Broadcast</title>
+  <title>えんぴつだいあろーぐ。</title>
   <meta name="robots" content="index,follow" />
-  <meta property="og:title" content="Quiet Broadcast" />
-  <meta property="og:description" content="写真でも、文字でも。静かに積み重なっていく小さなログ。" />
+  <meta property="og:title" content="えんぴつだいあろーぐ。" />
+  <meta property="og:description" content="なんでもないただの記憶。" />
   <meta property="og:image" content="./images/ogp.jpg" />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Quiet Broadcast" />
-  <meta name="twitter:description" content="写真でも、文字でも。静かに積み重なっていく小さなログ。" />
+  <meta name="twitter:title" content="えんぴつだいあろーぐ。" />
+  <meta name="twitter:description" content="なんでもないただの記憶。" />
   <meta name="twitter:image" content="./images/ogp.jpg" />
   <style>
     :root {
@@ -87,23 +87,6 @@
       color: var(--muted);
     }
 
-    .buttonlike,
-    button {
-      appearance: none;
-      border: 1px solid var(--line);
-      background: var(--paper);
-      color: var(--text);
-      padding: 8px 12px;
-      text-decoration: none;
-      cursor: pointer;
-      box-shadow: 0 1px 0 rgba(255,255,255,0.6) inset;
-    }
-
-    .buttonlike:hover,
-    button:hover {
-      background: #ffffff;
-    }
-
     .intro-card {
       background: var(--paper);
       border: 1px solid var(--line);
@@ -162,6 +145,12 @@
     .entry {
       display: block;
       scroll-margin-top: 84px;
+      opacity: 0;
+      transform: translateX(-18px);
+    }
+
+    .entry.is-visible {
+      animation: cardSlideIn 0.62s cubic-bezier(.22,.8,.2,1) forwards;
     }
 
     .entry.is-highlighted .bubble {
@@ -266,6 +255,17 @@
       100% { opacity: 0; transform: translateY(-8px); }
     }
 
+    @keyframes cardSlideIn {
+      from {
+        opacity: 0;
+        transform: translateX(-18px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
     .icon-btn {
       display: inline-flex;
       align-items: center;
@@ -344,34 +344,6 @@
         flex-direction: column;
       }
     }
-
-    .entry {
-  display: block;
-  scroll-margin-top: 84px;
-  opacity: 0;
-  transform: translateX(-18px);
-}
-
-.entry.is-visible {
-  animation: cardSlideIn 0.62s cubic-bezier(.22,.8,.2,1) forwards;
-}
-
-.entry.is-highlighted .bubble {
-  outline: 2px solid rgba(32, 32, 32, 0.28);
-  background: #fffdf8;
-}
-
-@keyframes cardSlideIn {
-  from {
-    opacity: 0;
-    transform: translateX(-18px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
   </style>
 </head>
 <body>
@@ -387,7 +359,8 @@
   <main class="wrap">
     <section class="intro-card">
       <p>
-        はじまり。
+        写真でも、文字でも。<br>
+        ただ積み重なっていく感じを優先した、静かなログ。
       </p>
     </section>
 
@@ -398,12 +371,10 @@
     <section id="entries" class="log-board"></section>
 
     <div id="returnLatestWrap" class="return-latest-wrap" hidden>
-      <button id="returnLatest">今へ戻る</button>
+      <button id="returnLatest">今へ戻る（最新の投稿へ戻る）</button>
     </div>
 
-    <p class="footer-note">
-      写真でも、文字でも、両方でも。
-    </p>
+    <p class="footer-note">写真でも、文字でも、両方でも。</p>
   </main>
 
   <div class="clock-wrap" aria-hidden="true">
@@ -427,6 +398,7 @@
     let visibleEntryCount = INITIAL_VISIBLE_COUNT;
     let anchoredEntryId = null;
     let viewObserver = null;
+    let initialScrollDone = false;
 
     document.getElementById('loadOlder')?.addEventListener('click', showMoreEntries);
     document.getElementById('returnLatest')?.addEventListener('click', returnToLatest);
@@ -550,21 +522,16 @@
     }
 
     async function loadEntriesFromContent() {
-      try {
-        const res = await fetch(CONTENT_INDEX_PATH, { cache: 'no-store' });
-        if (!res.ok) throw new Error(`Failed to fetch index.json: ${res.status}`);
-        const text = await res.text();
-        const data = JSON.parse(text);
-        if (!Array.isArray(data)) throw new Error('index.json is not an array');
+      const res = await fetch(CONTENT_INDEX_PATH, { cache: 'no-store' });
+      if (!res.ok) throw new Error(`Failed to fetch index.json: ${res.status}`);
+      const text = await res.text();
+      const data = JSON.parse(text);
+      if (!Array.isArray(data)) throw new Error('index.json is not an array');
 
-        return [...data].sort((a, b) => {
-          if (a.date !== b.date) return a.date < b.date ? -1 : 1;
-          return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-        });
-      } catch (error) {
-        console.error('[load] failed:', error);
-        throw error;
-      }
+      return [...data].sort((a, b) => {
+        if (a.date !== b.date) return a.date < b.date ? -1 : 1;
+        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+      });
     }
 
     function getVisibleEntries(entries) {
@@ -612,7 +579,9 @@
       if (!force && visibleEntryCount > INITIAL_VISIBLE_COUNT) return;
 
       requestAnimationFrame(() => {
-        window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'auto' });
+        requestAnimationFrame(() => {
+          window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'auto' });
+        });
       });
     }
 
@@ -649,7 +618,7 @@
       if (!entry) return;
 
       const url = `${location.origin}${location.pathname}#entry-${id}`;
-      const shareTitle = `Quiet Broadcast / ${entry.date || ''}`.trim();
+      const shareTitle = `えんぴつだいあろーぐ。 / ${entry.date || ''}`.trim();
       const shareText = shareTitle;
 
       if (navigator.share) {
@@ -744,6 +713,21 @@
         if (!seenIds.has(entryIdValue)) {
           viewObserver.observe(entryEl);
         }
+      });
+    }
+
+    function animateEntriesInOrder() {
+      const entryNodes = [...document.querySelectorAll('.entry')];
+      if (!entryNodes.length) return;
+
+      const newestFirst = [...entryNodes].reverse();
+
+      newestFirst.forEach((node, index) => {
+        node.classList.remove('is-visible');
+        const delay = index * 110;
+        window.setTimeout(() => {
+          node.classList.add('is-visible');
+        }, delay);
       });
     }
 
@@ -894,8 +878,15 @@
         bindShareButtons();
         setupViewObservers();
         animateEntriesInOrder();
-        highlightEntryFromHash();
-        scrollToLatest();
+
+        if (anchoredEntryId) {
+          highlightEntryFromHash();
+        } else if (!initialScrollDone) {
+          scrollToLatest(true);
+          initialScrollDone = true;
+        } else {
+          scrollToLatest();
+        }
       } catch (error) {
         console.error('[render] failed:', error);
         entriesEl.innerHTML = '<div class="empty">表示中にエラーが発生しました。コンソールを確認してください。</div>';
@@ -914,7 +905,14 @@
 
         allEntries = await loadEntriesFromContent();
         render();
-        scrollToLatest(true);
+
+        if (!anchoredEntryId) {
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'auto' });
+            });
+          });
+        }
       } catch (error) {
         console.error('[init] failed:', error);
         entriesEl.innerHTML = '<div class="empty">投稿の読み込みに失敗しました。コンソールを確認してください。</div>';
@@ -922,24 +920,6 @@
     }
 
     init();
-
-    function animateEntriesInOrder() {
-  const entryNodes = [...document.querySelectorAll('.entry')];
-  if (!entryNodes.length) return;
-
-  // DOM上は古い→新しい順なので、新しい→古い順にしたいから reverse
-  const newestFirst = [...entryNodes].reverse();
-
-  newestFirst.forEach((node, index) => {
-    node.classList.remove('is-visible');
-
-    const delay = index * 110;
-
-    window.setTimeout(() => {
-      node.classList.add('is-visible');
-    }, delay);
-  });
-}
   </script>
 </body>
 </html>
