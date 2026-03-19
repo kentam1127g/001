@@ -463,38 +463,42 @@
     }
 
     function enumerateDayLabels(entries) {
-      if (!entries.length) return new Map();
+  const labels = new Map();
+  if (!entries.length) return labels;
 
-      const labels = new Map();
-      const parsedDates = entries.map((entry) => parseDateOnly(entry.date, entry.createdAt));
+  const parsedDates = entries.map((entry) => parseDateOnly(entry.date, entry.createdAt));
 
-      for (let i = 0; i < entries.length; i += 1) {
-        const current = parsedDates[i];
-        if (!current) continue;
+  for (let i = 0; i < entries.length; i += 1) {
+    const current = parsedDates[i];
+    if (!current) continue;
 
-        const prev = i > 0 ? parsedDates[i - 1] : null;
+    const prev = i > 0 ? parsedDates[i - 1] : null;
+    const days = [];
 
-        if (!prev) {
-          labels.set(`before-${entries[i].id}`, [formatDateOnly(current)]);
-          continue;
-        }
+    if (!prev) {
+      days.push(formatDateOnly(current));
+    } else {
+      const prevStr = formatDateOnly(prev);
+      const currentStr = formatDateOnly(current);
 
+      if (prevStr !== currentStr) {
         const cursor = new Date(prev);
         cursor.setDate(cursor.getDate() + 1);
 
-        const days = [];
         while (cursor <= current) {
           days.push(formatDateOnly(cursor));
           cursor.setDate(cursor.getDate() + 1);
         }
-
-        if (days.length) {
-          labels.set(`before-${entries[i].id}`, days);
-        }
       }
-
-      return labels;
     }
+
+    if (days.length) {
+      labels.set(`before-${entries[i].id}`, days);
+    }
+  }
+
+  return labels;
+}
 
     function loadViewCounts() {
       try {
@@ -834,133 +838,106 @@
     }
 
     function render() {
-      try {
-        ensureHashedEntryVisible();
+  try {
+    ensureHashedEntryVisible();
 
-        if (!allEntries.length) {
-          if (loadOlderWrap) loadOlderWrap.hidden = true;
-          if (returnLatestWrap) returnLatestWrap.hidden = true;
-          entriesEl.innerHTML = '<div class="empty">まだ投稿がありません。</div>';
-          return;
-        }
-
-        const visibleEntries = getVisibleEntries(allEntries);
-        const dayLabels = enumerateDayLabels(visibleEntries);
-        const localCounts = loadViewCounts();
-
-        updateLoadOlderButton(allEntries.length, visibleEntries.length, allEntries);
-        updateReturnLatestButton();
-
-        const htmlParts = [];
-
-        visibleEntries.forEach((entry) => {
-          const labels = dayLabels.get(`before-${entry.id}`) || [];
-          labels.forEach((label) => {
-            htmlParts.push(`
-              <div class="day-divider">
-                <span>${escapeHtml(label)}</span>
-              </div>
-            `);
-          });
-
-          const imageSrc = normalizeImagePath(entry.image || '');
-          const imageHtml = imageSrc
-            ? `
-              <div class="entry-media">
-                <img src="${escapeHtml(imageSrc)}" alt="${escapeHtml(entry.caption || entry.text || entry.date || 'image')}" />
-              </div>
-              ${entry.caption ? `<div class="entry-caption">${escapeHtml(entry.caption)}</div>` : ''}
-            `
-            : '';
-
-          const textHtml = entry.text
-            ? `<p class="entry-text">${escapeHtml(entry.text)}</p>`
-            : '';
-
-          const displayCount = Number(
-            sharedCounts[entry.id] ?? localCounts[entry.id] ?? entry.viewCount ?? 0
-          );
-
-          htmlParts.push(`
-            <article class="entry" id="entry-${escapeHtml(entry.id)}" data-entry-id="${escapeHtml(entry.id)}">
-              <div class="bubble">
-                <div class="stamp">
-                  <div>${escapeHtml(formatOnlyTime(entry.createdAt))}</div>
-                </div>
-
-                <div class="bubble-head">
-                  <span class="author">${escapeHtml(entry.author || '')}</span>
-                </div>
-
-                ${imageHtml}
-                ${imageHtml && textHtml ? '<div style="height:10px"></div>' : ''}
-                ${textHtml}
-
-                <div class="entry-actions">
-                  <span class="view-count" data-view-count-id="${escapeHtml(entry.id)}" aria-label="既読カウント">
-                    <span class="view-count-label">既読：</span>
-                    <span class="view-count-number">${displayCount}</span>
-                    <span class="view-count-plus">+1</span>
-                  </span>
-
-                  <button class="icon-btn" type="button" data-share-id="${escapeHtml(entry.id)}" aria-label="共有">
-                    <svg viewBox="0 0 24 24">
-                      <path d="M22 2L11 13"></path>
-                      <path d="M22 2l-7 20-4-9-9-4z"></path>
-                    </svg>
-                  </button>
-                </div>
-              </div>
-            </article>
-          `);
-        });
-
-        entriesEl.innerHTML = htmlParts.join('');
-
-        bindShareButtons();
-        setupViewObservers();
-        animateEntriesInOrder();
-
-        if (anchoredEntryId) {
-          highlightEntryFromHash();
-        } else if (!initialScrollDone) {
-          scrollToLatest(true);
-          initialScrollDone = true;
-        } else {
-          scrollToLatest();
-        }
-      } catch (error) {
-        console.error('[render] failed:', error);
-        entriesEl.innerHTML = '<div class="empty">表示中にエラーが発生しました。コンソールを確認してください。</div>';
-      }
+    if (!allEntries.length) {
+      if (loadOlderWrap) loadOlderWrap.hidden = true;
+      if (returnLatestWrap) returnLatestWrap.hidden = true;
+      entriesEl.innerHTML = '<div class="empty">まだ投稿がありません。</div>';
+      return;
     }
 
-    async function init() {
-      try {
-        updateClock();
-        setInterval(updateClock, 1000);
+    const visibleEntries = getVisibleEntries(allEntries);
+    const dayLabels = enumerateDayLabels(allEntries); // ←ここが重要
+    const localCounts = loadViewCounts();
 
-        if (window.location.hash && window.location.hash.startsWith('#entry-')) {
-          anchoredEntryId = window.location.hash.replace('#entry-', '');
-          visibleEntryCount = INITIAL_VISIBLE_COUNT;
-        }
+    updateLoadOlderButton(allEntries.length, visibleEntries.length, allEntries);
+    updateReturnLatestButton();
 
-        sharedCounts = await loadSharedCounts();
-        allEntries = await loadEntriesFromContent();
-        render();
+    const htmlParts = [];
 
-        if (!anchoredEntryId) {
-          requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-              window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'auto' });
-            });
-          });
-        }
-      } catch (error) {
-        console.error('[init] failed:', error);
-        entriesEl.innerHTML = '<div class="empty">投稿の読み込みに失敗しました。コンソールを確認してください。</div>';
-      }
+    visibleEntries.forEach((entry) => {
+      const labels = dayLabels.get(`before-${entry.id}`) || [];
+      labels.forEach((label) => {
+        htmlParts.push(`
+          <div class="day-divider">
+            <span>${escapeHtml(label)}</span>
+          </div>
+        `);
+      });
+
+      const imageSrc = normalizeImagePath(entry.image || '');
+      const imageHtml = imageSrc
+        ? `
+          <div class="entry-media">
+            <img src="${escapeHtml(imageSrc)}" alt="${escapeHtml(entry.caption || entry.text || entry.date || 'image')}" />
+          </div>
+          ${entry.caption ? `<div class="entry-caption">${escapeHtml(entry.caption)}</div>` : ''}
+        `
+        : '';
+
+      const textHtml = entry.text
+        ? `<p class="entry-text">${escapeHtml(entry.text)}</p>`
+        : '';
+
+      const displayCount = Number(
+        sharedCounts[entry.id] ?? localCounts[entry.id] ?? entry.viewCount ?? 0
+      );
+
+      htmlParts.push(`
+        <article class="entry" id="entry-${escapeHtml(entry.id)}" data-entry-id="${escapeHtml(entry.id)}">
+          <div class="bubble">
+            <div class="stamp">
+              <div>${escapeHtml(formatOnlyTime(entry.createdAt))}</div>
+            </div>
+
+            <div class="bubble-head">
+              <span class="author">${escapeHtml(entry.author || '')}</span>
+            </div>
+
+            ${imageHtml}
+            ${imageHtml && textHtml ? '<div style="height:10px"></div>' : ''}
+            ${textHtml}
+
+            <div class="entry-actions">
+              <span class="view-count" data-view-count-id="${escapeHtml(entry.id)}" aria-label="既読カウント">
+                <span class="view-count-label">既読：</span>
+                <span class="view-count-number">${displayCount}</span>
+                <span class="view-count-plus">+1</span>
+              </span>
+
+              <button class="icon-btn" type="button" data-share-id="${escapeHtml(entry.id)}" aria-label="共有">
+                <svg viewBox="0 0 24 24">
+                  <path d="M22 2L11 13"></path>
+                  <path d="M22 2l-7 20-4-9-9-4z"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </article>
+      `);
+    });
+
+    entriesEl.innerHTML = htmlParts.join('');
+
+    bindShareButtons();
+    setupViewObservers();
+    animateEntriesInOrder();
+
+    if (anchoredEntryId) {
+      highlightEntryFromHash();
+    } else if (!initialScrollDone) {
+      scrollToLatest(true);
+      initialScrollDone = true;
+    } else {
+      scrollToLatest();
     }
+  } catch (error) {
+    console.error('[render] failed:', error);
+    entriesEl.innerHTML = '<div class="empty">表示中にエラーが発生しました。コンソールを確認してください。</div>';
+  }
+}
 
     init();
   </script>
