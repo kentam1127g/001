@@ -11,7 +11,7 @@ async function optimizeImage(fileName) {
   const inputPath = path.join(uploadsDir, fileName);
   const ext = path.extname(fileName).toLowerCase();
   const base = path.basename(fileName, ext);
-  const outputName = `${base}.jpg`;
+  const outputName = `${base}.webp`;
   const outputPath = path.join(uploadsDir, outputName);
 
   const image = sharp(inputPath);
@@ -20,18 +20,18 @@ async function optimizeImage(fileName) {
   await image
     .rotate()
     .resize({
-      width: 1600,
-      height: 1600,
+      width: 1200,
+      height: 1200,
       fit: "inside",
       withoutEnlargement: true,
     })
-    .jpeg({
-      quality: 82,
-      mozjpeg: true,
+    .webp({
+      quality: 80,
     })
+    .sharpen()
     .toFile(outputPath);
 
-  // 元画像が jpg 以外なら削除
+  // 元画像が別形式なら削除
   if (path.resolve(outputPath) !== path.resolve(inputPath)) {
     await fs.unlink(inputPath);
   }
