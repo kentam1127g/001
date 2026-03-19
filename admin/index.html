@@ -8,5 +8,26 @@
 </head>
 <body>
   <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
+  <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
+<script>
+  const AUTHOR_MAP = {
+    "kentam1127g": "A",
+    "friend-github-name": "B"
+  };
+
+  CMS.registerEventListener({
+    name: "preSave",
+    handler: ({ entry, author }) => {
+      const login =
+        author?.login ||
+        author?.name ||
+        "";
+
+      const mappedAuthor = AUTHOR_MAP[login] || "";
+
+      return entry.get("data").set("author", mappedAuthor);
+    }
+  });
+</script>
 </body>
 </html>

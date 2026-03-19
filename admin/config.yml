@@ -24,8 +24,8 @@ collections:
     fields:
       - label: "投稿者"
         name: "author"
-        widget: "select"
-        options: ["A", "B"]
+        widget: "hidden"
+        default: ""
 
       - label: "画像"
         name: "image"
