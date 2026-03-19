@@ -6,7 +6,17 @@
     "image": "",
     "text": "て",
     "caption": "",
-    "createdAt": "2026-03-19T09:00:41.885Z",
+    "createdAt": "2026-03-19T09:03:19.866Z",
+    "viewCount": 0
+  },
+  {
+    "id": "map-author-b-text-testあいうえこっこ",
+    "date": "2026-03-19",
+    "author": "B",
+    "image": "",
+    "text": "testあいうえこっこ",
+    "caption": "",
+    "createdAt": "2026-03-19T09:03:19.866Z",
     "viewCount": 0
   },
   {
@@ -16,7 +26,7 @@
     "image": "/images/uploads/24945730.jpg",
     "text": "tetete",
     "caption": "",
-    "createdAt": "2026-03-19T09:00:41.885Z",
+    "createdAt": "2026-03-19T09:03:19.866Z",
     "viewCount": 0
   },
   {
@@ -26,7 +36,7 @@
     "image": "/images/uploads/22994585.jpg",
     "text": "",
     "caption": "",
-    "createdAt": "2026-03-19T09:00:41.885Z",
+    "createdAt": "2026-03-19T09:03:19.866Z",
     "viewCount": 0
   }
 ]
