@@ -87,13 +87,6 @@
       color: var(--muted);
     }
 
-    .top-actions {
-      display: flex;
-      gap: 8px;
-      justify-content: flex-end;
-      flex-wrap: wrap;
-    }
-
     .buttonlike,
     button {
       appearance: none;
@@ -351,17 +344,42 @@
         flex-direction: column;
       }
     }
+
+    .entry {
+  display: block;
+  scroll-margin-top: 84px;
+  opacity: 0;
+  transform: translateX(-18px);
+}
+
+.entry.is-visible {
+  animation: cardSlideIn 0.62s cubic-bezier(.22,.8,.2,1) forwards;
+}
+
+.entry.is-highlighted .bubble {
+  outline: 2px solid rgba(32, 32, 32, 0.28);
+  background: #fffdf8;
+}
+
+@keyframes cardSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
   </style>
 </head>
 <body>
   <div class="topbar">
     <div class="topbar-inner">
       <div class="title">
-        <h1>Quiet Broadcast</h1>
-        <p>古いログほど上に積み重なる、小さな記録。</p>
-      </div>
-      <div class="top-actions">
-        <a class="buttonlike" href="./admin/">Admin</a>
+        <h1>えんぴつだいあろーぐ。</h1>
+        <p>なんでもないただの記憶。</p>
       </div>
     </div>
   </div>
@@ -369,8 +387,7 @@
   <main class="wrap">
     <section class="intro-card">
       <p>
-        写真でも、文字でも。<br>
-        ただ積み重なっていく感じを優先した、静かなログ。
+        はじまり。
       </p>
     </section>
 
@@ -381,7 +398,7 @@
     <section id="entries" class="log-board"></section>
 
     <div id="returnLatestWrap" class="return-latest-wrap" hidden>
-      <button id="returnLatest">今へ戻る（最新の投稿へ戻る）</button>
+      <button id="returnLatest">今へ戻る</button>
     </div>
 
     <p class="footer-note">
@@ -876,6 +893,7 @@
 
         bindShareButtons();
         setupViewObservers();
+        animateEntriesInOrder();
         highlightEntryFromHash();
         scrollToLatest();
       } catch (error) {
@@ -904,6 +922,24 @@
     }
 
     init();
+
+    function animateEntriesInOrder() {
+  const entryNodes = [...document.querySelectorAll('.entry')];
+  if (!entryNodes.length) return;
+
+  // DOM上は古い→新しい順なので、新しい→古い順にしたいから reverse
+  const newestFirst = [...entryNodes].reverse();
+
+  newestFirst.forEach((node, index) => {
+    node.classList.remove('is-visible');
+
+    const delay = index * 110;
+
+    window.setTimeout(() => {
+      node.classList.add('is-visible');
+    }, delay);
+  });
+}
   </script>
 </body>
 </html>
