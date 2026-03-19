@@ -359,7 +359,8 @@
   <main class="wrap">
     <section class="intro-card">
       <p>
-        はじまり。
+        写真でも、文字でも。<br>
+        ただ積み重なっていく感じを優先した、静かなログ。
       </p>
     </section>
 
@@ -373,7 +374,7 @@
       <button id="returnLatest">今へ戻る（最新の投稿へ戻る）</button>
     </div>
 
-    <p class="footer-note">^-^</p>
+    <p class="footer-note">写真でも、文字でも、両方でも。</p>
   </main>
 
   <div class="clock-wrap" aria-hidden="true">
@@ -382,6 +383,7 @@
 
   <script>
     const CONTENT_INDEX_PATH = './content/posts/index.json';
+    const COUNTS_API_BASE = 'https://enpitumark-oath.netlify.app';
     const VIEW_STORAGE_KEY = 'quiet-broadcast-view-counts-v1';
     const SEEN_STORAGE_KEY = 'quiet-broadcast-seen-entries-v1';
     const INITIAL_VISIBLE_COUNT = 12;
@@ -394,6 +396,7 @@
     const clockEl = document.getElementById('clock');
 
     let allEntries = [];
+    let sharedCounts = {};
     let visibleEntryCount = INITIAL_VISIBLE_COUNT;
     let anchoredEntryId = null;
     let viewObserver = null;
@@ -533,6 +536,39 @@
       });
     }
 
+    async function loadSharedCounts() {
+      try {
+        const res = await fetch(`${COUNTS_API_BASE}/counts`, { cache: 'no-store' });
+        if (!res.ok) throw new Error(`counts fetch failed: ${res.status}`);
+        const data = await res.json();
+        return data && typeof data === 'object' ? data : {};
+      } catch (error) {
+        console.error('[counts] load failed:', error);
+        return {};
+      }
+    }
+
+    async function bumpSharedCounts(ids) {
+      try {
+        if (!ids.length) return {};
+
+        const res = await fetch(`${COUNTS_API_BASE}/counts/bump`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ ids })
+        });
+
+        if (!res.ok) throw new Error(`counts bump failed: ${res.status}`);
+        const data = await res.json();
+        return data?.counts || {};
+      } catch (error) {
+        console.error('[counts] bump failed:', error);
+        return {};
+      }
+    }
+
     function getVisibleEntries(entries) {
       if (anchoredEntryId) {
         const anchorIndex = entries.findIndex(entry => entry.id === anchoredEntryId);
@@ -657,71 +693,84 @@
     }
 
     function setupViewObservers() {
-  if (!("IntersectionObserver" in window)) return;
+      if (!('IntersectionObserver' in window)) return;
 
-  if (viewObserver) {
-    viewObserver.disconnect();
-  }
-
-  const seenIds = new Set(loadSeenEntries());
-  const pendingTimers = new Map();
-
-  viewObserver = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      const target = entry.target;
-      const entryIdValue = target.dataset.entryId;
-      if (!entryIdValue || seenIds.has(entryIdValue)) return;
-
-      if (entry.isIntersecting && entry.intersectionRatio >= 0.6) {
-        if (pendingTimers.has(entryIdValue)) return;
-
-        const timerId = window.setTimeout(async () => {
-          if (seenIds.has(entryIdValue)) return;
-
-          seenIds.add(entryIdValue);
-          saveSeenEntries([...seenIds]);
-
-          // ローカル演出用
-          const localCounts = loadViewCounts();
-          localCounts[entryIdValue] = Number(localCounts[entryIdValue] || 0) + 1;
-          saveViewCounts(localCounts);
-
-          // 共有カウント加算
-          const changed = await bumpSharedCounts([entryIdValue]);
-          if (changed[entryIdValue] != null) {
-            sharedCounts[entryIdValue] = Number(changed[entryIdValue]);
-            syncViewCountsToDOM(entryIdValue, sharedCounts[entryIdValue]);
-          } else {
-            syncViewCountsToDOM(entryIdValue, localCounts[entryIdValue]);
-          }
-
-          if (viewObserver) {
-            viewObserver.unobserve(target);
-          }
-
-          pendingTimers.delete(entryIdValue);
-        }, VIEW_COUNT_DELAY_MS);
-
-        pendingTimers.set(entryIdValue, timerId);
-        return;
+      if (viewObserver) {
+        viewObserver.disconnect();
       }
 
-      if (pendingTimers.has(entryIdValue)) {
-        clearTimeout(pendingTimers.get(entryIdValue));
-        pendingTimers.delete(entryIdValue);
-      }
-    });
-  }, {
-    threshold: [0.6]
-  });
+      const seenIds = new Set(loadSeenEntries());
+      const pendingTimers = new Map();
 
-  document.querySelectorAll(".entry[data-entry-id]").forEach(entryEl => {
-    const entryIdValue = entryEl.dataset.entryId;
-    if (!seenIds.has(entryIdValue)) {
-      viewObserver.observe(entryEl);
+      viewObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          const target = entry.target;
+          const entryIdValue = target.dataset.entryId;
+          if (!entryIdValue || seenIds.has(entryIdValue)) return;
+
+          if (entry.isIntersecting && entry.intersectionRatio >= 0.6) {
+            if (pendingTimers.has(entryIdValue)) return;
+
+            const timerId = window.setTimeout(async () => {
+              if (seenIds.has(entryIdValue)) return;
+
+              seenIds.add(entryIdValue);
+              saveSeenEntries([...seenIds]);
+
+              const localCounts = loadViewCounts();
+              localCounts[entryIdValue] = Number(localCounts[entryIdValue] || 0) + 1;
+              saveViewCounts(localCounts);
+
+              const changed = await bumpSharedCounts([entryIdValue]);
+              if (changed[entryIdValue] != null) {
+                sharedCounts[entryIdValue] = Number(changed[entryIdValue]);
+                syncViewCountsToDOM(entryIdValue, sharedCounts[entryIdValue]);
+              } else {
+                syncViewCountsToDOM(entryIdValue, localCounts[entryIdValue]);
+              }
+
+              if (viewObserver) {
+                viewObserver.unobserve(target);
+              }
+
+              pendingTimers.delete(entryIdValue);
+            }, VIEW_COUNT_DELAY_MS);
+
+            pendingTimers.set(entryIdValue, timerId);
+            return;
+          }
+
+          if (pendingTimers.has(entryIdValue)) {
+            clearTimeout(pendingTimers.get(entryIdValue));
+            pendingTimers.delete(entryIdValue);
+          }
+        });
+      }, {
+        threshold: [0.6]
+      });
+
+      document.querySelectorAll('.entry[data-entry-id]').forEach(entryEl => {
+        const entryIdValue = entryEl.dataset.entryId;
+        if (!seenIds.has(entryIdValue)) {
+          viewObserver.observe(entryEl);
+        }
+      });
     }
-  });
-}
+
+    function animateEntriesInOrder() {
+      const entryNodes = [...document.querySelectorAll('.entry')];
+      if (!entryNodes.length) return;
+
+      const newestFirst = [...entryNodes].reverse();
+
+      newestFirst.forEach((node, index) => {
+        node.classList.remove('is-visible');
+        const delay = index * 110;
+        window.setTimeout(() => {
+          node.classList.add('is-visible');
+        }, delay);
+      });
+    }
 
     function showMoreEntries() {
       const beforeHeight = document.documentElement.scrollHeight;
@@ -798,11 +847,7 @@
 
         const visibleEntries = getVisibleEntries(allEntries);
         const dayLabels = enumerateDayLabels(visibleEntries);
-        let sharedCounts = {};
-        const viewCounts = loadViewCounts();
-        const displayCount = Number(
-  sharedCounts[entry.id] ?? viewCounts[entry.id] ?? entry.viewCount ?? 0
-);
+        const localCounts = loadViewCounts();
 
         updateLoadOlderButton(allEntries.length, visibleEntries.length, allEntries);
         updateReturnLatestButton();
@@ -833,7 +878,9 @@
             ? `<p class="entry-text">${escapeHtml(entry.text)}</p>`
             : '';
 
-          const displayCount = Number(viewCounts[entry.id] ?? entry.viewCount ?? 0);
+          const displayCount = Number(
+            sharedCounts[entry.id] ?? localCounts[entry.id] ?? entry.viewCount ?? 0
+          );
 
           htmlParts.push(`
             <article class="entry" id="entry-${escapeHtml(entry.id)}" data-entry-id="${escapeHtml(entry.id)}">
@@ -890,58 +937,33 @@
     }
 
     async function init() {
-  try {
-    updateClock();
-    setInterval(updateClock, 1000);
+      try {
+        updateClock();
+        setInterval(updateClock, 1000);
 
-    if (window.location.hash && window.location.hash.startsWith("#entry-")) {
-      anchoredEntryId = window.location.hash.replace("#entry-", "");
-      visibleEntryCount = INITIAL_VISIBLE_COUNT;
+        if (window.location.hash && window.location.hash.startsWith('#entry-')) {
+          anchoredEntryId = window.location.hash.replace('#entry-', '');
+          visibleEntryCount = INITIAL_VISIBLE_COUNT;
+        }
+
+        sharedCounts = await loadSharedCounts();
+        allEntries = await loadEntriesFromContent();
+        render();
+
+        if (!anchoredEntryId) {
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'auto' });
+            });
+          });
+        }
+      } catch (error) {
+        console.error('[init] failed:', error);
+        entriesEl.innerHTML = '<div class="empty">投稿の読み込みに失敗しました。コンソールを確認してください。</div>';
+      }
     }
-
-    sharedCounts = await loadSharedCounts();
-    allEntries = await loadEntriesFromContent();
-    render();
-
-    if (!anchoredEntryId) {
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          window.scrollTo({ top: document.documentElement.scrollHeight, behavior: "auto" });
-        });
-      });
-    }
-  } catch (error) {
-    console.error("[init] failed:", error);
-    entriesEl.innerHTML = '<div class="empty">投稿の読み込みに失敗しました。コンソールを確認してください。</div>';
-  }
-}
 
     init();
-
-    const COUNTS_API_BASE = "https://enpitumark-oath.netlify.app";
-    async function loadSharedCounts() {
-  try {
-    const res = await fetch(`${COUNTS_API_BASE}/counts`, { cache: "no-store" });
-    if (!res.ok) throw new Error(`counts fetch failed: ${res.status}`);
-    const data = await res.json();
-    return data && typeof data === "object" ? data : {};
-  } catch (error) {
-    console.error("[counts] load failed:", error);
-    return {};
-  }
-}
-async function loadSharedCounts() {
-  try {
-    const res = await fetch(`${COUNTS_API_BASE}/counts`, { cache: "no-store" });
-    if (!res.ok) throw new Error(`counts fetch failed: ${res.status}`);
-    const data = await res.json();
-    return data && typeof data === "object" ? data : {};
-  } catch (error) {
-    console.error("[counts] load failed:", error);
-    return {};
-  }
-}
-
   </script>
 </body>
 </html>
