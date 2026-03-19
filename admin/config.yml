@@ -1,17 +1,16 @@
 backend:
-  name: github
-  repo: kentam1127g/001
+  name: git-gateway
   branch: main
 
 media_folder: "images/uploads"
 public_folder: "/images/uploads"
 
 collections:
-  - name: "posts"
-    label: "Posts"
-    folder: "posts"
-    create: true
-    slug: "{{slug}}"
-    fields:
-      - { label: "Title", name: "title", widget: "string" }
-      - { label: "Body", name: "body", widget: "markdown" }
+  - name: "pages"
+    label: "Pages"
+    files:
+      - label: "Top Page"
+        name: "top"
+        file: "index.html"
+        fields:
+          - { label: "Body", name: "body", widget: "text" }
