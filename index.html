@@ -554,21 +554,24 @@
 }
 
     async function bumpSharedCounts(ids) {
-  if (!ids.length) return {};
+  try {
+    if (!ids.length) return {};
 
-  const res = await fetch(`${COUNTS_API_BASE}/.netlify/functions/count-bump`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ ids })
-  });
+    const res = await fetch(`${COUNTS_API_BASE}/.netlify/functions/count-bump`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ ids })
+    });
 
-  const text = await res.text();
-  console.log('[count-bump raw]', res.status, text);
-
-  if (!res.ok) throw new Error(`counts bump failed: ${res.status} / ${text}`);
-
-  const data = JSON.parse(text);
-  return data?.counts || {};
+    if (!res.ok) throw new Error(`counts bump failed: ${res.status}`);
+    const data = await res.json();
+    return data?.counts || {};
+  } catch (error) {
+    console.error('[counts] bump failed:', error);
+    return {};
+  }
 }
 
     function getVisibleEntries(entries) {
