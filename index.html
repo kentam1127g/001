@@ -463,9 +463,9 @@
     }
 
     function enumerateDayLabels(entries) {
-      if (!entries.length) return new Map();
-
       const labels = new Map();
+      if (!entries.length) return labels;
+
       const parsedDates = entries.map((entry) => parseDateOnly(entry.date, entry.createdAt));
 
       for (let i = 0; i < entries.length; i += 1) {
@@ -473,19 +473,23 @@
         if (!current) continue;
 
         const prev = i > 0 ? parsedDates[i - 1] : null;
+        const days = [];
 
         if (!prev) {
-          labels.set(`before-${entries[i].id}`, [formatDateOnly(current)]);
-          continue;
-        }
+          days.push(formatDateOnly(current));
+        } else {
+          const prevStr = formatDateOnly(prev);
+          const currentStr = formatDateOnly(current);
 
-        const cursor = new Date(prev);
-        cursor.setDate(cursor.getDate() + 1);
+          if (prevStr !== currentStr) {
+            const cursor = new Date(prev);
+            cursor.setDate(cursor.getDate() + 1);
 
-        const days = [];
-        while (cursor <= current) {
-          days.push(formatDateOnly(cursor));
-          cursor.setDate(cursor.getDate() + 1);
+            while (cursor <= current) {
+              days.push(formatDateOnly(cursor));
+              cursor.setDate(cursor.getDate() + 1);
+            }
+          }
         }
 
         if (days.length) {
@@ -536,37 +540,39 @@
     }
 
     async function loadSharedCounts() {
-      try {
-        const res = await fetch(`${COUNTS_API_BASE}/counts`, { cache: 'no-store' });
-        if (!res.ok) throw new Error(`counts fetch failed: ${res.status}`);
-        const data = await res.json();
-        return data && typeof data === 'object' ? data : {};
-      } catch (error) {
-        console.error('[counts] load failed:', error);
-        return {};
-      }
-    }
+  try {
+    const res = await fetch(`${COUNTS_API_BASE}/.netlify/functions/counts-get`, {
+      cache: 'no-store'
+    });
+    if (!res.ok) throw new Error(`counts fetch failed: ${res.status}`);
+    const data = await res.json();
+    return data && typeof data === 'object' ? data : {};
+  } catch (error) {
+    console.error('[counts] load failed:', error);
+    return {};
+  }
+}
 
     async function bumpSharedCounts(ids) {
-      try {
-        if (!ids.length) return {};
+  try {
+    if (!ids.length) return {};
 
-        const res = await fetch(`${COUNTS_API_BASE}/counts/bump`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ ids })
-        });
+    const res = await fetch(`${COUNTS_API_BASE}/.netlify/functions/count-bump`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ ids })
+    });
 
-        if (!res.ok) throw new Error(`counts bump failed: ${res.status}`);
-        const data = await res.json();
-        return data?.counts || {};
-      } catch (error) {
-        console.error('[counts] bump failed:', error);
-        return {};
-      }
-    }
+    if (!res.ok) throw new Error(`counts bump failed: ${res.status}`);
+    const data = await res.json();
+    return data?.counts || {};
+  } catch (error) {
+    console.error('[counts] bump failed:', error);
+    return {};
+  }
+}
 
     function getVisibleEntries(entries) {
       if (anchoredEntryId) {
@@ -845,7 +851,7 @@
         }
 
         const visibleEntries = getVisibleEntries(allEntries);
-        const dayLabels = enumerateDayLabels(visibleEntries);
+        const dayLabels = enumerateDayLabels(allEntries);
         const localCounts = loadViewCounts();
 
         updateLoadOlderButton(allEntries.length, visibleEntries.length, allEntries);

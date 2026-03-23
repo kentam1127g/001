@@ -11,8 +11,8 @@
 
   <script>
     const AUTHOR_MAP = {
-      "kentam1127g": "A",
-      "friend-github-name": "B"
+      "kentam1127g": "まつけん",
+      "wakako38-dev": "わかこ"
     };
 
     function getGithubLogin() {
@@ -27,21 +27,88 @@
       }
     }
 
+    function getJSTNowParts() {
+      const now = new Date();
+
+      const formatter = new Intl.DateTimeFormat("sv-SE", {
+        timeZone: "Asia/Tokyo",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false
+      });
+
+      const parts = formatter.formatToParts(now);
+      const map = Object.fromEntries(
+        parts
+          .filter(part => part.type !== "literal")
+          .map(part => [part.type, part.value])
+      );
+
+      return {
+        year: map.year,
+        month: map.month,
+        day: map.day,
+        hour: map.hour,
+        minute: map.minute,
+        second: map.second
+      };
+    }
+
+    function getJSTDate() {
+      const p = getJSTNowParts();
+      return `${p.year}-${p.month}-${p.day}`;
+    }
+
+    function getJSTISOString() {
+      const p = getJSTNowParts();
+      return `${p.year}-${p.month}-${p.day}T${p.hour}:${p.minute}:${p.second}+09:00`;
+    }
+
+    function isInvalidAutoValue(value) {
+      if (value == null) return true;
+      const s = String(value).trim();
+      return !s || s === "{{now}}" || s === "Invalid Date";
+    }
+
     CMS.registerEventListener({
       name: "preSave",
       handler: ({ entry }) => {
         try {
           const login = getGithubLogin();
-          console.log("github login:", login);
-
           const author = AUTHOR_MAP[login] || "";
+          const nowDate = getJSTDate();
+          const nowCreatedAt = getJSTISOString();
 
-          // entry.get("data").set(...) だけだと data Map を返してしまうので、
-          // entry 全体へ set し直す
-          const nextData = entry.get("data").set("author", author);
-          return entry.set("data", nextData);
+          let data = entry.get("data");
+
+          const currentAuthor = data.get("author");
+          const currentDate = data.get("date");
+          const currentCreatedAt = data.get("createdAt");
+
+          data = data.set("author", author || currentAuthor || "");
+
+          if (isInvalidAutoValue(currentCreatedAt)) {
+            data = data.set("createdAt", nowCreatedAt);
+          }
+
+          const finalCreatedAt = data.get("createdAt");
+
+          if (isInvalidAutoValue(currentDate)) {
+            const derivedDate =
+              typeof finalCreatedAt === "string" && finalCreatedAt.length >= 10
+                ? finalCreatedAt.slice(0, 10)
+                : nowDate;
+
+            data = data.set("date", derivedDate);
+          }
+
+          return entry.set("data", data);
         } catch (e) {
-          console.error("author auto set failed:", e);
+          console.error("preSave failed:", e);
           return entry;
         }
       }
