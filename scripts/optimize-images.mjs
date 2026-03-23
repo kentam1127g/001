@@ -7,42 +7,66 @@ const postsDir = path.resolve("content/posts");
 
 const IMAGE_EXT_RE = /\.(png|webp|jpeg|jpg)$/i;
 
+// 調整しやすいように設定を外に出す
+const EMO_FILTER = {
+  enabled: true,
+  resizeWidth: 1200,
+  resizeHeight: 1200,
+  webpQuality: 80,
+
+  // “やりすぎない” 初期値
+  brightness: 1.03, // 少し明るく
+  saturation: 0.9,  // 少し彩度を落とす
+  hue: 0,           // 色相はいじらない
+  lightness: 0,     // 必要なら少しだけ足す
+
+  linearA: 1.04,    // コントラスト少し上げる
+  linearB: -6,      // 黒をほんの少し締める
+
+  sharpenSigma: 1.1,
+};
+
 async function optimizeImage(fileName) {
   const inputPath = path.join(uploadsDir, fileName);
   const ext = path.extname(fileName).toLowerCase();
 
-  // すでに webp なら再変換しない
-  if (ext === ".webp") {
-    console.log(`Skip (already webp): ${fileName}`);
-    return {
-      original: fileName,
-      converted: fileName,
-      skipped: true,
-    };
-  }
-
+  // webpでも再処理したいなら skip しない
   const base = path.basename(fileName, ext);
   const outputName = `${base}.webp`;
   const outputPath = path.join(uploadsDir, outputName);
 
-  const image = sharp(inputPath);
-  const metadata = await image.metadata();
+  const metadata = await sharp(inputPath).metadata();
 
-  await image
+  let pipeline = sharp(inputPath)
     .rotate()
     .resize({
-      width: 1200,
-      height: 1200,
+      width: EMO_FILTER.resizeWidth,
+      height: EMO_FILTER.resizeHeight,
       fit: "inside",
       withoutEnlargement: true,
-    })
-    .webp({
-      quality: 80,
-    })
-    .sharpen()
-    .toFile(outputPath);
+    });
 
-  // 元画像が別形式なら削除
+  if (EMO_FILTER.enabled) {
+    pipeline = pipeline
+      .modulate({
+        brightness: EMO_FILTER.brightness,
+        saturation: EMO_FILTER.saturation,
+        hue: EMO_FILTER.hue,
+        lightness: EMO_FILTER.lightness,
+      })
+      .linear(EMO_FILTER.linearA, EMO_FILTER.linearB);
+  }
+
+  pipeline = pipeline
+    .sharpen({ sigma: EMO_FILTER.sharpenSigma })
+    .webp({
+      quality: EMO_FILTER.webpQuality,
+    });
+
+  await pipeline.toFile(outputPath);
+
+  // 元画像が webp 以外なら削除
+  // webp → webp の場合は outputPath が同名になるので削除しない
   if (path.resolve(outputPath) !== path.resolve(inputPath)) {
     await fs.unlink(inputPath);
   }
@@ -55,72 +79,3 @@ async function optimizeImage(fileName) {
     skipped: false,
   };
 }
-
-async function rewritePostJsonImagePaths(rewrites) {
-  const files = await fs.readdir(postsDir);
-
-  for (const file of files) {
-    if (!file.endsWith(".json") || file === "index.json") continue;
-
-    const fullPath = path.join(postsDir, file);
-    const raw = await fs.readFile(fullPath, "utf8");
-    const data = JSON.parse(raw);
-
-    if (!data.image) continue;
-
-    let nextImage = data.image;
-
-    for (const { original, converted } of rewrites) {
-      const originalRelative = `images/uploads/${original}`;
-      const originalAbsolute = `/images/uploads/${original}`;
-      const originalDotRelative = `./images/uploads/${original}`;
-
-      const convertedRelative = `images/uploads/${converted}`;
-
-      if (data.image === originalRelative) nextImage = convertedRelative;
-      if (data.image === originalAbsolute) nextImage = convertedRelative;
-      if (data.image === originalDotRelative) nextImage = convertedRelative;
-
-      if (
-        typeof data.image === "string" &&
-        data.image.endsWith(`/images/uploads/${original}`)
-      ) {
-        nextImage = convertedRelative;
-      }
-    }
-
-    if (nextImage !== data.image) {
-      data.image = nextImage;
-      await fs.writeFile(fullPath, JSON.stringify(data, null, 2) + "\n", "utf8");
-      console.log(`Updated image path in ${file}: ${nextImage}`);
-    }
-  }
-}
-
-async function main() {
-  await fs.mkdir(uploadsDir, { recursive: true });
-  await fs.mkdir(postsDir, { recursive: true });
-
-  const files = await fs.readdir(uploadsDir);
-  const targets = files.filter((file) => IMAGE_EXT_RE.test(file));
-
-  const rewrites = [];
-
-  for (const file of targets) {
-    const result = await optimizeImage(file);
-    rewrites.push(result);
-
-    if (result.skipped) {
-      console.log(`Skipped: ${result.original}`);
-    } else {
-      console.log(`Optimized: ${result.original} -> ${result.converted}`);
-    }
-  }
-
-  await rewritePostJsonImagePaths(rewrites);
-}
-
-main().catch((error) => {
-  console.error(error);
-  process.exit(1);
-});
