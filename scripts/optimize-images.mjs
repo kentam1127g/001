@@ -31,8 +31,8 @@ async function optimizeImage(fileName) {
   await image
     .rotate()
     .resize({
-      width: 360,
-      height: 360,
+      width: 240,
+      height: 240,
       fit: "inside",
       withoutEnlargement: true,
     })
