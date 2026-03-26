@@ -533,7 +533,7 @@
 
     function loadSeenEntries() {
       try {
-        const parsed = JSON.parse(sessionStorage.getItem(SEEN_STORAGE_KEY));
+        const parsed = JSON.parse(localStorage.getItem(SEEN_STORAGE_KEY));
         return Array.isArray(parsed) ? parsed : [];
       } catch {
         return [];
@@ -541,7 +541,7 @@
     }
 
     function saveSeenEntries(ids) {
-      sessionStorage.setItem(SEEN_STORAGE_KEY, JSON.stringify(ids));
+      localStorage.setItem(SEEN_STORAGE_KEY, JSON.stringify(ids));
     }
 
     async function loadEntriesFromContent() {
@@ -585,6 +585,7 @@
 
         if (!res.ok) throw new Error(`counts bump failed: ${res.status}`);
         const data = await res.json();
+        console.log('[counts] bump ok:', data?.counts);
         return data?.counts || {};
       } catch (error) {
         console.error('[counts] bump failed:', error);
@@ -901,9 +902,7 @@
             ? `<p class="entry-text">${escapeHtml(entry.text)}</p>`
             : '';
 
-          const displayCount = Number(
-            sharedCounts[entry.id] ?? localCounts[entry.id] ?? entry.viewCount ?? 0
-          );
+          const displayCount = Number(sharedCounts[entry.id] ?? 0);
 
           htmlParts.push(`
             <article class="entry" id="entry-${escapeHtml(entry.id)}" data-entry-id="${escapeHtml(entry.id)}">
