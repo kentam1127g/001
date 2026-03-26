@@ -36,10 +36,18 @@ async function optimizeImage(fileName) {
       fit: "inside",
       withoutEnlargement: true,
     })
+    // ① 彩度を落としてくすんだ色味に
+    .modulate({ saturation: 0.80 })
+    // ② 黒を持ち上げてフィルム特有のフェード感（output = input × 0.84 + 22）
+    .linear(0.84, 22)
+    // ③ ウォームシフト：赤を微増・青を削ってフィルムの温かみ
+    .recomb([
+      [1.02, 0.00, 0.00],
+      [0.00, 0.98, 0.00],
+      [0.00, 0.00, 0.88],
+    ])
     .sharpen()
-    .webp({
-      quality: 80,
-    })
+    .webp({ quality: 80 })
     .toFile(outputPath);
 
   // 元画像が別形式なら削除
