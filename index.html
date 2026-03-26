@@ -36,7 +36,8 @@
       line-height: 1.7;
     }
 
-    body { min-height: 100vh; }
+    body { min-height: 100vh; visibility: hidden; }
+    body.is-ready { visibility: visible; }
 
     img {
       max-width: 100%;
@@ -934,8 +935,8 @@
         if (anchoredEntryId) {
           highlightEntryFromHash();
         } else if (!initialScrollDone) {
-          scrollToLatest(true);
           initialScrollDone = true;
+          // 初回スクロールは init() で body 表示と一括管理
         } else {
           scrollToLatest();
         }
@@ -960,15 +961,16 @@
         render();
 
         if (!anchoredEntryId) {
-          requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-              window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'auto' });
-            });
-          });
+          window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' });
         }
+
+        requestAnimationFrame(() => {
+          document.body.classList.add('is-ready');
+        });
       } catch (error) {
         console.error('[init] failed:', error);
         entriesEl.innerHTML = '<div class="empty">投稿の読み込みに失敗しました。コンソールを確認してください。</div>';
+        document.body.classList.add('is-ready');
       }
     }
 
