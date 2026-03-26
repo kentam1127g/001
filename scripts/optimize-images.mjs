@@ -8,17 +8,9 @@ const MANIFEST_PATH = path.join(uploadsDir, ".film-processed.json");
 
 const IMAGE_EXT_RE = /\.(png|webp|jpeg|jpg|heic|heif)$/i;
 
-// フィルム風フィルター設定
-const FILM = {
-  saturation: 0.52,       // 彩度を落とす（くすんだ色味）
-  linearA: 0.82,          // 黒の持ち上げ幅（フィルムのフェード感）
-  linearB: 28,            // 黒の持ち上げオフセット
-  recomb: [
-    [0.85, 0.00, 0.00],   // 赤: わずかに増加
-    [0.00, 0.90, 0.00],   // 緑: わずかに減少
-    [0.00, 0.00, 0.87],   // 青: 削減（ウォームトーン）
-  ],
-};
+// コントラスト調整（output = input × A + B）
+// A=0.92, B=10 → 黒が10まで持ち上がり、白が244まで下がる、ほんの少しだけ眠い印象
+const FILTER = { linearA: 0.92, linearB: 10 };
 
 async function loadManifest() {
   try {
@@ -38,9 +30,7 @@ async function saveManifest(processed) {
 
 function applyFilmFilter(pipeline) {
   return pipeline
-    .modulate({ saturation: FILM.saturation })
-    .linear(FILM.linearA, FILM.linearB)
-    .recomb(FILM.recomb)
+    .linear(FILTER.linearA, FILTER.linearB)
     .sharpen()
     .webp({ quality: 80 });
 }
