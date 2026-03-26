@@ -967,28 +967,24 @@
         render();
 
         requestAnimationFrame(() => {
-          // ハッシュなし通常ロードのとき：1件の状態でまず底へスクロール
+          // フェーズ2：6件を追加して計7件にレンダリング（描画前に完了）
+          if (!anchoredEntryId && allEntries.length > INITIAL_VISIBLE_COUNT) {
+            visibleEntryCount = Math.min(INITIAL_VISIBLE_COUNT + INITIAL_EXTRA_COUNT, allEntries.length);
+            initialScrollDone = false;
+            render();
+          }
+
+          // 初期表示のエントリーは即座に表示（アニメーションをスキップ）
+          // .day-divider は常に表示されているため、.entry も同タイミングで表示しないと
+          // 罫線だけが見えてしまう
+          document.querySelectorAll('.entry').forEach(el => el.classList.add('is-visible'));
+
+          // フル7件レンダリング後に底へスクロール
           if (!anchoredEntryId) {
             window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' });
           }
 
-          // フェーズ2：さらに6件を追加して計7件に（同じフレーム内なので描画前に完了）
-          if (!anchoredEntryId && allEntries.length > INITIAL_VISIBLE_COUNT) {
-            const beforeHeight = document.documentElement.scrollHeight;
-            const beforeScrollY = window.scrollY;
-
-            visibleEntryCount = Math.min(INITIAL_VISIBLE_COUNT + INITIAL_EXTRA_COUNT, allEntries.length);
-            initialScrollDone = false; // render() 内の初回スクロックをリセット
-            render();
-
-            // 追加された分だけスクロール位置を下にずらして底を維持
-            window.scrollTo({
-              top: beforeScrollY + (document.documentElement.scrollHeight - beforeHeight),
-              behavior: 'instant'
-            });
-          }
-
-          // ページ表示（ここまで全て描画前に完了しているので一瞬で7件が見える）
+          // ページ表示
           document.body.classList.add('is-ready');
 
           // 既読カウントはバックグラウンドで取得してバッジだけ更新
