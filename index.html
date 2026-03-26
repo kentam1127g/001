@@ -956,16 +956,31 @@
           visibleEntryCount = INITIAL_VISIBLE_COUNT;
         }
 
-        sharedCounts = await loadSharedCounts();
+        // ローカルデータだけ先に取得してすぐ表示（Netlify API を待たない）
         allEntries = await loadEntriesFromContent();
         render();
 
-        if (!anchoredEntryId) {
-          window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' });
-        }
-
+        // スクロール確定後に表示
         requestAnimationFrame(() => {
+          if (!anchoredEntryId) {
+            window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' });
+          }
           document.body.classList.add('is-ready');
+
+          // 既読カウントはバックグラウンドで取得してバッジだけ更新
+          loadSharedCounts().then(counts => {
+            sharedCounts = counts;
+            const localCounts = loadViewCounts();
+            for (const [id, count] of Object.entries(sharedCounts)) {
+              const badge = document.querySelector(`[data-view-count-id="${CSS.escape(id)}"]`);
+              if (!badge) continue;
+              const numberEl = badge.querySelector('.view-count-number');
+              if (numberEl) {
+                const display = Math.max(Number(count), Number(localCounts[id] || 0));
+                numberEl.textContent = String(display);
+              }
+            }
+          }).catch(err => console.error('[counts] background load failed:', err));
         });
       } catch (error) {
         console.error('[init] failed:', error);
