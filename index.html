@@ -129,6 +129,11 @@
       color: var(--muted);
       font-size: 0.74rem;
       letter-spacing: 0.06em;
+      opacity: 0;
+    }
+
+    .day-divider.is-visible {
+      animation: cardSlideIn 0.62s cubic-bezier(.22,.8,.2,1) forwards;
     }
 
     .day-divider::before,
@@ -769,10 +774,10 @@
     }
 
     function animateEntriesInOrder() {
-      const entryNodes = [...document.querySelectorAll('.entry')];
-      if (!entryNodes.length) return;
+      const nodes = [...document.querySelectorAll('.entry, .day-divider')];
+      if (!nodes.length) return;
 
-      const newestFirst = [...entryNodes].reverse();
+      const newestFirst = [...nodes].reverse();
 
       newestFirst.forEach((node, index) => {
         node.classList.remove('is-visible');
@@ -974,10 +979,8 @@
             render();
           }
 
-          // 初期表示のエントリーは即座に表示（アニメーションをスキップ）
-          // .day-divider は常に表示されているため、.entry も同タイミングで表示しないと
-          // 罫線だけが見えてしまう
-          document.querySelectorAll('.entry').forEach(el => el.classList.add('is-visible'));
+          // 初期表示の要素は即座に表示（アニメーションをスキップ）
+          document.querySelectorAll('.entry, .day-divider').forEach(el => el.classList.add('is-visible'));
 
           // フル7件レンダリング後に底へスクロール
           if (!anchoredEntryId) {
