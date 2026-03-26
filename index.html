@@ -327,13 +327,13 @@
     }
 
     .clock {
-      min-width: 180px;
-      padding: 8px 14px;
+      min-width: 320px;
+      padding: 14px 24px;
       border: 1px solid var(--line);
       background: rgba(251, 250, 246, 0.9);
       box-shadow: var(--shadow);
       text-align: center;
-      font-size: 0.9rem;
+      font-size: 1.7rem;
       letter-spacing: 0.12em;
       color: var(--muted);
       font-variant-numeric: tabular-nums;
@@ -346,8 +346,10 @@
 
     @media (max-width: 720px) {
       .clock {
-        min-width: 156px;
-        font-size: 0.82rem;
+        min-width: 0;
+        width: calc(100vw - 32px);
+        font-size: 1.4rem;
+        padding: 12px 16px;
       }
 
       .topbar-inner {
