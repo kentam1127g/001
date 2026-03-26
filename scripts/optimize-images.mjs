@@ -5,7 +5,7 @@ import sharp from "sharp";
 const uploadsDir = path.resolve("images/uploads");
 const postsDir = path.resolve("content/posts");
 
-const IMAGE_EXT_RE = /\.(png|webp|jpeg|jpg)$/i;
+const IMAGE_EXT_RE = /\.(png|webp|jpeg|jpg|heic|heif)$/i;
 
 async function optimizeImage(fileName) {
   const inputPath = path.join(uploadsDir, fileName);
@@ -36,10 +36,10 @@ async function optimizeImage(fileName) {
       fit: "inside",
       withoutEnlargement: true,
     })
+    .sharpen()
     .webp({
       quality: 80,
     })
-    .sharpen()
     .toFile(outputPath);
 
   // 元画像が別形式なら削除

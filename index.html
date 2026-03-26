@@ -9,7 +9,7 @@
   <meta property="og:description" content="なんでもないただの記憶。" />
   <meta property="og:image" content="./images/ogp.jpg" />
   <meta property="og:type" content="website" />
-  <meta property="og:url" content="" />
+  <meta property="og:url" content="https://kentam1127g.github.io/001/" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="えんぴつだいあろーぐ。" />
   <meta name="twitter:description" content="なんでもないただの記憶。" />
@@ -389,8 +389,8 @@
     const COUNTS_API_BASE = 'https://enpitumark-oath.netlify.app';
     const VIEW_STORAGE_KEY = 'quiet-broadcast-view-counts-v1';
     const SEEN_STORAGE_KEY = 'quiet-broadcast-seen-entries-v1';
-    const INITIAL_VISIBLE_COUNT = 12;
-    const LOAD_MORE_COUNT = 12;
+    const INITIAL_VISIBLE_COUNT = 10;
+    const LOAD_MORE_COUNT = 10;
     const VIEW_COUNT_DELAY_MS = 900;
 
     const entriesEl = document.getElementById('entries');
@@ -450,7 +450,7 @@
 
     function parseDateOnly(dateStr, createdAt) {
       if (dateStr) {
-        const d = new Date(`${dateStr}T00:00:00`);
+        const d = new Date(`${dateStr}T00:00:00+09:00`);
         if (!Number.isNaN(d.getTime())) return d;
       }
       if (createdAt) {
@@ -544,39 +544,39 @@
     }
 
     async function loadSharedCounts() {
-  try {
-    const res = await fetch(`${COUNTS_API_BASE}/.netlify/functions/counts-get`, {
-      cache: 'no-store'
-    });
-    if (!res.ok) throw new Error(`counts fetch failed: ${res.status}`);
-    const data = await res.json();
-    return data && typeof data === 'object' ? data : {};
-  } catch (error) {
-    console.error('[counts] load failed:', error);
-    return {};
-  }
-}
+      try {
+        const res = await fetch(`${COUNTS_API_BASE}/.netlify/functions/counts-get`, {
+          cache: 'no-store'
+        });
+        if (!res.ok) throw new Error(`counts fetch failed: ${res.status}`);
+        const data = await res.json();
+        return data && typeof data === 'object' ? data : {};
+      } catch (error) {
+        console.error('[counts] load failed:', error);
+        return {};
+      }
+    }
 
     async function bumpSharedCounts(ids) {
-  try {
-    if (!ids.length) return {};
+      try {
+        if (!ids.length) return {};
 
-    const res = await fetch(`${COUNTS_API_BASE}/.netlify/functions/count-bump`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ ids })
-    });
+        const res = await fetch(`${COUNTS_API_BASE}/.netlify/functions/counts-bump`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ ids })
+        });
 
-    if (!res.ok) throw new Error(`counts bump failed: ${res.status}`);
-    const data = await res.json();
-    return data?.counts || {};
-  } catch (error) {
-    console.error('[counts] bump failed:', error);
-    return {};
-  }
-}
+        if (!res.ok) throw new Error(`counts bump failed: ${res.status}`);
+        const data = await res.json();
+        return data?.counts || {};
+      } catch (error) {
+        console.error('[counts] bump failed:', error);
+        return {};
+      }
+    }
 
     function getVisibleEntries(entries) {
       if (anchoredEntryId) {
