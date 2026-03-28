@@ -55,7 +55,7 @@
     .wrap {
       width: min(calc(100% - 28px), var(--max));
       margin: 0 auto;
-      padding: 24px 0 120px;
+      padding: 24px 0 140px;
     }
 
     .topbar {
@@ -98,13 +98,7 @@
     }
 
     .topbar-clock {
-      margin-left: auto;
-      font-family: "Courier New", "MS Gothic", monospace;
-      font-size: 0.8rem;
-      letter-spacing: 0.05em;
-      color: #000;
-      font-variant-numeric: tabular-nums;
-      white-space: nowrap;
+      display: none;
     }
 
     .intro-card {
@@ -331,7 +325,39 @@
     }
 
     .clock-wrap {
-      display: none;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 30;
+      background: #000;
+      border-top: 2px solid #000;
+    }
+
+    .clock-inner {
+      width: min(calc(100% - 28px), var(--max));
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 0;
+    }
+
+    .clock {
+      font-family: "Share Tech Mono", "Courier New", monospace;
+      font-size: 0.72rem;
+      letter-spacing: 0.08em;
+      color: #fff;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    .clock-date {
+      opacity: 0.55;
+    }
+
+    .clock-time {
+      opacity: 1;
     }
 
     @media (min-width: 1024px) {
@@ -378,7 +404,10 @@
   </main>
 
   <div class="clock-wrap" aria-hidden="true">
-    <div id="clock" class="clock">----.--.-- --:--:--</div>
+    <div class="clock-inner">
+      <span id="clockDate" class="clock clock-date">----.--.--.--</span>
+      <span id="clockTime" class="clock clock-time">--:--:--</span>
+    </div>
   </div>
 
   <script>
@@ -394,7 +423,8 @@
     const entriesEl = document.getElementById('entries');
     const loadOlderWrap = document.getElementById('loadOlderWrap');
     const returnLatestWrap = document.getElementById('returnLatestWrap');
-    const clockEl = document.getElementById('clock');
+    const clockDateEl = document.getElementById('clockDate');
+    const clockTimeEl = document.getElementById('clockTime');
     const topbarClockEl = document.getElementById('topbarClock');
 
     let allEntries = [];
@@ -424,13 +454,9 @@
     function updateClock() {
       const now = new Date();
       const timeStr = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
-      if (clockEl) {
-        clockEl.textContent =
-          `${now.getFullYear()}.${pad(now.getMonth() + 1)}.${pad(now.getDate())} ${timeStr}`;
-      }
-      if (topbarClockEl) {
-        topbarClockEl.textContent = timeStr;
-      }
+      const dateStr = `${now.getFullYear()}.${pad(now.getMonth() + 1)}.${pad(now.getDate())}`;
+      if (clockDateEl) clockDateEl.textContent = dateStr;
+      if (clockTimeEl) clockTimeEl.textContent = timeStr;
     }
 
     function normalizeImagePath(path) {
