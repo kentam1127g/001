@@ -31,15 +31,13 @@ collections:
         name: "image"
         widget: "image"
         required: false
+        media_library:
+          config:
+            choose_url: false
 
       - label: "テキスト"
         name: "text"
         widget: "text"
-        required: false
-
-      - label: "画像キャプション"
-        name: "caption"
-        widget: "string"
         required: false
 
       - label: "日付"

@@ -350,8 +350,8 @@
   <div class="topbar">
     <div class="topbar-inner">
       <div class="title">
-        <h1>えんぴつだいあろーぐ。</h1>
-        <p>なんでもないただの記憶。</p>
+        <h1>なんでもないただの記憶。</h1>
+        <!--<p>なんでもないただの記憶。</p>-->
       </div>
       <div id="topbarClock" class="topbar-clock">--:--:--</div>
     </div>
@@ -897,8 +897,8 @@
             <article class="entry" id="entry-${escapeHtml(entry.id)}" data-entry-id="${escapeHtml(entry.id)}">
               <div class="bubble">
                 <div class="stamp">
-                  <span>${escapeHtml(formatOnlyTime(entry.createdAt))}</span>
                   <span class="author">${escapeHtml(entry.author || '')}</span>
+                  <span>${escapeHtml(formatOnlyTime(entry.createdAt))}</span>
                 </div>
 
                 ${imageHtml}
