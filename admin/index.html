@@ -283,76 +283,60 @@
         }
       }
 
-      // メディアモーダルをSP向けにパッチする
+      // モーダルコンテナ本体のみ位置・幅を修正（子要素はCSSに任せる）
       function patchModal(modal) {
         if (modal.dataset.spModalPatched) return;
         modal.dataset.spModalPatched = '1';
-
-        // モーダル本体を全幅・全高に
         modal.style.setProperty('width', '100vw', 'important');
         modal.style.setProperty('max-width', '100vw', 'important');
         modal.style.setProperty('left', '0', 'important');
         modal.style.setProperty('right', '0', 'important');
         modal.style.setProperty('margin', '0', 'important');
         modal.style.setProperty('box-sizing', 'border-box', 'important');
-
-        // 子要素を全て走査して幅オーバーと横並びを修正
-        modal.querySelectorAll('*').forEach(el => {
-          el.style.setProperty('box-sizing', 'border-box', 'important');
-          el.style.setProperty('max-width', '100%', 'important');
-
-          const cs = getComputedStyle(el);
-
-          // 横並びflex → 折り返し許可
-          if (cs.display === 'flex' && cs.flexDirection !== 'column') {
-            el.style.setProperty('flex-wrap', 'wrap', 'important');
-          }
-
-          // 固定幅のgridは1列に
-          if (cs.display === 'grid') {
-            const cols = cs.gridTemplateColumns.trim().split(/\s+/);
-            if (cols.length > 2) {
-              el.style.setProperty('grid-template-columns', 'repeat(2, 1fr)', 'important');
-            }
-          }
-
-          // ボタン類が横に並んでいる行は縦積みに
-          if (el.tagName === 'HEADER' || el.tagName === 'FOOTER') {
-            el.style.setProperty('flex-direction', 'column', 'important');
-            el.style.setProperty('align-items', 'stretch', 'important');
-            el.style.setProperty('gap', '8px', 'important');
-          }
-        });
+        modal.style.setProperty('overflow-y', 'auto', 'important');
       }
 
+      // "Collections" テキストノードを TreeWalker で効率的に検索
+      function findCollectionsLabel(root) {
+        const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
+        let node;
+        while ((node = walker.nextNode())) {
+          if (node.textContent.trim() === 'Collections') return node.parentElement;
+        }
+        return null;
+      }
+
+      let pendingMutations = [];
       let rafId = null;
+
       const observer = new MutationObserver((mutations) => {
+        pendingMutations.push(...mutations);
         if (rafId) return;
         rafId = requestAnimationFrame(() => {
           rafId = null;
+          const batch = pendingMutations.splice(0);
           const root = document.getElementById('nc-root');
           if (!root) return;
 
-          // 一覧画面: "Collections" テキストのみを持つ要素を探してサイドバーを隠す
-          const collectionsLabel = [...root.querySelectorAll('*')]
-            .find(el => !el.children.length && el.textContent.trim() === 'Collections');
+          // 新規追加ノードの中から [role="dialog"] だけを対象にモーダルパッチ
+          for (const mutation of batch) {
+            for (const node of mutation.addedNodes) {
+              if (node.nodeType !== 1) continue;
+              if (node.getAttribute('role') === 'dialog') patchModal(node);
+              node.querySelectorAll('[role="dialog"]').forEach(patchModal);
+            }
+          }
+
+          // 一覧画面: Collections サイドバーを非表示
+          const collectionsLabel = findCollectionsLabel(root);
           if (collectionsLabel) hidePaneContaining(collectionsLabel);
 
-          // 編集画面: プレビューiframeを含むペインを隠す
+          // 編集画面: プレビューiframeを含むペインを非表示
           const iframe = root.querySelector('iframe');
           if (iframe && !iframe.dataset.spPatched) {
             iframe.dataset.spPatched = '1';
             hidePaneContaining(iframe);
           }
-
-          // メディアモーダル: position:fixed かつ高z-indexの要素を検知してパッチ
-          root.querySelectorAll('*').forEach(el => {
-            if (el.dataset.spModalPatched) return;
-            const cs = getComputedStyle(el);
-            if (cs.position === 'fixed' && parseInt(cs.zIndex) > 100) {
-              patchModal(el);
-            }
-          });
         });
       });
       observer.observe(document.body, { childList: true, subtree: true });
