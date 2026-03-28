@@ -214,39 +214,55 @@
   <script>
     // ── SP レイアウトパッチ ──────────────────────────────────────────
     if (window.matchMedia('(max-width: 768px)').matches) {
-      function patchSplitLayout(iframe) {
-        // iframeを起点に親を辿り、横並びのflex/gridコンテナ（分割レイアウト）を探す
-        let node = iframe.parentElement;
+
+      // 指定要素を含む「横並びflex/gridコンテナ」を見つけ、
+      // その要素を含むペインを非表示にして反対側を全幅にする
+      function hidePaneContaining(anchor) {
+        let node = anchor.parentElement;
         while (node && node.id !== 'nc-root') {
           const parent = node.parentElement;
           if (!parent || parent.id === 'nc-root') break;
-
           const cs = getComputedStyle(parent);
-          const isSideBySide =
+          const sideBySide =
             (cs.display === 'flex' && cs.flexDirection !== 'column') ||
             (cs.display === 'grid' && cs.gridTemplateColumns.trim().split(/\s+/).length > 1);
-
-          if (isSideBySide && parent.children.length >= 2) {
-            const previewPane = [...parent.children].find(c => c.contains(iframe));
-            const editorPane  = [...parent.children].find(c => !c.contains(iframe));
-            if (previewPane && editorPane) {
-              previewPane.style.setProperty('display', 'none', 'important');
-              editorPane.style.setProperty('width', '100%', 'important');
-              editorPane.style.setProperty('max-width', '100vw', 'important');
+          if (sideBySide && parent.children.length >= 2) {
+            const hidePane = [...parent.children].find(c => c.contains(anchor));
+            const showPane = [...parent.children].find(c => c !== hidePane);
+            if (hidePane && showPane && !hidePane.dataset.spHidden) {
+              hidePane.dataset.spHidden = '1';
+              hidePane.style.setProperty('display', 'none', 'important');
+              showPane.style.setProperty('width', '100vw', 'important');
+              showPane.style.setProperty('max-width', '100vw', 'important');
               parent.style.setProperty('grid-template-columns', '1fr', 'important');
               parent.style.setProperty('flex-direction', 'column', 'important');
-              return;
             }
+            return;
           }
           node = parent;
         }
       }
 
+      let rafId = null;
       const observer = new MutationObserver(() => {
-        const iframe = document.querySelector('#nc-root iframe');
-        if (!iframe || iframe.dataset.spPatched) return;
-        iframe.dataset.spPatched = '1';
-        patchSplitLayout(iframe);
+        if (rafId) return;
+        rafId = requestAnimationFrame(() => {
+          rafId = null;
+          const root = document.getElementById('nc-root');
+          if (!root) return;
+
+          // 一覧画面: "Collections" テキストのみを持つ要素を探してサイドバーを隠す
+          const collectionsLabel = [...root.querySelectorAll('*')]
+            .find(el => !el.children.length && el.textContent.trim() === 'Collections');
+          if (collectionsLabel) hidePaneContaining(collectionsLabel);
+
+          // 編集画面: プレビューiframeを含むペインを隠す
+          const iframe = root.querySelector('iframe');
+          if (iframe && !iframe.dataset.spPatched) {
+            iframe.dataset.spPatched = '1';
+            hidePaneContaining(iframe);
+          }
+        });
       });
       observer.observe(document.body, { childList: true, subtree: true });
     }
