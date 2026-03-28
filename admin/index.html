@@ -123,7 +123,6 @@
     `, { raw: true });
 
     const PostPreview = ({ entry, getAsset }) => {
-      const h = React.createElement;
       const author = entry.getIn(['data', 'author']) || '';
       const text = entry.getIn(['data', 'text']) || '';
       const image = entry.getIn(['data', 'image']) || '';
