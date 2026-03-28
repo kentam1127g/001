@@ -120,15 +120,14 @@
         word-break: break-word;
         font-size: 0.98rem;
       }
-    `);
+    `, { raw: true });
 
     const PostPreview = ({ entry, getAsset }) => {
       const h = React.createElement;
-      const data = entry.get('data');
-      const author = data.get('author') || '';
-      const text = data.get('text') || '';
-      const image = data.get('image') || '';
-      const createdAt = data.get('createdAt') || '';
+      const author = entry.getIn(['data', 'author']) || '';
+      const text = entry.getIn(['data', 'text']) || '';
+      const image = entry.getIn(['data', 'image']) || '';
+      const createdAt = entry.getIn(['data', 'createdAt']) || '';
 
       let timeStr = '';
       if (createdAt) {
@@ -141,7 +140,8 @@
         }
       }
 
-      const imageUrl = image ? getAsset(image) : null;
+      const asset = image ? getAsset(image) : null;
+      const imageUrl = asset ? (asset.url || asset.toString()) : null;
 
       return h('div', null,
         h('article', { className: 'bubble' },
@@ -151,7 +151,7 @@
           ),
           imageUrl
             ? h('div', { className: 'entry-media' },
-                h('img', { src: String(imageUrl), alt: '' })
+                h('img', { src: imageUrl, alt: '' })
               )
             : null,
           text ? h('p', { className: 'entry-text' }, text) : null
