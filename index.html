@@ -164,7 +164,7 @@
       display: block;
       scroll-margin-top: 84px;
       opacity: 0;
-      transform: translateX(-18px);
+      transform: translateY(18px);
     }
 
     .entry.is-visible {
@@ -276,11 +276,11 @@
     @keyframes cardSlideIn {
       from {
         opacity: 0;
-        transform: translateX(-18px);
+        transform: translateY(18px);
       }
       to {
         opacity: 1;
-        transform: translateX(0);
+        transform: translateY(0);
       }
     }
 
@@ -996,9 +996,6 @@
             initialScrollDone = false;
             render();
           }
-
-          // 初期表示の要素は即座に表示（アニメーションをスキップ）
-          document.querySelectorAll('.entry, .day-divider').forEach(el => el.classList.add('is-visible'));
 
           // フル7件レンダリング後に底へスクロール
           if (!anchoredEntryId) {
