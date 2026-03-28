@@ -577,11 +577,19 @@
         const res = await fetch(`${COUNTS_API_BASE}/.netlify/functions/counts-get`, {
           cache: 'no-store'
         });
-        if (!res.ok) throw new Error(`counts fetch failed: ${res.status}`);
+        if (!res.ok) {
+          const body = await res.text().catch(() => '');
+          console.error(`[counts] load failed: HTTP ${res.status}`, body);
+          return {};
+        }
         const data = await res.json();
-        return data && typeof data === 'object' ? data : {};
+        if (!data || typeof data !== 'object' || Array.isArray(data)) {
+          console.error('[counts] load: unexpected response format', data);
+          return {};
+        }
+        return data;
       } catch (error) {
-        console.error('[counts] load failed:', error);
+        console.error('[counts] load failed (network?):', error);
         return {};
       }
     }
@@ -598,12 +606,20 @@
           body: JSON.stringify({ ids })
         });
 
-        if (!res.ok) throw new Error(`counts bump failed: ${res.status}`);
+        if (!res.ok) {
+          const body = await res.text().catch(() => '');
+          console.error(`[counts] bump failed: HTTP ${res.status}`, body);
+          return {};
+        }
         const data = await res.json();
-        console.log('[counts] bump ok:', data?.counts);
-        return data?.counts || {};
+        if (!data?.counts || typeof data.counts !== 'object') {
+          console.error('[counts] bump: unexpected response format', data);
+          return {};
+        }
+        console.log('[counts] bump ok:', data.counts);
+        return data.counts;
       } catch (error) {
-        console.error('[counts] bump failed:', error);
+        console.error('[counts] bump failed (network?):', error);
         return {};
       }
     }
@@ -804,7 +820,7 @@
 
       newestFirst.forEach((node, index) => {
         node.classList.remove('is-visible');
-        const delay = index * 110;
+        const delay = index * 280;
         window.setTimeout(() => {
           node.classList.add('is-visible');
         }, delay);
@@ -1009,15 +1025,18 @@
           loadSharedCounts().then(counts => {
             sharedCounts = counts;
             const localCounts = loadViewCounts();
-            for (const [id, count] of Object.entries(sharedCounts)) {
-              const badge = document.querySelector(`[data-view-count-id="${CSS.escape(id)}"]`);
-              if (!badge) continue;
+            console.log('[counts] shared:', sharedCounts, '/ local:', localCounts);
+
+            // sharedCounts にないIDも含め、表示中の全バッジを更新
+            document.querySelectorAll('[data-view-count-id]').forEach(badge => {
+              const id = badge.dataset.viewCountId;
               const numberEl = badge.querySelector('.view-count-number');
-              if (numberEl) {
-                const display = Math.max(Number(count), Number(localCounts[id] || 0));
-                numberEl.textContent = String(display);
-              }
-            }
+              if (!numberEl) return;
+              const shared = Number(sharedCounts[id] || 0);
+              const local = Number(localCounts[id] || 0);
+              const display = Math.max(shared, local);
+              numberEl.textContent = String(display);
+            });
           }).catch(err => console.error('[counts] background load failed:', err));
         });
       } catch (error) {
