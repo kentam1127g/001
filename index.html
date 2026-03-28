@@ -145,7 +145,7 @@
     }
 
     .day-divider.is-visible {
-      animation: cardSlideIn 0.62s cubic-bezier(.22,.8,.2,1) forwards;
+      animation: cardSlideIn 0.72s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
 
     .day-divider::before,
@@ -164,11 +164,11 @@
       display: block;
       scroll-margin-top: 84px;
       opacity: 0;
-      transform: translateY(18px);
+      transform: translateY(56px) scale(0.93);
     }
 
     .entry.is-visible {
-      animation: cardSlideIn 0.62s cubic-bezier(.22,.8,.2,1) forwards;
+      animation: cardSlideIn 0.72s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
 
     .entry.is-highlighted .bubble {
@@ -276,11 +276,11 @@
     @keyframes cardSlideIn {
       from {
         opacity: 0;
-        transform: translateY(18px);
+        transform: translateY(56px) scale(0.93);
       }
       to {
         opacity: 1;
-        transform: translateY(0);
+        transform: translateY(0) scale(1);
       }
     }
 
@@ -429,6 +429,7 @@
 
     let allEntries = [];
     let sharedCounts = {};
+    let countsLoaded = false;
     let visibleEntryCount = INITIAL_VISIBLE_COUNT;
     let anchoredEntryId = null;
     let viewObserver = null;
@@ -933,7 +934,9 @@
             ? `<p class="entry-text">${escapeHtml(entry.text)}</p>`
             : '';
 
-          const displayCount = Number(sharedCounts[entry.id] ?? 0);
+          const sharedCount = Number(sharedCounts[entry.id] || 0);
+          const localCount = Number(localCounts[entry.id] || 0);
+          const displayCount = countsLoaded ? Math.max(sharedCount, localCount) : '';
 
           htmlParts.push(`
             <article class="entry" id="entry-${escapeHtml(entry.id)}" data-entry-id="${escapeHtml(entry.id)}">
@@ -1024,8 +1027,8 @@
           // 既読カウントはバックグラウンドで取得してバッジだけ更新
           loadSharedCounts().then(counts => {
             sharedCounts = counts;
+            countsLoaded = true;
             const localCounts = loadViewCounts();
-            console.log('[counts] shared:', sharedCounts, '/ local:', localCounts);
 
             // sharedCounts にないIDも含め、表示中の全バッジを更新
             document.querySelectorAll('[data-view-count-id]').forEach(badge => {
