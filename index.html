@@ -62,7 +62,7 @@
       position: sticky;
       top: 0;
       z-index: 20;
-      background: #fff;
+      background: #e8e8e8;
       border-bottom: 2px solid #000;
       margin-bottom: 20px;
     }
@@ -72,22 +72,39 @@
       margin: 0 auto;
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      padding: 12px 0;
+      gap: 12px;
+      padding: 5px 0;
+    }
+
+    .title {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
     }
 
     .title h1 {
       margin: 0;
-      font-size: clamp(1.05rem, 1.5vw, 1.35rem);
-      font-weight: 400;
+      font-size: 1rem;
+      font-weight: 700;
       letter-spacing: 0.03em;
+      white-space: nowrap;
     }
 
     .title p {
-      margin: 2px 0 0;
-      font-size: 0.88rem;
+      margin: 0;
+      font-size: 0.78rem;
       color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .topbar-clock {
+      margin-left: auto;
+      font-family: "Courier New", "MS Gothic", monospace;
+      font-size: 0.8rem;
+      letter-spacing: 0.05em;
+      color: #000;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
     }
 
     .intro-card {
@@ -172,6 +189,10 @@
     }
 
     .stamp {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 10px;
       color: var(--muted);
       font-size: 0.78rem;
       line-height: 1.45;
@@ -179,19 +200,12 @@
       word-break: break-word;
     }
 
-    .bubble-head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      margin-bottom: 10px;
-      color: var(--muted);
-      font-size: 0.82rem;
-    }
-
     .author {
       letter-spacing: 0.08em;
       text-transform: uppercase;
+      font-size: 0.82rem;
+      color: var(--muted);
+      flex-shrink: 0;
     }
 
     .entry-text {
@@ -317,43 +331,17 @@
     }
 
     .clock-wrap {
-      position: fixed;
-      left: 50%;
-      bottom: 16px;
-      transform: translateX(-50%);
-      z-index: 8;
-      pointer-events: none;
-    }
-
-    .clock {
-      min-width: 320px;
-      padding: 10px 20px;
-      border: 2px solid #000;
-      background: #fff;
-      text-align: center;
-      font-family: "Courier New", "MS Gothic", monospace;
-      font-size: 1.5rem;
-      letter-spacing: 0.06em;
-      color: #000;
-      font-variant-numeric: tabular-nums;
+      display: none;
     }
 
     @media (min-width: 1024px) {
       :root { --max: 500px; }
-      .entry-media { max-width: 420px; }
+      .entry-media { max-width: 100%; }
     }
 
     @media (max-width: 720px) {
-      .clock {
-        min-width: 0;
-        width: calc(100vw - 32px);
-        font-size: 1.2rem;
-        padding: 8px 12px;
-      }
-
-      .topbar-inner {
-        align-items: flex-start;
-        flex-direction: column;
+      .title p {
+        display: none;
       }
     }
   </style>
@@ -365,6 +353,7 @@
         <h1>えんぴつだいあろーぐ。</h1>
         <p>なんでもないただの記憶。</p>
       </div>
+      <div id="topbarClock" class="topbar-clock">--:--:--</div>
     </div>
   </div>
 
@@ -406,6 +395,7 @@
     const loadOlderWrap = document.getElementById('loadOlderWrap');
     const returnLatestWrap = document.getElementById('returnLatestWrap');
     const clockEl = document.getElementById('clock');
+    const topbarClockEl = document.getElementById('topbarClock');
 
     let allEntries = [];
     let sharedCounts = {};
@@ -432,11 +422,15 @@
     }
 
     function updateClock() {
-      if (!clockEl) return;
       const now = new Date();
-      clockEl.textContent =
-        `${now.getFullYear()}.${pad(now.getMonth() + 1)}.${pad(now.getDate())} ` +
-        `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+      const timeStr = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+      if (clockEl) {
+        clockEl.textContent =
+          `${now.getFullYear()}.${pad(now.getMonth() + 1)}.${pad(now.getDate())} ${timeStr}`;
+      }
+      if (topbarClockEl) {
+        topbarClockEl.textContent = timeStr;
+      }
     }
 
     function normalizeImagePath(path) {
@@ -903,10 +897,7 @@
             <article class="entry" id="entry-${escapeHtml(entry.id)}" data-entry-id="${escapeHtml(entry.id)}">
               <div class="bubble">
                 <div class="stamp">
-                  <div>${escapeHtml(formatOnlyTime(entry.createdAt))}</div>
-                </div>
-
-                <div class="bubble-head">
+                  <span>${escapeHtml(formatOnlyTime(entry.createdAt))}</span>
                   <span class="author">${escapeHtml(entry.author || '')}</span>
                 </div>
 
