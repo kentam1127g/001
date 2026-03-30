@@ -536,10 +536,13 @@
       });
     }
 
-    async function loadSharedCounts() {
+    async function loadSharedCounts(ids) {
       try {
-        // 【改善点1】 APIにもキャッシュバスター(現在時刻)を付与し、強制的に最新を取得させる
-        const res = await fetch(`${COUNTS_API_BASE}/.netlify/functions/counts-get?t=${Date.now()}`, {
+        if (!ids || !ids.length) return {};
+        const res = await fetch(`${COUNTS_API_BASE}/.netlify/functions/counts-get`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ids }),
           cache: 'no-store'
         });
         if (!res.ok) {
@@ -981,9 +984,9 @@
           });
         });
 
-        // 既読カウントのバックグラウンド取得
+        // 既読カウントのバックグラウンド取得（全エントリIDを渡して一括取得）
         {
-          const countsPromise = loadSharedCounts();
+          const countsPromise = loadSharedCounts(allEntries.map(e => e.id));
           countsPromise.then(counts => {
             sharedCounts = counts;
             countsLoaded = true;
