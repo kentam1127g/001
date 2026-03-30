@@ -566,11 +566,8 @@
         if (!ids.length) return {};
         console.log('[counts] BUMP start — ids:', ids);
 
-        const res = await fetch(`${COUNTS_API_BASE}/.netlify/functions/counts-bump`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ids })
-        });
+        const url = `${COUNTS_API_BASE}/.netlify/functions/counts-bump?ids=${encodeURIComponent(ids.join(','))}`;
+        const res = await fetch(url, { cache: 'no-store' });
 
         const text = await res.text();
         console.log('[counts] BUMP response status:', res.status, '— body:', text);
