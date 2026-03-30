@@ -244,29 +244,8 @@
       line-height: 1.2;
     }
 
-    .view-count.is-bumped {
-      animation: bumpCount 1s ease;
-    }
-
     .view-count-plus {
-      opacity: 0;
-      transform: translateY(2px);
-    }
-
-    .view-count.is-bumped .view-count-plus {
-      animation: floatPlus 1s ease;
-    }
-
-    @keyframes bumpCount {
-      0% { transform: scale(1); }
-      22% { transform: scale(1.08); }
-      100% { transform: scale(1); }
-    }
-
-    @keyframes floatPlus {
-      0% { opacity: 0; transform: translateY(4px); }
-      20% { opacity: 1; transform: translateY(0); }
-      100% { opacity: 0; transform: translateY(-8px); }
+      display: none;
     }
 
     @keyframes cardSlideIn {
@@ -409,7 +388,6 @@
 <script>
     const CONTENT_INDEX_PATH = './content/posts/index.json';
     const COUNTS_API_BASE = 'https://enpitumark-oath.netlify.app';
-    const VIEW_STORAGE_KEY = 'quiet-broadcast-view-counts-v1';
     const SEEN_STORAGE_KEY = 'quiet-broadcast-seen-entries-v1';
     const INITIAL_VISIBLE_COUNT = 1;
     const INITIAL_EXTRA_COUNT = 6;
@@ -528,19 +506,6 @@
       }
 
       return labels;
-    }
-
-    function loadViewCounts() {
-      try {
-        const parsed = JSON.parse(localStorage.getItem(VIEW_STORAGE_KEY));
-        return parsed && typeof parsed === 'object' ? parsed : {};
-      } catch {
-        return {};
-      }
-    }
-
-    function saveViewCounts(counts) {
-      localStorage.setItem(VIEW_STORAGE_KEY, JSON.stringify(counts));
     }
 
     function loadSeenEntries() {
@@ -737,14 +702,6 @@
 
       const numberEl = badge.querySelector('.view-count-number');
       if (numberEl) numberEl.textContent = String(count);
-
-      badge.classList.remove('is-bumped');
-      void badge.offsetWidth;
-      badge.classList.add('is-bumped');
-
-      setTimeout(() => {
-        badge.classList.remove('is-bumped');
-      }, 1000);
     }
 
     function setupViewObservers() {
@@ -772,17 +729,10 @@
               seenIds.add(entryIdValue);
               saveSeenEntries([...seenIds]);
 
-              const localCounts = loadViewCounts();
-              localCounts[entryIdValue] = Number(localCounts[entryIdValue] || 0) + 1;
-              saveViewCounts(localCounts);
-
               const changed = await bumpSharedCounts([entryIdValue]);
               if (changed && changed[entryIdValue] != null) {
-                // 【改善点2】サーバー側で加算成功時はサーバーの数値を絶対の正義とする
                 sharedCounts[entryIdValue] = Number(changed[entryIdValue]);
                 syncViewCountsToDOM(entryIdValue, sharedCounts[entryIdValue]);
-              } else {
-                syncViewCountsToDOM(entryIdValue, localCounts[entryIdValue]);
               }
 
               if (viewObserver) {
@@ -903,8 +853,6 @@
 
         const visibleEntries = getVisibleEntries(allEntries);
         const dayLabels = enumerateDayLabels(allEntries);
-        const localCounts = loadViewCounts();
-
         updateLoadOlderButton(allEntries.length, visibleEntries.length, allEntries);
         updateReturnLatestButton();
 
@@ -934,12 +882,8 @@
             ? `<p class="entry-text">${escapeHtml(entry.text)}</p>`
             : '';
 
-          // 【改善点3】 サーバーから数字が取得できている場合は、ローカルの数字(バグで増えている可能性)を無視する
           const sharedCount = sharedCounts[entry.id];
-          const localCount = localCounts[entry.id] || 0;
-          const displayCount = countsLoaded 
-            ? (sharedCount !== undefined ? sharedCount : localCount) 
-            : '';
+          const displayCount = countsLoaded ? (sharedCount !== undefined ? sharedCount : 0) : '';
 
           htmlParts.push(`
             <article class="entry" id="entry-${escapeHtml(entry.id)}" data-entry-id="${escapeHtml(entry.id)}">
@@ -1043,19 +987,13 @@
           countsPromise.then(counts => {
             sharedCounts = counts;
             countsLoaded = true;
-            const localCounts = loadViewCounts();
 
             document.querySelectorAll('[data-view-count-id]').forEach(badge => {
               const id = badge.dataset.viewCountId;
               const numberEl = badge.querySelector('.view-count-number');
               if (!numberEl) return;
-              
-              // 【改善点4】 バックグラウンド取得完了後も、サーバーの数字を最優先する
               const shared = sharedCounts[id];
-              const local = localCounts[id] || 0;
-              const display = shared !== undefined ? shared : local;
-              
-              numberEl.textContent = String(display);
+              numberEl.textContent = String(shared !== undefined ? shared : 0);
             });
           }).catch(err => console.error('[counts] background load failed:', err));
         }
