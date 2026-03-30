@@ -102,10 +102,8 @@
     }
 
     .intro-card {
-      background: var(--paper);
-      border: 2px solid #000;
-      padding: 16px 18px;
-      margin-bottom: 18px;
+      padding: 4px 0 16px;
+      margin-bottom: 0;
     }
 
     .intro-card p {
@@ -130,7 +128,7 @@
 
     .log-board {
       display: grid;
-      gap: 12px;
+      gap: 0;
     }
 
     .day-divider {
@@ -164,7 +162,7 @@
       display: block;
       scroll-margin-top: 84px;
       opacity: 0;
-      transform: translateY(56px);
+      transform: translateY(20px);
     }
 
     .entry.is-visible {
@@ -172,14 +170,12 @@
     }
 
     .entry.is-highlighted .bubble {
-      outline: 3px solid #000;
       background: #ffffcc;
     }
 
     .bubble {
-      background: var(--paper);
-      border: 2px solid #000;
-      padding: 14px;
+      padding: 14px 0;
+      border-bottom: 1px solid #000;
     }
 
     .stamp {
@@ -276,7 +272,7 @@
     @keyframes cardSlideIn {
       from {
         opacity: 0;
-        transform: translateY(56px);
+        transform: translateY(20px);
       }
       to {
         opacity: 1;
@@ -1001,7 +997,7 @@
         // ローカルデータだけ先に取得してすぐ表示（Netlify API を待たない）
         allEntries = await loadEntriesFromContent();
 
-        // フェーズ1：最新1件だけレンダリング（小さいページ高さで確実にスクロール底を確定）
+        // フェーズ1：最新1件だけレンダリング（ページ高さが小さく、底スクロールが確実に決まる）
         // ハッシュリンクの場合は最初から7件分で表示
         visibleEntryCount = anchoredEntryId
           ? INITIAL_VISIBLE_COUNT + INITIAL_EXTRA_COUNT
@@ -1009,23 +1005,42 @@
         render();
 
         requestAnimationFrame(() => {
-          // フェーズ2：6件を追加して計7件にレンダリング（描画前に完了）
-          if (!anchoredEntryId && allEntries.length > INITIAL_VISIBLE_COUNT) {
-            visibleEntryCount = Math.min(INITIAL_VISIBLE_COUNT + INITIAL_EXTRA_COUNT, allEntries.length);
-            initialScrollDone = false;
-            render();
-          }
+          requestAnimationFrame(() => {
+            // 1件の状態で底へスクロール（ページ高さが確定済みなので安定）
+            if (!anchoredEntryId) {
+              window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' });
+            }
 
-          // フル7件レンダリング後に底へスクロール
-          if (!anchoredEntryId) {
-            window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' });
-          }
+            // ページ表示
+            document.body.classList.add('is-ready');
 
-          // ページ表示
-          document.body.classList.add('is-ready');
+            // フェーズ2：短いディレイを挟んで残り件数を上側に追加（スクロール位置を維持）
+            if (!anchoredEntryId && allEntries.length > INITIAL_VISIBLE_COUNT) {
+              setTimeout(() => {
+                const beforeHeight = document.documentElement.scrollHeight;
+                const beforeScrollY = window.scrollY;
 
-          // 既読カウントはバックグラウンドで取得してバッジだけ更新
-          loadSharedCounts().then(counts => {
+                visibleEntryCount = Math.min(INITIAL_VISIBLE_COUNT + INITIAL_EXTRA_COUNT, allEntries.length);
+                initialScrollDone = false;
+                render();
+
+                requestAnimationFrame(() => {
+                  const afterHeight = document.documentElement.scrollHeight;
+                  window.scrollTo({
+                    top: beforeScrollY + (afterHeight - beforeHeight),
+                    behavior: 'auto'
+                  });
+                });
+              }, 80);
+            }
+          });
+        });
+
+        // 既読カウントはバックグラウンドで取得してバッジだけ更新（フェーズ1と並行）
+        {
+          // ページ表示完了後に処理が走るよう少し遅延
+          const countsPromise = loadSharedCounts();
+          countsPromise.then(counts => {
             sharedCounts = counts;
             countsLoaded = true;
             const localCounts = loadViewCounts();
@@ -1041,7 +1056,7 @@
               numberEl.textContent = String(display);
             });
           }).catch(err => console.error('[counts] background load failed:', err));
-        });
+        }
       } catch (error) {
         console.error('[init] failed:', error);
         entriesEl.innerHTML = '<div class="empty">投稿の読み込みに失敗しました。コンソールを確認してください。</div>';
