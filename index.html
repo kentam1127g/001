@@ -539,25 +539,28 @@
     async function loadSharedCounts(ids) {
       try {
         if (!ids || !ids.length) return {};
+        console.log('[counts] GET start — entries:', ids.length, ids);
         const res = await fetch(`${COUNTS_API_BASE}/.netlify/functions/counts-get`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ ids }),
           cache: 'no-store'
         });
+        const text = await res.text();
+        console.log('[counts] GET response status:', res.status, '— body:', text);
         if (!res.ok) {
-          const body = await res.text().catch(() => '');
-          console.error(`[counts] load failed: HTTP ${res.status}`, body);
+          console.error(`[counts] GET failed: HTTP ${res.status}`, text);
           return {};
         }
-        const data = await res.json();
+        let data;
+        try { data = JSON.parse(text); } catch { console.error('[counts] GET: JSON parse error', text); return {}; }
         if (!data || typeof data !== 'object' || Array.isArray(data)) {
-          console.error('[counts] load: unexpected response format', data);
+          console.error('[counts] GET: unexpected format', data);
           return {};
         }
         return data;
       } catch (error) {
-        console.error('[counts] load failed (network?):', error);
+        console.error('[counts] GET failed (network?):', error);
         return {};
       }
     }
@@ -565,29 +568,30 @@
     async function bumpSharedCounts(ids) {
       try {
         if (!ids.length) return {};
+        console.log('[counts] BUMP start — ids:', ids);
 
         const res = await fetch(`${COUNTS_API_BASE}/.netlify/functions/counts-bump`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ ids })
         });
 
+        const text = await res.text();
+        console.log('[counts] BUMP response status:', res.status, '— body:', text);
         if (!res.ok) {
-          const body = await res.text().catch(() => '');
-          console.error(`[counts] bump failed: HTTP ${res.status}`, body);
+          console.error(`[counts] BUMP failed: HTTP ${res.status}`, text);
           return {};
         }
-        const data = await res.json();
+        let data;
+        try { data = JSON.parse(text); } catch { console.error('[counts] BUMP: JSON parse error', text); return {}; }
         if (!data?.counts || typeof data.counts !== 'object') {
-          console.error('[counts] bump: unexpected response format', data);
+          console.error('[counts] BUMP: unexpected format', data);
           return {};
         }
-        console.log('[counts] bump ok:', data.counts);
+        console.log('[counts] BUMP ok:', data.counts);
         return data.counts;
       } catch (error) {
-        console.error('[counts] bump failed (network?):', error);
+        console.error('[counts] BUMP failed (network?):', error);
         return {};
       }
     }
@@ -715,6 +719,7 @@
       }
 
       const seenIds = new Set(loadSeenEntries());
+      console.log('[counts] seenIds on setup:', [...seenIds]);
       const pendingTimers = new Map();
 
       viewObserver = new IntersectionObserver((entries) => {
@@ -728,6 +733,7 @@
 
             const timerId = window.setTimeout(async () => {
               if (seenIds.has(entryIdValue)) return;
+              console.log('[counts] bump triggered for entry:', entryIdValue);
 
               seenIds.add(entryIdValue);
               saveSeenEntries([...seenIds]);
@@ -988,6 +994,7 @@
         {
           const countsPromise = loadSharedCounts(allEntries.map(e => e.id));
           countsPromise.then(counts => {
+            console.log('[counts] server data loaded:', counts);
             sharedCounts = counts;
             countsLoaded = true;
 
