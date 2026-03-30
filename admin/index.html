@@ -429,6 +429,21 @@
         return null;
       }
 
+      // "Images" テキストを非表示
+      function hideImagesLabel(root) {
+        const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
+        let node;
+        while ((node = walker.nextNode())) {
+          if (node.textContent.trim() === 'Images') {
+            const el = node.parentElement;
+            if (el && !el.dataset.spImagesHidden) {
+              el.dataset.spImagesHidden = '1';
+              el.style.setProperty('display', 'none', 'important');
+            }
+          }
+        }
+      }
+
       let pendingMutations = [];
       let rafId = null;
 
@@ -453,6 +468,9 @@
           // 一覧画面: Collections サイドバーを非表示
           const collectionsLabel = findCollectionsLabel(root);
           if (collectionsLabel) hidePaneContaining(collectionsLabel);
+
+          // "Images" ラベルを非表示
+          hideImagesLabel(root);
 
           // 編集画面: プレビューiframeを含むペインを非表示
           const iframe = root.querySelector('iframe');
