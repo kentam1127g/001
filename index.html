@@ -406,7 +406,7 @@
     </div>
   </div>
 
-  <script>
+<script>
     const CONTENT_INDEX_PATH = './content/posts/index.json';
     const COUNTS_API_BASE = 'https://enpitumark-oath.netlify.app';
     const VIEW_STORAGE_KEY = 'quiet-broadcast-view-counts-v1';
@@ -557,7 +557,9 @@
     }
 
     async function loadEntriesFromContent() {
-      const res = await fetch(CONTENT_INDEX_PATH, { cache: 'no-store' });
+      // JSONのキャッシュを防ぐため、クエリパラメータに現在時刻を付与
+      const cacheBuster = `?t=${Date.now()}`;
+      const res = await fetch(`${CONTENT_INDEX_PATH}${cacheBuster}`, { cache: 'no-store' });
       if (!res.ok) throw new Error(`Failed to fetch index.json: ${res.status}`);
       const text = await res.text();
       const data = JSON.parse(text);
@@ -571,7 +573,8 @@
 
     async function loadSharedCounts() {
       try {
-        const res = await fetch(`${COUNTS_API_BASE}/.netlify/functions/counts-get`, {
+        // 【改善点1】 APIにもキャッシュバスター(現在時刻)を付与し、強制的に最新を取得させる
+        const res = await fetch(`${COUNTS_API_BASE}/.netlify/functions/counts-get?t=${Date.now()}`, {
           cache: 'no-store'
         });
         if (!res.ok) {
@@ -774,7 +777,8 @@
               saveViewCounts(localCounts);
 
               const changed = await bumpSharedCounts([entryIdValue]);
-              if (changed[entryIdValue] != null) {
+              if (changed && changed[entryIdValue] != null) {
+                // 【改善点2】サーバー側で加算成功時はサーバーの数値を絶対の正義とする
                 sharedCounts[entryIdValue] = Number(changed[entryIdValue]);
                 syncViewCountsToDOM(entryIdValue, sharedCounts[entryIdValue]);
               } else {
@@ -930,9 +934,12 @@
             ? `<p class="entry-text">${escapeHtml(entry.text)}</p>`
             : '';
 
-          const sharedCount = Number(sharedCounts[entry.id] || 0);
-          const localCount = Number(localCounts[entry.id] || 0);
-          const displayCount = countsLoaded ? Math.max(sharedCount, localCount) : '';
+          // 【改善点3】 サーバーから数字が取得できている場合は、ローカルの数字(バグで増えている可能性)を無視する
+          const sharedCount = sharedCounts[entry.id];
+          const localCount = localCounts[entry.id] || 0;
+          const displayCount = countsLoaded 
+            ? (sharedCount !== undefined ? sharedCount : localCount) 
+            : '';
 
           htmlParts.push(`
             <article class="entry" id="entry-${escapeHtml(entry.id)}" data-entry-id="${escapeHtml(entry.id)}">
@@ -994,11 +1001,8 @@
           anchoredEntryId = window.location.hash.replace('#entry-', '');
         }
 
-        // ローカルデータだけ先に取得してすぐ表示（Netlify API を待たない）
         allEntries = await loadEntriesFromContent();
 
-        // フェーズ1：最新1件だけレンダリング（ページ高さが小さく、底スクロールが確実に決まる）
-        // ハッシュリンクの場合は最初から7件分で表示
         visibleEntryCount = anchoredEntryId
           ? INITIAL_VISIBLE_COUNT + INITIAL_EXTRA_COUNT
           : INITIAL_VISIBLE_COUNT;
@@ -1006,15 +1010,12 @@
 
         requestAnimationFrame(() => {
           requestAnimationFrame(() => {
-            // 1件の状態で底へスクロール（ページ高さが確定済みなので安定）
             if (!anchoredEntryId) {
               window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' });
             }
 
-            // ページ表示
             document.body.classList.add('is-ready');
 
-            // フェーズ2：短いディレイを挟んで残り件数を上側に追加（スクロール位置を維持）
             if (!anchoredEntryId && allEntries.length > INITIAL_VISIBLE_COUNT) {
               setTimeout(() => {
                 const beforeHeight = document.documentElement.scrollHeight;
@@ -1036,23 +1037,24 @@
           });
         });
 
-        // 既読カウントはバックグラウンドで取得してバッジだけ更新（フェーズ1と並行）
+        // 既読カウントのバックグラウンド取得
         {
-          // ページ表示完了後に処理が走るよう少し遅延
           const countsPromise = loadSharedCounts();
           countsPromise.then(counts => {
             sharedCounts = counts;
             countsLoaded = true;
             const localCounts = loadViewCounts();
 
-            // sharedCounts にないIDも含め、表示中の全バッジを更新
             document.querySelectorAll('[data-view-count-id]').forEach(badge => {
               const id = badge.dataset.viewCountId;
               const numberEl = badge.querySelector('.view-count-number');
               if (!numberEl) return;
-              const shared = Number(sharedCounts[id] || 0);
-              const local = Number(localCounts[id] || 0);
-              const display = Math.max(shared, local);
+              
+              // 【改善点4】 バックグラウンド取得完了後も、サーバーの数字を最優先する
+              const shared = sharedCounts[id];
+              const local = localCounts[id] || 0;
+              const display = shared !== undefined ? shared : local;
+              
               numberEl.textContent = String(display);
             });
           }).catch(err => console.error('[counts] background load failed:', err));
