@@ -8,9 +8,12 @@ const MANIFEST_PATH = path.join(uploadsDir, ".film-processed.json");
 
 const IMAGE_EXT_RE = /\.(png|webp|jpeg|jpg|heic|heif)$/i;
 
-// コントラスト調整（output = input × A + B）
-// A=0.92, B=10 → 黒が10まで持ち上がり、白が244まで下がる、ほんの少しだけ眠い印象
-const FILTER = { linearA: 0.92, linearB: 10 };
+// パレット色数を絞ることでディザリングが際立ち、古い印刷物のような質感になる
+const GIF_OPTIONS = {
+  colours: 48,  // 2〜256。少ないほどディザリングが強く出る
+  dither: 1.0,  // Floyd-Steinberg の強度（0=なし〜1=最大）
+  effort: 7,
+};
 
 async function loadManifest() {
   try {
@@ -28,45 +31,22 @@ async function saveManifest(processed) {
   );
 }
 
-function applyFilmFilter(pipeline) {
-  return pipeline
-    .linear(FILTER.linearA, FILTER.linearB)
-    .sharpen()
-    .webp({ quality: 80 });
-}
-
 async function optimizeImage(fileName, processed) {
   const inputPath = path.join(uploadsDir, fileName);
   const ext = path.extname(fileName).toLowerCase();
   const base = path.basename(fileName, ext);
-  const outputName = `${base}.webp`;
+  const outputName = `${base}.gif`;
   const outputPath = path.join(uploadsDir, outputName);
 
-  if (ext === ".webp") {
-    // 処理済みならスキップ（二重適用防止）
-    if (processed.has(fileName)) {
-      return { original: fileName, converted: fileName, skipped: true };
-    }
-    // 未処理のwebp：一時ファイルに書き出してから置き換え
-    const tmpPath = inputPath + ".tmp.webp";
-    await applyFilmFilter(
-      sharp(inputPath)
-        .rotate()
-        .resize({ width: 240, height: 240, fit: "inside", withoutEnlargement: true })
-    ).toFile(tmpPath);
-    await fs.rename(tmpPath, inputPath);
-    console.log(`Filtered (webp): ${fileName}`);
-    return { original: fileName, converted: fileName, skipped: false };
+  if (processed.has(outputName)) {
+    return { original: fileName, converted: outputName, skipped: true };
   }
 
-  // 非webp：変換 + フィルター適用
-  const image = sharp(inputPath);
-  const metadata = await image.metadata();
-  await applyFilmFilter(
-    image
-      .rotate()
-      .resize({ width: 240, height: 240, fit: "inside", withoutEnlargement: true })
-  ).toFile(outputPath);
+  await sharp(inputPath)
+    .rotate()
+    .resize({ width: 240, height: 240, fit: "inside", withoutEnlargement: true })
+    .gif(GIF_OPTIONS)
+    .toFile(outputPath);
 
   if (path.resolve(outputPath) !== path.resolve(inputPath)) {
     await fs.unlink(inputPath);
@@ -75,8 +55,6 @@ async function optimizeImage(fileName, processed) {
   return {
     original: fileName,
     converted: outputName,
-    width: metadata.width,
-    height: metadata.height,
     skipped: false,
   };
 }
@@ -128,6 +106,11 @@ async function main() {
   const processed = await loadManifest();
   const files = await fs.readdir(uploadsDir);
   const targets = files.filter((file) => IMAGE_EXT_RE.test(file));
+
+  if (!targets.length) {
+    console.log("No images to process.");
+    return;
+  }
 
   const rewrites = [];
 
