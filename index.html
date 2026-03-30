@@ -55,7 +55,7 @@
     .wrap {
       width: min(calc(100% - 28px), var(--max));
       margin: 0 auto;
-      padding: 24px 0 140px;
+      padding: 24px 0 60px;
     }
 
     .topbar {
@@ -345,6 +345,83 @@
         display: none;
       }
     }
+
+    .clock-btns {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .clock-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      padding: 0;
+      border: 1px solid #888;
+      background: #ddd;
+      cursor: pointer;
+      color: #000;
+    }
+
+    .clock-btn:hover {
+      background: #bbb;
+      border-color: #000;
+    }
+
+    .clock-btn svg {
+      width: 16px;
+      height: 16px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.6;
+    }
+
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.45);
+      z-index: 50;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-overlay.is-open {
+      display: flex;
+    }
+
+    .modal-box {
+      background: var(--paper);
+      border: 2px solid #000;
+      width: min(calc(100% - 48px), 400px);
+      max-height: 80vh;
+      overflow-y: auto;
+      padding: 20px;
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+      border-bottom: 1px solid #000;
+      padding-bottom: 10px;
+    }
+
+    .modal-title {
+      margin: 0;
+      font-size: 0.95rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+
+    .modal-body {
+      font-size: 0.9rem;
+      color: var(--muted);
+      line-height: 1.8;
+    }
   </style>
 </head>
 <body>
@@ -360,7 +437,7 @@
 
   <main class="wrap">
     <section class="intro-card">
-      <p class="entry-text">
+      <p style="font-size: 0.98rem;">
         はじまり。
       </p>
     </section>
@@ -378,9 +455,61 @@
     <p class="footer-note"></p>
   </main>
 
-  <div class="clock-wrap" aria-hidden="true">
+
+  <div id="aboutModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="aboutModalTitle">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2 class="modal-title" id="aboutModalTitle">About</h2>
+        <button id="aboutModalClose" class="icon-btn" type="button" aria-label="閉じる">
+          <svg viewBox="0 0 24 24">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>えんぴつだいあろーぐ。</p>
+        <p>わかこ</p>
+        <p>都内在住</p>
+        <hr>
+        <p>まつけん</p>
+        <p>都内在住</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="clock-wrap">
     <div class="clock-inner">
       <span id="clockDate" class="clock clock-date">----.--.--.--</span>
+      <div class="clock-btns">
+        <button id="floatRandom" class="clock-btn" type="button" aria-label="ランダム">
+          <svg viewBox="0 0 24 24" stroke-linecap="round">
+            <rect x="2" y="2" width="20" height="20" rx="3" ry="3"></rect>
+            <circle cx="8"  cy="8"  r="1.3" fill="currentColor" stroke="none"></circle>
+            <circle cx="16" cy="8"  r="1.3" fill="currentColor" stroke="none"></circle>
+            <circle cx="8"  cy="16" r="1.3" fill="currentColor" stroke="none"></circle>
+            <circle cx="16" cy="16" r="1.3" fill="currentColor" stroke="none"></circle>
+            <circle cx="12" cy="12" r="1.3" fill="currentColor" stroke="none"></circle>
+          </svg>
+        </button>
+        <button id="floatReload" class="clock-btn" type="button" aria-label="更新">
+          <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 4a8 8 0 1 0 7.93 6.93"></path>
+            <polyline points="20 2 20 8 14 8"></polyline>
+          </svg>
+        </button>
+        <button id="floatAbout" class="clock-btn" type="button" aria-label="About">
+          <svg viewBox="0 0 24 24">
+            <rect x="4" y="2" width="16" height="20" rx="1" ry="1"></rect>
+            <line x1="8" y1="7" x2="16" y2="7"></line>
+            <line x1="8" y1="11" x2="16" y2="11"></line>
+            <line x1="8" y1="15" x2="12" y2="15"></line>
+            <line x1="4" y1="6" x2="2" y2="6"></line>
+            <line x1="4" y1="10" x2="2" y2="10"></line>
+            <line x1="4" y1="14" x2="2" y2="14"></line>
+          </svg>
+        </button>
+      </div>
       <span id="clockTime" class="clock clock-time">--:--:--</span>
     </div>
   </div>
@@ -412,6 +541,29 @@
     document.getElementById('loadOlder')?.addEventListener('click', showMoreEntries);
     document.getElementById('returnLatest')?.addEventListener('click', returnToLatest);
     window.addEventListener('hashchange', handleHashChange);
+    document.getElementById('floatReload')?.addEventListener('click', () => location.reload());
+
+    const aboutModal = document.getElementById('aboutModal');
+    document.getElementById('floatAbout')?.addEventListener('click', () => {
+      aboutModal?.classList.add('is-open');
+    });
+    document.getElementById('aboutModalClose')?.addEventListener('click', () => {
+      aboutModal?.classList.remove('is-open');
+    });
+    aboutModal?.addEventListener('click', (e) => {
+      if (e.target === aboutModal) aboutModal.classList.remove('is-open');
+    });
+
+    document.getElementById('floatRandom')?.addEventListener('click', () => {
+      if (!allEntries.length) return;
+      const entry = allEntries[Math.floor(Math.random() * allEntries.length)];
+      anchoredEntryId = entry.id;
+      visibleEntryCount = INITIAL_VISIBLE_COUNT;
+      if (history.replaceState) {
+        history.replaceState(null, '', `${location.pathname}${location.search}#entry-${entry.id}`);
+      }
+      render();
+    });
 
     function escapeHtml(str = '') {
       return String(str)
