@@ -539,13 +539,9 @@
     async function loadSharedCounts(ids) {
       try {
         if (!ids || !ids.length) return {};
-        console.log('[counts] GET start — entries:', ids.length, ids);
-        const res = await fetch(`${COUNTS_API_BASE}/.netlify/functions/counts-get`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ids }),
-          cache: 'no-store'
-        });
+        console.log('[counts] GET start — entries:', ids.length);
+        const url = `${COUNTS_API_BASE}/.netlify/functions/counts-get?ids=${encodeURIComponent(ids.join(','))}`;
+        const res = await fetch(url, { cache: 'no-store' });
         const text = await res.text();
         console.log('[counts] GET response status:', res.status, '— body:', text);
         if (!res.ok) {
