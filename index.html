@@ -37,9 +37,10 @@
       color: var(--text);
       font-family: "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Meiryo", "MS Gothic", sans-serif;
       line-height: 1.7;
+      overflow-x: hidden;
     }
 
-    body { min-height: 100vh; visibility: hidden; }
+    body { min-height: 100vh; visibility: hidden; padding-top: 40px; }
     body.is-ready { visibility: visible; }
 
     img {
@@ -59,12 +60,13 @@
     }
 
     .topbar {
-      position: sticky;
+      position: fixed;
       top: 0;
+      left: 0;
+      right: 0;
       z-index: 20;
       background: #e8e8e8;
       border-bottom: 2px solid #000;
-      margin-bottom: 20px;
     }
 
     .topbar-inner {
@@ -142,15 +144,52 @@
     }
 
     .load-older-wrap,
-    .return-latest-wrap {
+    .load-newer-wrap {
       display: flex;
       justify-content: center;
     }
 
     .load-older-wrap { margin: 8px 0 18px; }
-    .return-latest-wrap { margin: 18px 0 8px; }
+    .load-newer-wrap { margin: 18px 0 8px; }
+
+    .return-latest-wrap {
+      position: fixed;
+      bottom: 52px;
+      right: 14px;
+      z-index: 25;
+      display: flex;
+    }
+
+    #loadOlder, #loadNewer {
+      font-size: 0.82rem;
+    }
+
+    #returnLatest {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      padding: 0;
+      flex-shrink: 0;
+      border: 1px solid #888;
+      background: #ddd;
+      cursor: pointer;
+      color: #000;
+    }
+
+    #returnLatest:hover {
+      background: #bbb;
+      border-color: #000;
+    }
+
+    #returnLatest svg {
+      width: 16px;
+      height: 16px;
+    }
 
     .load-older-wrap[hidden],
+    .load-newer-wrap[hidden],
     .return-latest-wrap[hidden] {
       display: none;
     }
@@ -161,30 +200,37 @@
     }
 
     .day-divider {
-      display: flex;
-      align-items: center;
-      gap: 10px;
+      display: block;
       margin: 6px 0 2px;
+      padding-top: 6px;
       color: #000;
       font-size: 0.74rem;
       letter-spacing: 0.06em;
       opacity: 0;
+      position: relative;
     }
 
     .day-divider.is-visible {
       opacity: 1;
     }
 
-    .day-divider::before,
-    .day-divider::after {
+    .day-divider::before {
       content: "";
+      display: block;
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100vw;
       height: 1px;
       background: #000;
-      flex: 1 1 auto;
+      margin-bottom: 4px;
     }
 
     .day-divider span {
       white-space: nowrap;
+      display: block;
+      text-align: center;
     }
 
     .entry {
@@ -201,7 +247,13 @@
       position: relative;
     }
 
-    .bubble.loading-state > *:not(.pixel-loader) {
+    .bubble.loading-state > *:not(.pixel-loader):not(.stamp):not(.entry-actions) {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .bubble.loading-state > .stamp > :not(.author),
+    .bubble.loading-state > .entry-actions > .view-count {
       opacity: 0;
       pointer-events: none;
     }
@@ -228,13 +280,10 @@
     }
 
     .random-modal-loader .pixel-loader-bar span:nth-child(1) { animation-delay:   0ms; animation-duration: 0.03s; }
-    .random-modal-loader .pixel-loader-bar span:nth-child(2) { animation-delay:  45ms; animation-duration: 0.03s; }
-    .random-modal-loader .pixel-loader-bar span:nth-child(3) { animation-delay:  90ms; animation-duration: 0.03s; }
-    .random-modal-loader .pixel-loader-bar span:nth-child(4) { animation-delay: 135ms; animation-duration: 0.03s; }
-    .random-modal-loader .pixel-loader-bar span:nth-child(5) { animation-delay: 180ms; animation-duration: 0.03s; }
-    .random-modal-loader .pixel-loader-bar span:nth-child(6) { animation-delay: 225ms; animation-duration: 0.03s; }
-    .random-modal-loader .pixel-loader-bar span:nth-child(7) { animation-delay: 270ms; animation-duration: 0.03s; }
-    .random-modal-loader .pixel-loader-bar span:nth-child(8) { animation-delay: 315ms; animation-duration: 0.03s; }
+    .random-modal-loader .pixel-loader-bar span:nth-child(2) { animation-delay:  78ms; animation-duration: 0.03s; }
+    .random-modal-loader .pixel-loader-bar span:nth-child(3) { animation-delay: 157ms; animation-duration: 0.03s; }
+    .random-modal-loader .pixel-loader-bar span:nth-child(4) { animation-delay: 236ms; animation-duration: 0.03s; }
+    .random-modal-loader .pixel-loader-bar span:nth-child(5) { animation-delay: 315ms; animation-duration: 0.03s; }
 
     .pixel-loader.done {
       opacity: 0;
@@ -259,13 +308,10 @@
     }
 
     .pixel-loader-bar span:nth-child(1) { animation: pixelSquareOn 0.05s steps(1)   0ms both; }
-    .pixel-loader-bar span:nth-child(2) { animation: pixelSquareOn 0.05s steps(1) 110ms both; }
-    .pixel-loader-bar span:nth-child(3) { animation: pixelSquareOn 0.05s steps(1) 220ms both; }
-    .pixel-loader-bar span:nth-child(4) { animation: pixelSquareOn 0.05s steps(1) 330ms both; }
-    .pixel-loader-bar span:nth-child(5) { animation: pixelSquareOn 0.05s steps(1) 440ms both; }
-    .pixel-loader-bar span:nth-child(6) { animation: pixelSquareOn 0.05s steps(1) 550ms both; }
-    .pixel-loader-bar span:nth-child(7) { animation: pixelSquareOn 0.05s steps(1) 660ms both; }
-    .pixel-loader-bar span:nth-child(8) { animation: pixelSquareOn 0.05s steps(1) 770ms both; }
+    .pixel-loader-bar span:nth-child(2) { animation: pixelSquareOn 0.05s steps(1) 192ms both; }
+    .pixel-loader-bar span:nth-child(3) { animation: pixelSquareOn 0.05s steps(1) 385ms both; }
+    .pixel-loader-bar span:nth-child(4) { animation: pixelSquareOn 0.05s steps(1) 577ms both; }
+    .pixel-loader-bar span:nth-child(5) { animation: pixelSquareOn 0.05s steps(1) 770ms both; }
 
     @keyframes pixelBlink {
       0%, 49% { opacity: 1; }
@@ -286,7 +332,28 @@
 
     .bubble {
       padding: 14px 0;
-      border-bottom: 1px solid #000;
+      position: relative;
+    }
+
+    .bubble::after {
+      content: "";
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100vw;
+      height: 1px;
+      background: #000;
+    }
+
+    .entry:has(+ .day-divider) .bubble,
+    #entries .entry:last-child .bubble {
+      padding-bottom: 6px;
+    }
+
+    .entry:has(+ .day-divider) .bubble::after,
+    #entries .entry:last-child .bubble::after {
+      display: none;
     }
 
     .stamp {
@@ -538,8 +605,23 @@
       display: none;
     }
 
-    .image-modal-loader .modal-spinner span {
-      background: #000;
+
+    .image-modal-author {
+      display: flex;
+      gap: 4px;
+      font-size: 0.78rem;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      flex-shrink: 0;
+      padding-top: 2px;
+      box-sizing: border-box;
+    }
+
+    .image-modal-author svg {
+      width: 13px;
+      height: 13px;
+      flex-shrink: 0;
     }
 
     #imageModal .modal-body img {
@@ -582,43 +664,15 @@
       z-index: 10;
     }
 
+    .modal-header {
+      position: relative;
+      z-index: 11;
+    }
+
     .modal-loader.hidden {
       display: none;
     }
 
-    .modal-spinner {
-      position: relative;
-      width: 40px;
-      height: 40px;
-      image-rendering: pixelated;
-      animation: modalSpinStep 0.8s steps(8) infinite;
-    }
-
-    .modal-spinner span {
-      position: absolute;
-      display: block;
-      width: 4px;
-      height: 11px;
-      background: #000;
-      left: 18px;
-      top: 0;
-      transform-origin: 2px 20px;
-      opacity: 0.1;
-    }
-
-    .modal-spinner span:nth-child(1) { transform: rotate(  0deg); opacity: 1;    }
-    .modal-spinner span:nth-child(2) { transform: rotate( 45deg); opacity: 0.55; }
-    .modal-spinner span:nth-child(3) { transform: rotate( 90deg); opacity: 0.3;  }
-    .modal-spinner span:nth-child(4) { transform: rotate(135deg); }
-    .modal-spinner span:nth-child(5) { transform: rotate(180deg); }
-    .modal-spinner span:nth-child(6) { transform: rotate(225deg); }
-    .modal-spinner span:nth-child(7) { transform: rotate(270deg); }
-    .modal-spinner span:nth-child(8) { transform: rotate(315deg); }
-
-    @keyframes modalSpinStep {
-      from { transform: rotate(0deg); }
-      to   { transform: rotate(360deg); }
-    }
 
     .modal-header {
       display: flex;
@@ -673,18 +727,34 @@
 
     <section id="entries" class="log-board"></section>
 
-    <div id="returnLatestWrap" class="return-latest-wrap" hidden>
-      <button id="returnLatest">今へ戻る（最新の投稿へ戻る）</button>
+    <div id="loadNewerWrap" class="load-newer-wrap" hidden>
+      <button id="loadNewer">さらに新しいログを読む</button>
     </div>
 
     <p class="footer-note"></p>
   </main>
 
+  <div id="returnLatestWrap" class="return-latest-wrap" hidden>
+    <button id="returnLatest" aria-label="今へ戻る（最新の投稿へ戻る）">
+      <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <line x1="8" y1="1" x2="8" y2="10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        <polyline points="4,7 8,11 12,7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
+        <line x1="3" y1="14" x2="13" y2="14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+      </svg>
+    </button>
+  </div>
+
 
   <div id="imageModal" class="modal-overlay" role="dialog" aria-modal="true" aria-label="画像拡大">
     <div class="modal-box">
       <div class="modal-header">
-        <span class="modal-title" id="imageModalTitle"></span>
+        <div style="display:flex; align-items:baseline; gap:8px; overflow:hidden;">
+          <span class="modal-title" id="imageModalTitle"></span>
+          <div class="image-modal-author">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+            <span id="imageModalAuthor"></span>
+          </div>
+        </div>
         <button id="imageModalClose" class="icon-btn" type="button" aria-label="閉じる">
           <svg viewBox="0 0 24 24">
             <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -694,9 +764,11 @@
       </div>
       <div class="modal-body">
         <div class="image-modal-loader hidden" id="imageModalLoader">
-          <div class="modal-spinner">
-            <span></span><span></span><span></span><span></span>
-            <span></span><span></span><span></span><span></span>
+          <div class="pixel-loader">
+            <div class="pixel-loader-bar">
+              <span></span><span></span><span></span><span></span><span></span>
+            </div>
+            <div class="pixel-loader-label">LOADING</div>
           </div>
         </div>
         <img id="imageModalImg" src="" alt="" />
@@ -713,8 +785,7 @@
         <div class="random-modal-loader">
           <div id="reloadPixelLoader" class="pixel-loader">
             <div class="pixel-loader-bar">
-              <span></span><span></span><span></span><span></span>
-              <span></span><span></span><span></span><span></span>
+              <span></span><span></span><span></span><span></span><span></span>
             </div>
             <div class="pixel-loader-label">LOADING</div>
           </div>
@@ -732,8 +803,7 @@
         <div class="random-modal-loader">
           <div id="randomPixelLoader" class="pixel-loader">
             <div class="pixel-loader-bar">
-              <span></span><span></span><span></span><span></span>
-              <span></span><span></span><span></span><span></span>
+              <span></span><span></span><span></span><span></span><span></span>
             </div>
             <div class="pixel-loader-label">LOADING</div>
           </div>
@@ -745,9 +815,11 @@
   <div id="aboutModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="aboutModalTitle">
     <div class="modal-box">
       <div class="modal-loader hidden" id="aboutModalLoader">
-        <div class="modal-spinner">
-          <span></span><span></span><span></span><span></span>
-          <span></span><span></span><span></span><span></span>
+        <div class="pixel-loader">
+          <div class="pixel-loader-bar">
+            <span></span><span></span><span></span><span></span><span></span>
+          </div>
+          <div class="pixel-loader-label">LOADING</div>
         </div>
       </div>
       <div class="modal-header">
@@ -761,6 +833,7 @@
       </div>
       <div class="modal-body">
         <p>とりとめのない記憶たちをたれながし。</p>
+        <br><br><br><br>
       </div>
     </div>
   </div>
@@ -768,13 +841,15 @@
   <div id="writerModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="writerModalTitle">
     <div class="modal-box">
       <div class="modal-loader hidden" id="writerModalLoader">
-        <div class="modal-spinner">
-          <span></span><span></span><span></span><span></span>
-          <span></span><span></span><span></span><span></span>
+        <div class="pixel-loader">
+          <div class="pixel-loader-bar">
+            <span></span><span></span><span></span><span></span><span></span>
+          </div>
+          <div class="pixel-loader-label">LOADING</div>
         </div>
       </div>
       <div class="modal-header">
-        <h2 class="modal-title" id="writerModalTitle">Writer</h2>
+        <h2 class="modal-title" id="writerModalTitle">書いてる人</h2>
         <button id="writerModalClose" class="icon-btn" type="button" aria-label="閉じる">
           <svg viewBox="0 0 24 24">
             <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -783,12 +858,30 @@
         </button>
       </div>
       <div class="modal-body">
-        <p>えんぴつだいあろーぐ。</p>
         <p>わかこ</p>
         <p>都内在住</p>
+        <p></p>
         <hr>
         <p>まつけん</p>
-        <p>都内在住</p>
+        <p>1996年生まれ／都内在住<br>
+        割り箸に入ってる爪楊枝がきらい。民主主義みたいで。</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="newPostsModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="newPostsModalTitle">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2 class="modal-title" id="newPostsModalTitle">お知らせ</h2>
+        <button id="newPostsModalClose" class="icon-btn" type="button" aria-label="閉じる">
+          <svg viewBox="0 0 24 24">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>新しい投稿があります。</p>
       </div>
     </div>
   </div>
@@ -797,16 +890,7 @@
     <div class="clock-inner">
       <span id="clockDate" class="clock clock-date">----.--.--.--</span>
       <div class="clock-btns">
-        <button id="floatRandom" class="clock-btn" type="button" aria-label="ランダム">
-          <svg viewBox="0 0 24 24" stroke-linecap="round">
-            <rect x="2" y="2" width="20" height="20" rx="3" ry="3"></rect>
-            <circle cx="8"  cy="8"  r="1.3" fill="currentColor" stroke="none"></circle>
-            <circle cx="16" cy="8"  r="1.3" fill="currentColor" stroke="none"></circle>
-            <circle cx="8"  cy="16" r="1.3" fill="currentColor" stroke="none"></circle>
-            <circle cx="16" cy="16" r="1.3" fill="currentColor" stroke="none"></circle>
-            <circle cx="12" cy="12" r="1.3" fill="currentColor" stroke="none"></circle>
-          </svg>
-        </button>
+        <button id="floatRandom" class="clock-btn" type="button" aria-label="ランダム" style="font-size:1rem;font-weight:700;line-height:1;">？</button>
         <button id="floatAbout" class="clock-btn" type="button" aria-label="About">
           <svg viewBox="0 0 24 24">
             <rect x="4" y="2" width="16" height="20" rx="1" ry="1"></rect>
@@ -832,6 +916,7 @@
     const CONTENT_INDEX_PATH = './content/posts/index.json';
     const COUNTS_API_BASE = 'https://enpitumark-oath.netlify.app';
     const SEEN_STORAGE_KEY = 'quiet-broadcast-seen-entries-v1';
+    const LAST_LATEST_ID_KEY = 'enpitu-last-latest-id';
     const INITIAL_VISIBLE_COUNT = 1;
     const INITIAL_EXTRA_COUNT = 6;
     const LOAD_MORE_COUNT = 10;
@@ -840,6 +925,7 @@
     const entriesEl = document.getElementById('entries');
     const loadOlderWrap = document.getElementById('loadOlderWrap');
     const returnLatestWrap = document.getElementById('returnLatestWrap');
+    const loadNewerWrap = document.getElementById('loadNewerWrap');
     const clockDateEl = document.getElementById('clockDate');
     const clockTimeEl = document.getElementById('clockTime');
     const topbarClockEl = document.getElementById('topbarClock');
@@ -849,6 +935,7 @@
     let countsLoaded = false;
     let visibleEntryCount = INITIAL_VISIBLE_COUNT;
     let anchoredEntryId = null;
+    let newerEntryCount = 0;
     let viewObserver = null;
     let revealObserver = null;
     let initialScrollDone = false;
@@ -861,8 +948,10 @@
       if (SCROLL_BLOCK_KEYS.includes(e.key)) e.preventDefault();
     }
 
+    let modalLockCount = 0;
+
     function disableScroll() {
-      if (loadingCount === 0) {
+      if (loadingCount === 0 && modalLockCount === 0) {
         window.addEventListener('wheel',     blockScrollWheel, { passive: false });
         window.addEventListener('touchmove', blockScrollWheel, { passive: false });
         window.addEventListener('keydown',   blockScrollKey);
@@ -872,7 +961,7 @@
 
     function enableScroll() {
       loadingCount = Math.max(0, loadingCount - 1);
-      if (loadingCount === 0) {
+      if (loadingCount === 0 && modalLockCount === 0) {
         window.removeEventListener('wheel',     blockScrollWheel);
         window.removeEventListener('touchmove', blockScrollWheel);
         window.removeEventListener('keydown',   blockScrollKey);
@@ -880,6 +969,7 @@
     }
 
     document.getElementById('loadOlder')?.addEventListener('click', showMoreEntries);
+    document.getElementById('loadNewer')?.addEventListener('click', showNewerEntries);
     document.getElementById('returnLatest')?.addEventListener('click', returnToLatest);
     window.addEventListener('hashchange', handleHashChange);
     document.getElementById('topbarReload')?.addEventListener('click', () => {
@@ -898,8 +988,24 @@
     const writerModal = document.getElementById('writerModal');
     let aboutLoaderTimer = null;
     let writerLoaderTimer = null;
-    function lockScroll()   { document.body.style.overflow = 'hidden'; }
-    function unlockScroll() { document.body.style.overflow = ''; }
+    function lockScroll() {
+      document.body.style.overflow = 'hidden';
+      if (modalLockCount === 0 && loadingCount === 0) {
+        window.addEventListener('wheel',     blockScrollWheel, { passive: false });
+        window.addEventListener('touchmove', blockScrollWheel, { passive: false });
+        window.addEventListener('keydown',   blockScrollKey);
+      }
+      modalLockCount++;
+    }
+    function unlockScroll() {
+      modalLockCount = Math.max(0, modalLockCount - 1);
+      document.body.style.overflow = '';
+      if (modalLockCount === 0 && loadingCount === 0) {
+        window.removeEventListener('wheel',     blockScrollWheel);
+        window.removeEventListener('touchmove', blockScrollWheel);
+        window.removeEventListener('keydown',   blockScrollKey);
+      }
+    }
 
     document.getElementById('floatAbout')?.addEventListener('click', () => {
       aboutModal?.classList.add('is-open');
@@ -937,10 +1043,20 @@
       if (e.target === writerModal) { writerModal.classList.remove('is-open'); unlockScroll(); }
     });
 
+    const newPostsModal = document.getElementById('newPostsModal');
+    document.getElementById('newPostsModalClose')?.addEventListener('click', () => {
+      newPostsModal?.classList.remove('is-open');
+      unlockScroll();
+    });
+    newPostsModal?.addEventListener('click', (e) => {
+      if (e.target === newPostsModal) { newPostsModal.classList.remove('is-open'); unlockScroll(); }
+    });
+
     const imageModal      = document.getElementById('imageModal');
     const imageModalImg   = document.getElementById('imageModalImg');
     const imageModalTitle  = document.getElementById('imageModalTitle');
     const imageModalLoader = document.getElementById('imageModalLoader');
+    const imageModalAuthor = document.getElementById('imageModalAuthor');
     let imageLoaderTimer = null;
 
     document.getElementById('imageModalClose')?.addEventListener('click', () => {
@@ -962,10 +1078,12 @@
       const img = media.querySelector('img');
       if (!img) return;
       const entry = media.closest('.entry');
-      const text = entry?.querySelector('.entry-text')?.textContent || '';
+      const text   = entry?.querySelector('.entry-text')?.textContent || '';
+      const author = entry?.querySelector('.author')?.textContent?.trim() || '';
       imageModalImg.src = img.src;
       imageModalImg.alt = img.alt;
-      imageModalTitle.textContent = text.length > 15 ? text.slice(0, 15) + '...' : text;
+      imageModalTitle.textContent  = text.length > 15 ? text.slice(0, 15) + '...' : text;
+      imageModalAuthor.textContent = author;
       imageModal.classList.add('is-open');
       lockScroll();
       if (imageModalLoader) {
@@ -1014,7 +1132,7 @@
     function updateClock() {
       const now = new Date();
       const timeStr = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
-      const dateStr = `${now.getFullYear()}.${pad(now.getMonth() + 1)}.${pad(now.getDate())}`;
+      const dateStr = `${now.getFullYear()}.${pad(now.getMonth() + 1)}.${pad(now.getDate())} (${DAY_JA[now.getDay()]})`;
       if (clockDateEl) clockDateEl.textContent = dateStr;
       if (clockTimeEl) clockTimeEl.textContent = timeStr;
     }
@@ -1051,8 +1169,10 @@
       return null;
     }
 
+    const DAY_JA = ['日', '月', '火', '水', '木', '金', '土'];
+
     function formatDateOnly(date) {
-      return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+      return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} (${DAY_JA[date.getDay()]})`;
     }
 
     function enumerateDayLabels(entries) {
@@ -1178,8 +1298,9 @@
       if (anchoredEntryId) {
         const anchorIndex = entries.findIndex(entry => entry.id === anchoredEntryId);
         if (anchorIndex !== -1) {
-          const start = Math.max(anchorIndex - visibleEntryCount + 1, 0);
-          return entries.slice(start, anchorIndex + 1);
+          const end = Math.min(anchorIndex + 1 + newerEntryCount, entries.length);
+          const start = Math.max(anchorIndex + 1 - visibleEntryCount, 0);
+          return entries.slice(start, end);
         }
       }
       return entries.slice(-visibleEntryCount);
@@ -1191,7 +1312,7 @@
 
       if (anchoredEntryId) {
         const anchorIndex = entries.findIndex(entry => entry.id === anchoredEntryId);
-        const hiddenOlderCount = anchorIndex === -1 ? 0 : Math.max(anchorIndex - visibleCount + 1, 0);
+        const hiddenOlderCount = anchorIndex === -1 ? 0 : Math.max(anchorIndex + 1 - visibleEntryCount, 0);
         loadOlderWrap.hidden = hiddenOlderCount === 0;
         const nextCount = Math.min(hiddenOlderCount, LOAD_MORE_COUNT);
         button.textContent = hiddenOlderCount > 0
@@ -1214,6 +1335,21 @@
       }
     }
 
+    function updateLoadNewerButton(entries) {
+      if (!loadNewerWrap) return;
+      if (!anchoredEntryId) {
+        loadNewerWrap.hidden = true;
+        return;
+      }
+      const anchorIndex = entries.findIndex(entry => entry.id === anchoredEntryId);
+      const hiddenNewerCount = anchorIndex === -1 ? 0 : Math.max(entries.length - anchorIndex - 1 - newerEntryCount, 0);
+      loadNewerWrap.hidden = hiddenNewerCount === 0;
+      const button = document.getElementById('loadNewer');
+      if (!button) return;
+      const nextCount = Math.min(hiddenNewerCount, LOAD_MORE_COUNT);
+      button.textContent = `さらに新しいログを ${nextCount} 件読む（あと ${hiddenNewerCount} 件）`;
+    }
+
     function scrollToLatest(force = false) {
       if (anchoredEntryId) return;
       if (!force && visibleEntryCount > INITIAL_VISIBLE_COUNT) return;
@@ -1231,8 +1367,10 @@
       const id = hash.replace('#entry-', '');
       const index = allEntries.findIndex(item => item.id === id);
       if (index === -1) return;
-      anchoredEntryId = id;
-      visibleEntryCount = INITIAL_VISIBLE_COUNT;
+      if (anchoredEntryId !== id) {
+        anchoredEntryId = id;
+        visibleEntryCount = INITIAL_VISIBLE_COUNT;
+      }
     }
 
     function highlightEntryFromHash() {
@@ -1365,8 +1503,7 @@
       loader.className = 'pixel-loader';
       loader.innerHTML =
         '<div class="pixel-loader-bar">' +
-        '<span></span><span></span><span></span><span></span>' +
-        '<span></span><span></span><span></span><span></span>' +
+        '<span></span><span></span><span></span><span></span><span></span>' +
         '</div>' +
         '<div class="pixel-loader-label">LOADING</div>';
       bubble.insertBefore(loader, bubble.firstChild);
@@ -1436,8 +1573,18 @@
       });
     }
 
+    function showNewerEntries() {
+      if (!anchoredEntryId) return;
+      const anchorIndex = allEntries.findIndex(entry => entry.id === anchoredEntryId);
+      if (anchorIndex === -1) return;
+      const maxNewer = allEntries.length - anchorIndex - 1;
+      newerEntryCount = Math.min(newerEntryCount + LOAD_MORE_COUNT, maxNewer);
+      render();
+    }
+
     function returnToLatest() {
       anchoredEntryId = null;
+      newerEntryCount = 0;
       visibleEntryCount = INITIAL_VISIBLE_COUNT;
 
       if (history.replaceState) {
@@ -1450,6 +1597,7 @@
 
     function handleHashChange() {
       const hash = window.location.hash;
+      newerEntryCount = 0;
       if (hash && hash.startsWith('#entry-')) {
         anchoredEntryId = hash.replace('#entry-', '');
         visibleEntryCount = INITIAL_VISIBLE_COUNT;
@@ -1467,6 +1615,7 @@
         if (!allEntries.length) {
           if (loadOlderWrap) loadOlderWrap.hidden = true;
           if (returnLatestWrap) returnLatestWrap.hidden = true;
+          if (loadNewerWrap) loadNewerWrap.hidden = true;
           entriesEl.innerHTML = '<div class="empty">まだ投稿がありません。</div>';
           return;
         }
@@ -1475,6 +1624,7 @@
         const dayLabels = enumerateDayLabels(allEntries);
         updateLoadOlderButton(allEntries.length, visibleEntries.length, allEntries);
         updateReturnLatestButton();
+        updateLoadNewerButton(allEntries);
 
         const htmlParts = [];
 
@@ -1566,6 +1716,22 @@
         }
 
         allEntries = await loadEntriesFromContent();
+
+        // 新着投稿チェック
+        {
+          const lastLatestId = localStorage.getItem(LAST_LATEST_ID_KEY);
+          const currentLatestId = allEntries.length ? allEntries[allEntries.length - 1].id : null;
+          if (currentLatestId) {
+            localStorage.setItem(LAST_LATEST_ID_KEY, currentLatestId);
+          }
+          if (lastLatestId && currentLatestId && lastLatestId !== currentLatestId) {
+            const modal = document.getElementById('newPostsModal');
+            if (modal) {
+              modal.classList.add('is-open');
+              lockScroll();
+            }
+          }
+        }
 
         visibleEntryCount = anchoredEntryId
           ? INITIAL_VISIBLE_COUNT + INITIAL_EXTRA_COUNT
