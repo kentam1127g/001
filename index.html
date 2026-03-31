@@ -154,7 +154,7 @@
 
     .return-latest-wrap {
       position: fixed;
-      bottom: 52px;
+      bottom: 76px;
       right: 14px;
       z-index: 25;
       display: flex;
@@ -516,6 +516,44 @@
       opacity: 1;
     }
 
+    .ticker-bar {
+      border-bottom: 1px solid #1a1a1a;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      height: 24px;
+    }
+
+    .ticker-label {
+      font-family: "Share Tech Mono", "Courier New", monospace;
+      font-size: 0.62rem;
+      color: #fff;
+      white-space: nowrap;
+      flex-shrink: 0;
+      padding: 0 8px;
+      border-right: 1px solid #1a1a1a;
+    }
+
+    .ticker-track-wrap {
+      overflow: hidden;
+      flex: 1;
+    }
+
+    .ticker-track {
+      display: inline-block;
+      white-space: nowrap;
+      font-family: "Share Tech Mono", "Courier New", monospace;
+      font-size: 0.62rem;
+      color: #999;
+      padding-left: 16px;
+      animation: ticker-scroll 80s linear infinite;
+    }
+
+    @keyframes ticker-scroll {
+      from { transform: translateX(100vw); }
+      to   { transform: translateX(-100%); }
+    }
+
     @media (min-width: 1024px) {
       :root { --max: 500px; }
       .entry-media { width: 40%; }
@@ -722,13 +760,13 @@
     </section>
 
     <div id="loadOlderWrap" class="load-older-wrap" hidden>
-      <button id="loadOlder">さらに古いログを読む</button>
+      <button id="loadOlder">古いログを読む</button>
     </div>
 
     <section id="entries" class="log-board"></section>
 
     <div id="loadNewerWrap" class="load-newer-wrap" hidden>
-      <button id="loadNewer">さらに新しいログを読む</button>
+      <button id="loadNewer">新しいログを読む</button>
     </div>
 
     <p class="footer-note"></p>
@@ -887,6 +925,12 @@
   </div>
 
   <div class="clock-wrap">
+    <div class="ticker-bar">
+      <span class="ticker-label">今日はなんの日</span>
+      <div class="ticker-track-wrap">
+        <span id="tickerTrack" class="ticker-track">―</span>
+      </div>
+    </div>
     <div class="clock-inner">
       <span id="clockDate" class="clock clock-date">----.--.--.--</span>
       <div class="clock-btns">
@@ -1316,8 +1360,8 @@
         loadOlderWrap.hidden = hiddenOlderCount === 0;
         const nextCount = Math.min(hiddenOlderCount, LOAD_MORE_COUNT);
         button.textContent = hiddenOlderCount > 0
-          ? `さらに古いログを ${nextCount} 件読む（あと ${hiddenOlderCount} 件）`
-          : 'さらに古いログを読む';
+          ? `古いログを${nextCount}件読む（あと${hiddenOlderCount}件）`
+          : '古いログを読む';
         return;
       }
 
@@ -1325,8 +1369,8 @@
       loadOlderWrap.hidden = hiddenCount === 0;
       const nextCount = Math.min(hiddenCount, LOAD_MORE_COUNT);
       button.textContent = hiddenCount > 0
-        ? `さらに古いログを ${nextCount} 件読む（あと ${hiddenCount} 件）`
-        : 'さらに古いログを読む';
+        ? `古いログを${nextCount}件読む（あと${hiddenCount}件）`
+        : '古いログを読む';
     }
 
     function updateReturnLatestButton() {
@@ -1347,7 +1391,7 @@
       const button = document.getElementById('loadNewer');
       if (!button) return;
       const nextCount = Math.min(hiddenNewerCount, LOAD_MORE_COUNT);
-      button.textContent = `さらに新しいログを ${nextCount} 件読む（あと ${hiddenNewerCount} 件）`;
+      button.textContent = `新しいログを${nextCount}件読む（あと${hiddenNewerCount}件）`;
     }
 
     function scrollToLatest(force = false) {
@@ -1792,6 +1836,49 @@
     }
 
     init();
+
+    async function fetchOnThisDay() {
+      try {
+        const res = await fetch('https://ja.wikipedia.org/w/api.php?action=featuredfeed&feed=onthisday&feedformat=atom');
+        if (!res.ok) throw new Error('feed error');
+        const xml = new DOMParser().parseFromString(await res.text(), 'application/xml');
+        const entries = Array.from(xml.querySelectorAll('entry'));
+        if (!entries.length) throw new Error('no entries');
+        const items = [];
+        for (const entry of entries) {
+          const contentEl = entry.querySelector('content, summary');
+          if (!contentEl) continue;
+          const tmp = document.createElement('div');
+          tmp.innerHTML = contentEl.textContent;
+          tmp.querySelectorAll('li').forEach(li => {
+            const t = li.textContent.trim().replace(/\s+/g, ' ');
+            if (t) items.push(t);
+          });
+        }
+        if (items.length) return items.join('　／　');
+        throw new Error('no items');
+      } catch (_) {
+        const now = new Date();
+        const m = String(now.getMonth() + 1).padStart(2, '0');
+        const d = String(now.getDate()).padStart(2, '0');
+        const res = await fetch(`https://ja.wikipedia.org/api/rest_v1/feed/onthisday/events/${m}/${d}`);
+        const data = await res.json();
+        const evts = (data.events || []).slice(0, 12);
+        return evts.map(e => `${e.year}年 ― ${e.text}`).join('　／　');
+      }
+    }
+
+    (async () => {
+      const track = document.getElementById('tickerTrack');
+      if (!track) return;
+      try {
+        const text = await fetchOnThisDay();
+        if (!text) return;
+        track.textContent = text;
+        const duration = Math.max(30, Math.min(150, Math.round(text.length * 0.2)));
+        track.style.animationDuration = `${duration}s`;
+      } catch (_) {}
+    })();
   </script>
 </body>
 </html>
