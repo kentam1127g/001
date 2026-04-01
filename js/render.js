@@ -1,6 +1,6 @@
 /* ===== render.js — レンダリング・ナビゲーション・オブザーバー ===== */
 
-import { INITIAL_VISIBLE_COUNT, LOAD_MORE_COUNT, VIEW_COUNT_DELAY_MS, LAST_READ_ID_KEY } from './config.js';
+import { INITIAL_VISIBLE_COUNT, INITIAL_EXTRA_COUNT, LOAD_MORE_COUNT, VIEW_COUNT_DELAY_MS, LAST_READ_ID_KEY } from './config.js';
 import { state } from './state.js';
 import { disableScroll, enableScroll, lockScroll, unlockScroll } from './scroll.js';
 import { escapeHtml, normalizeImagePath, formatOnlyTime, enumerateDayLabels } from './utils.js';
@@ -51,9 +51,15 @@ export function updateLoadOlderButton(totalCount, visibleCount, entries) {
 }
 
 export function updateReturnLatestButton() {
-  if (returnLatestWrap) {
-    returnLatestWrap.hidden = !state.anchoredEntryId;
+  if (!returnLatestWrap) return;
+  if (!state.anchoredEntryId) {
+    returnLatestWrap.hidden = true;
+    return;
   }
+  const anchorIndex = state.allEntries.findIndex(e => e.id === state.anchoredEntryId);
+  const caughtUp = anchorIndex !== -1 &&
+    state.newerEntryCount >= state.allEntries.length - anchorIndex - 1;
+  returnLatestWrap.hidden = caughtUp;
 }
 
 export function updateLoadNewerButton(entries) {
@@ -367,7 +373,7 @@ export function showNewerEntries() {
 export function returnToLatest() {
   state.anchoredEntryId  = null;
   state.newerEntryCount  = 0;
-  state.visibleEntryCount = INITIAL_VISIBLE_COUNT;
+  state.visibleEntryCount = INITIAL_VISIBLE_COUNT + INITIAL_EXTRA_COUNT;
 
   if (history.replaceState) {
     history.replaceState(null, '', location.pathname + location.search);
