@@ -28,12 +28,6 @@
         <!--<p>なんでもないただの記憶。</p>-->
       </div>
       <div id="topbarClock" class="topbar-clock">--:--:--</div>
-      <button id="topbarReload" class="topbar-reload" type="button" aria-label="更新">
-        <svg viewBox="0 0 24 24">
-          <path d="M12 4a8 8 0 1 0 7.93 6.93"></path>
-          <polyline points="20 2 20 8 14 8"></polyline>
-        </svg>
-      </button>
     </div>
   </div>
 
@@ -87,12 +81,7 @@
       </div>
       <div class="modal-body">
         <div class="image-modal-loader hidden" id="imageModalLoader">
-          <div class="pixel-loader">
-            <div class="pixel-loader-bar">
-              <span></span><span></span><span></span><span></span><span></span>
-            </div>
-            <div class="pixel-loader-label">LOADING</div>
-          </div>
+          <div class="img-reveal-overlay"></div>
         </div>
         <img id="imageModalImg" src="" alt="" />
       </div>
@@ -153,6 +142,7 @@
     </div>
   </div>
 
+  <!-- とは？モーダル -->
   <div id="aboutModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="aboutModalTitle">
     <div class="modal-box">
       <div class="modal-loader hidden" id="aboutModalLoader">
@@ -179,6 +169,7 @@
     </div>
   </div>
 
+  <!-- 書いてる人モーダル -->
   <div id="writerModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="writerModalTitle">
     <div class="modal-box">
       <div class="modal-loader hidden" id="writerModalLoader">
@@ -210,6 +201,7 @@
     </div>
   </div>
 
+  <!-- 新しい投稿モーダル -->
   <div id="newPostsModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="newPostsModalTitle">
     <div class="modal-box">
       <div class="modal-header">
@@ -223,10 +215,12 @@
       </div>
       <div class="modal-body">
         <p>新しい投稿があります。</p>
+        <br><br><br><br>
       </div>
     </div>
   </div>
 
+  <!-- 時計 -->
   <div class="clock-wrap">
     <div class="ticker-bar">
       <div class="ticker-track-wrap">
@@ -254,7 +248,15 @@
           </svg>
         </button>
       </div>
-      <span id="clockTime" class="clock clock-time">--:--:--</span>
+      <div class="clock-time-wrap">
+        <span id="clockTime" class="clock clock-time">--:--:--</span>
+        <button id="topbarReload" class="clock-btn" type="button" aria-label="更新">
+          <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="23 4 23 10 17 10"></polyline>
+            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+          </svg>
+        </button>
+      </div>
     </div>
   </div>
 

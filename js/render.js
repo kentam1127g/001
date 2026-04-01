@@ -1,6 +1,6 @@
 /* ===== render.js — レンダリング・ナビゲーション・オブザーバー ===== */
 
-import { INITIAL_VISIBLE_COUNT, LOAD_MORE_COUNT, VIEW_COUNT_DELAY_MS } from './config.js';
+import { INITIAL_VISIBLE_COUNT, LOAD_MORE_COUNT, VIEW_COUNT_DELAY_MS, LAST_READ_ID_KEY } from './config.js';
 import { state } from './state.js';
 import { disableScroll, enableScroll, lockScroll, unlockScroll } from './scroll.js';
 import { escapeHtml, normalizeImagePath, formatOnlyTime, enumerateDayLabels } from './utils.js';
@@ -215,6 +215,7 @@ export function setupViewObservers() {
 
           seenIds.add(entryIdValue);
           saveSeenEntries([...seenIds]);
+          localStorage.setItem(LAST_READ_ID_KEY, entryIdValue);
 
           const changed = await bumpSharedCounts([entryIdValue]);
           if (changed && changed[entryIdValue] != null) {
@@ -280,7 +281,7 @@ export function triggerPixelLoad(node) {
   }, 900);
 }
 
-export function animateEntriesInOrder() {
+export function animateEntriesInOrder(alreadyVisibleIds = new Set()) {
   const nodes = [...document.querySelectorAll('.entry, .day-divider')];
   if (!nodes.length) return;
 
@@ -296,7 +297,15 @@ export function animateEntriesInOrder() {
     });
   }, { threshold: 0.5 });
 
-  nodes.forEach(node => state.revealObserver.observe(node));
+  nodes.forEach(node => {
+    // day-divider は即表示、すでに表示済みのエントリもアニメーションなしで即表示
+    if (node.classList.contains('day-divider') ||
+        (node.dataset.entryId && alreadyVisibleIds.has(node.dataset.entryId))) {
+      node.classList.add('is-visible');
+    } else {
+      state.revealObserver.observe(node);
+    }
+  });
 }
 
 // ---- ナビゲーション ----
@@ -469,11 +478,17 @@ export function render() {
       `);
     });
 
+    // innerHTML 差し替え前に表示済みエントリの ID を記録
+    const alreadyVisibleIds = new Set(
+      [...document.querySelectorAll('.entry.is-visible[data-entry-id]')]
+        .map(el => el.dataset.entryId)
+    );
+
     entriesEl.innerHTML = htmlParts.join('');
 
     bindShareButtons();
     setupViewObservers();
-    animateEntriesInOrder();
+    animateEntriesInOrder(alreadyVisibleIds);
 
     if (state.anchoredEntryId) {
       highlightEntryFromHash();

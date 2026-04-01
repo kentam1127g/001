@@ -76,7 +76,7 @@
 #imageModal .modal-box {
   width: min(calc(100% - 24px), 520px);
   max-height: 90vh;
-  overflow-y: auto;
+  overflow: hidden;
   padding: 12px;
 }
 
@@ -88,26 +88,41 @@
 #imageModal .modal-body {
   padding: 0;
   position: relative;
+  overflow: hidden;
 }
 
 #imageModal .modal-body img {
   display: block;
   width: 100%;
+  max-width: 100%;
   height: auto;
 }
 
 .image-modal-loader {
   position: absolute;
-  inset: 0;
-  background: rgba(255, 255, 255, 1);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  inset: -4px;
   z-index: 2;
 }
 
 .image-modal-loader.hidden {
   display: none;
+}
+
+@keyframes imgReveal {
+  0%   { transform: scaleY(1);    }
+  28%  { transform: scaleY(0.7);  } /* ~30% で到着 */
+  37%  { transform: scaleY(0.7);  } /* 一瞬停止 */
+  83%  { transform: scaleY(0.15); } /* スムーズに ~85% へ */
+  90%  { transform: scaleY(0.15); } /* カクッと停止 */
+  100% { transform: scaleY(0);    } /* 完了 */
+}
+
+.img-reveal-overlay {
+  position: absolute;
+  inset: 0;
+  background: var(--paper);
+  transform-origin: bottom;
+  animation: imgReveal 650ms linear forwards;
 }
 
 .image-modal-author {

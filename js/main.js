@@ -1,6 +1,6 @@
 /* ===== main.js — エントリーポイント・初期化 ===== */
 
-import { INITIAL_VISIBLE_COUNT, INITIAL_EXTRA_COUNT, LAST_LATEST_ID_KEY } from './config.js';
+import { INITIAL_VISIBLE_COUNT, INITIAL_EXTRA_COUNT, LAST_LATEST_ID_KEY, LAST_READ_ID_KEY } from './config.js';
 import { state } from './state.js';
 import { lockScroll } from './scroll.js';
 import { updateClock } from './utils.js';
@@ -28,6 +28,14 @@ async function init() {
     }
 
     state.allEntries = await loadEntriesFromContent();
+
+    // URL ハッシュがない場合、前回読み終えた位置を復元
+    if (!state.anchoredEntryId) {
+      const lastReadId = localStorage.getItem(LAST_READ_ID_KEY);
+      if (lastReadId && state.allEntries.find(e => e.id === lastReadId)) {
+        state.anchoredEntryId = lastReadId;
+      }
+    }
 
     // 新着投稿チェック
     {

@@ -60,35 +60,6 @@ button, a {
   padding: 5px 0;
 }
 
-.topbar-reload {
-  margin-left: auto;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  padding: 0;
-  border: 1px solid #888;
-  background: #ddd;
-  cursor: pointer;
-  color: #000;
-}
-
-.topbar-reload:hover {
-  background: #bbb;
-  border-color: #000;
-}
-
-.topbar-reload svg {
-  width: 16px;
-  height: 16px;
-  stroke: currentColor;
-  fill: none;
-  stroke-width: 1.6;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
 .title {
   display: flex;
   align-items: baseline;

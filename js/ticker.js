@@ -63,7 +63,7 @@ async function fetchJMA() {
 
   if (otdItem.status === 'fulfilled' && otdItem.value) {
     const item  = otdItem.value;
-    const label = `今日は何の日「${item.t}」`;
+    const label = `今日は何の日「${item.t}」の日`;
     if (item.href) {
       const a = document.createElement('a');
       a.href = item.href;
