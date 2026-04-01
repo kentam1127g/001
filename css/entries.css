@@ -49,8 +49,13 @@
   opacity: 1;
 }
 
-.entry.is-highlighted .bubble {
-  background: #ffffcc;
+.entry.is-highlighted .author {
+  color: #ff0000;
+}
+
+.entry.is-highlighted .author-icon {
+  color: #ff0000;
+  opacity: 1;
 }
 
 .bubble {

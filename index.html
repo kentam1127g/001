@@ -63,22 +63,13 @@
 
   <div id="imageModal" class="modal-overlay" role="dialog" aria-modal="true" aria-label="画像拡大">
     <div class="modal-box">
-      <div class="modal-header">
-        <div style="display:flex; align-items:baseline; gap:8px; overflow:hidden;">
-          <span class="modal-title" id="imageModalTitle"></span>
-          <div class="image-modal-author">
-            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
-            <span id="imageModalAuthor"></span>
-          </div>
-        </div>
+      <div class="modal-body">
         <button id="imageModalClose" class="icon-btn" type="button" aria-label="閉じる">
           <svg viewBox="0 0 24 24">
             <line x1="18" y1="6" x2="6" y2="18"></line>
             <line x1="6" y1="6" x2="18" y2="18"></line>
           </svg>
         </button>
-      </div>
-      <div class="modal-body">
         <div class="image-modal-loader hidden" id="imageModalLoader">
           <div class="img-reveal-overlay"></div>
         </div>
@@ -127,6 +118,12 @@
     <div class="modal-box">
       <div class="modal-header">
         <h2 class="modal-title" id="randomModalTitle">ランダム投稿</h2>
+        <button id="randomModalClose" class="icon-btn" type="button" aria-label="閉じる">
+          <svg viewBox="0 0 24 24">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
       </div>
       <div class="modal-body">
         <div class="random-modal-loader">
@@ -137,6 +134,8 @@
             <div class="pixel-loader-label">LOADING</div>
           </div>
         </div>
+        <div id="randomPreview" hidden></div>
+        <button id="randomGoToEntry" class="random-go-btn" type="button" hidden>投稿に移動</button>
       </div>
     </div>
   </div>

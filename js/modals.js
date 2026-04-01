@@ -1,18 +1,16 @@
 /* ===== modals.js — モーダルイベントリスナー ===== */
 
-import { INITIAL_VISIBLE_COUNT } from './config.js';
 import { state } from './state.js';
 import { lockScroll, unlockScroll } from './scroll.js';
 import { render } from './render.js';
+import { escapeHtml, normalizeImagePath, formatOnlyTime } from './utils.js';
 
 const aboutModal    = document.getElementById('aboutModal');
 const writerModal   = document.getElementById('writerModal');
 const newPostsModal = document.getElementById('newPostsModal');
 const imageModal      = document.getElementById('imageModal');
 const imageModalImg   = document.getElementById('imageModalImg');
-const imageModalTitle  = document.getElementById('imageModalTitle');
 const imageModalLoader = document.getElementById('imageModalLoader');
-const imageModalAuthor = document.getElementById('imageModalAuthor');
 
 let aboutLoaderTimer  = null;
 let writerLoaderTimer = null;
@@ -102,13 +100,8 @@ document.getElementById('entries')?.addEventListener('click', (e) => {
   if (!media) return;
   const img = media.querySelector('img');
   if (!img) return;
-  const entry  = media.closest('.entry');
-  const text   = entry?.querySelector('.entry-text')?.textContent || '';
-  const author = entry?.querySelector('.author')?.textContent?.trim() || '';
   imageModalImg.src = img.src;
   imageModalImg.alt = img.alt;
-  imageModalTitle.textContent  = text.length > 12 ? text.slice(0, 12) + '...' : text;
-  imageModalAuthor.textContent = author;
   imageModal.classList.add('is-open');
   lockScroll();
   if (imageModalLoader) {
@@ -118,27 +111,102 @@ document.getElementById('entries')?.addEventListener('click', (e) => {
   }
 });
 
-// ---- ランダムモーダル ----
+// ---- ランダム投稿プレビュー ----
+
+function buildPreviewHTML(entry) {
+  const imageSrc    = normalizeImagePath(entry.image || '');
+  const imageHtml   = imageSrc
+    ? `<div class="entry-media"><img src="${escapeHtml(imageSrc)}" alt="${escapeHtml(entry.caption || entry.text || 'image')}" /></div>`
+    : '';
+  const captionHtml = (imageSrc && entry.caption)
+    ? `<div class="entry-caption">${escapeHtml(entry.caption)}</div>`
+    : '';
+  const textHtml    = entry.text
+    ? `<p class="entry-text">${escapeHtml(entry.text)}</p>`
+    : '';
+  const spacer = (imageHtml && textHtml) ? '<div style="height:10px"></div>' : '';
+  return `
+    <div class="preview-bubble bubble">
+      <div class="stamp">
+        <span class="author">
+          <svg class="author-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>${escapeHtml(entry.author || '')}
+        </span>
+        <span>${escapeHtml(formatOnlyTime(entry.createdAt))}</span>
+      </div>
+      ${imageHtml}
+      ${captionHtml}
+      ${spacer}
+      ${textHtml}
+    </div>
+  `;
+}
+
+export function showEntryPreviewModal(entry, { skipLoader = false, onNavigate = null } = {}) {
+  const modal      = document.getElementById('randomModal');
+  const previewEl  = document.getElementById('randomPreview');
+  const goBtn      = document.getElementById('randomGoToEntry');
+  const closeBtn   = document.getElementById('randomModalClose');
+
+  if (!modal || !previewEl || !goBtn) return;
+
+  previewEl.hidden = true;
+  previewEl.innerHTML = '';
+  goBtn.hidden = true;
+
+  const loaderWrap = document.getElementById('randomPixelLoader')?.parentElement;
+  if (loaderWrap) loaderWrap.hidden = false;
+
+  modal.classList.add('is-open');
+  lockScroll();
+
+  const showPreview = () => {
+    // loaderWrap はcloneNode後に付け替わっているので再取得
+    const currentLoaderWrap = document.getElementById('randomPixelLoader')?.parentElement;
+    if (currentLoaderWrap) currentLoaderWrap.hidden = true;
+    previewEl.innerHTML = buildPreviewHTML(entry);
+    previewEl.hidden = false;
+    goBtn.hidden = false;
+  };
+
+  if (skipLoader) {
+    showPreview();
+  } else {
+    if (loaderWrap) {
+      const fresh = loaderWrap.cloneNode(true);
+      loaderWrap.replaceWith(fresh);
+    }
+    setTimeout(showPreview, 650);
+  }
+
+  const close = () => {
+    modal.classList.remove('is-open');
+    unlockScroll();
+    previewEl.hidden = true;
+    previewEl.innerHTML = '';
+    goBtn.hidden = true;
+    modal.onclick   = null;
+    goBtn.onclick   = null;
+    if (closeBtn) closeBtn.onclick = null;
+  };
+
+  goBtn.onclick   = () => { close(); if (onNavigate) onNavigate(); };
+  if (closeBtn) closeBtn.onclick = close;
+  modal.onclick   = (e) => { if (e.target === modal) close(); };
+}
 
 document.getElementById('floatRandom')?.addEventListener('click', () => {
   if (!state.allEntries.length) return;
   const entry = state.allEntries[Math.floor(Math.random() * state.allEntries.length)];
-  const randomModal = document.getElementById('randomModal');
-  const loaderWrap  = document.getElementById('randomPixelLoader')?.parentElement;
-  if (loaderWrap) {
-    const fresh = loaderWrap.cloneNode(true);
-    loaderWrap.replaceWith(fresh);
-  }
-  randomModal?.classList.add('is-open');
-  lockScroll();
-  setTimeout(() => {
-    randomModal?.classList.remove('is-open');
-    unlockScroll();
-    state.anchoredEntryId   = entry.id;
-    state.visibleEntryCount = INITIAL_VISIBLE_COUNT;
-    if (history.replaceState) {
-      history.replaceState(null, '', `${location.pathname}${location.search}#entry-${entry.id}`);
+  showEntryPreviewModal(entry, {
+    skipLoader: false,
+    onNavigate: () => {
+      state.anchoredEntryId   = entry.id;
+      state.visibleEntryCount = 4;
+      state.newerEntryCount   = 3;
+      if (history.replaceState) {
+        history.replaceState(null, '', `${location.pathname}${location.search}#entry-${entry.id}`);
+      }
+      render();
     }
-    render();
-  }, 650);
+  });
 });

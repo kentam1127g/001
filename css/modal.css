@@ -74,21 +74,18 @@
 }
 
 #imageModal .modal-box {
-  width: min(calc(100% - 24px), 520px);
-  max-height: 90vh;
-  overflow: hidden;
-  padding: 12px;
-}
-
-#imageModal .modal-header {
-  margin-bottom: 8px;
-  padding-bottom: 8px;
+  width: min(calc(100% - 48px), 520px);
+  max-height: 95vh;
+  overflow: visible;
+  padding: 20px;
+  background: var(--paper);
+  border: 2px solid #000;
+  box-shadow: none;
 }
 
 #imageModal .modal-body {
   padding: 0;
   position: relative;
-  overflow: hidden;
 }
 
 #imageModal .modal-body img {
@@ -96,6 +93,19 @@
   width: 100%;
   max-width: 100%;
   height: auto;
+  border: 0;
+}
+
+#imageModalClose {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 10;
+  /* .icon-btn のスタイルを継承 */
+}
+
+#imageModalClose:active {
+  transform: translate(1px, 1px);
 }
 
 .image-modal-loader {
@@ -123,6 +133,41 @@
   background: var(--paper);
   transform-origin: bottom;
   animation: imgReveal 650ms linear forwards;
+}
+
+/* ランダム投稿プレビュー */
+
+#randomPreview .preview-bubble {
+  padding: 9px 0;
+  margin-bottom: 12px;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+#randomPreview .bubble::after {
+  display: none;
+}
+
+#randomPreview .entry-media {
+  cursor: default;
+  width: 55%;
+}
+
+.random-go-btn {
+  display: block;
+  width: 100%;
+  padding: 9px 0;
+  background: #000;
+  color: #fff;
+  border: none;
+  font-size: 0.88rem;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.random-go-btn:active {
+  transform: translate(1px, 1px);
 }
 
 .image-modal-author {

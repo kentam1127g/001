@@ -120,6 +120,15 @@ export function highlightEntryFromHash() {
   requestAnimationFrame(() => {
     target.scrollIntoView({ block: 'center', behavior: 'smooth' });
   });
+
+  // 既読カウントと同じ秒数（1.8秒）待ってからハイライトを消す
+  setTimeout(() => {
+    target.classList.remove('is-highlighted');
+    // URLのハッシュを削除（ページをスクロールさせないために history.replaceState を使用）
+    if (window.location.hash === hash) {
+      history.replaceState(null, '', window.location.pathname + window.location.search);
+    }
+  }, VIEW_COUNT_DELAY_MS);
 }
 
 // ---- 共有 ----

@@ -6,7 +6,7 @@ import { lockScroll } from './scroll.js';
 import { updateClock } from './utils.js';
 import { loadEntriesFromContent, loadSharedCounts } from './data.js';
 import { render, showMoreEntries, showNewerEntries, returnToLatest, handleHashChange } from './render.js';
-import './modals.js';
+import { showEntryPreviewModal } from './modals.js';
 import './ticker.js';
 
 // ---- ナビゲーションボタン ----
@@ -23,8 +23,14 @@ async function init() {
     updateClock();
     setInterval(updateClock, 1000);
 
-    if (window.location.hash && window.location.hash.startsWith('#entry-')) {
-      state.anchoredEntryId = window.location.hash.replace('#entry-', '');
+    const initialHashId = (window.location.hash && window.location.hash.startsWith('#entry-'))
+      ? window.location.hash.replace('#entry-', '')
+      : null;
+
+    if (initialHashId) {
+      state.anchoredEntryId = initialHashId;
+      state.visibleEntryCount = 4;
+      state.newerEntryCount   = 3;
     }
 
     state.allEntries = await loadEntriesFromContent();
@@ -34,6 +40,8 @@ async function init() {
       const lastReadId = localStorage.getItem(LAST_READ_ID_KEY);
       if (lastReadId && state.allEntries.find(e => e.id === lastReadId)) {
         state.anchoredEntryId = lastReadId;
+        state.visibleEntryCount = 4;
+        state.newerEntryCount   = 3;
       }
     }
 
@@ -53,8 +61,16 @@ async function init() {
       }
     }
 
-    state.visibleEntryCount = INITIAL_VISIBLE_COUNT;
+    if (!state.anchoredEntryId) {
+      state.visibleEntryCount = INITIAL_VISIBLE_COUNT;
+    }
     render();
+
+    // 直リンクの場合はプレビューモーダルを表示
+    if (initialHashId) {
+      const targetEntry = state.allEntries.find(e => e.id === initialHashId);
+      if (targetEntry) showEntryPreviewModal(targetEntry, { skipLoader: true });
+    }
 
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
