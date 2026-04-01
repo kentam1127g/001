@@ -96,13 +96,17 @@
   border: 0;
 }
 
-#imageModalClose,
+#imageModalClose{
+    position: absolute;
+    top: 0px;
+    right: 0px;
+    z-index: 10;
+}
 #randomModalClose {
   position: absolute;
   top: 20px;
   right: 20px;
   z-index: 10;
-  /* .icon-btn のスタイルを継承 */
 }
 
 #imageModalClose:active {
