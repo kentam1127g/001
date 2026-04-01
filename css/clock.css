@@ -76,8 +76,10 @@
   font-size: 0.62rem;
   color: #c2c2c2;
   padding-left: 16px;
-  animation: ticker-scroll linear infinite;
-  animation-play-state: paused;
+}
+
+.ticker-track.is-scrolling {
+  animation: ticker-scroll linear infinite alternate;
 }
 
 .ticker-loading-text {
@@ -102,8 +104,8 @@
 }
 
 @keyframes ticker-scroll {
-  from { transform: translateX(100vw); }
-  to   { transform: translateX(-100%); }
+  from { transform: translateX(0); }
+  to   { transform: translateX(var(--ticker-dist)); }
 }
 
 /* ボタン群 */
