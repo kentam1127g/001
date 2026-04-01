@@ -1,0 +1,227 @@
+/* ===== base.css — 変数・リセット・レイアウト ===== */
+
+:root {
+  --bg: #fff;
+  --paper: #fff;
+  --text: #000;
+  --muted: #444;
+  --line: #000;
+  --max: 460px;
+  --shadow: none;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Meiryo", "MS Gothic", sans-serif;
+  line-height: 1.7;
+  overflow-x: hidden;
+}
+
+body { min-height: 100vh; visibility: hidden; padding-top: 40px; }
+body.is-ready { visibility: visible; }
+
+img {
+  max-width: 100%;
+  display: block;
+  height: auto;
+}
+
+button, a {
+  font: inherit;
+}
+
+.wrap {
+  width: min(calc(100% - 28px), var(--max));
+  margin: 0 auto;
+  padding: 24px 0 60px;
+}
+
+.topbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  background: #e8e8e8;
+  border-bottom: 2px solid #000;
+}
+
+.topbar-inner {
+  width: min(calc(100% - 28px), var(--max));
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 5px 0;
+}
+
+.topbar-reload {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid #888;
+  background: #ddd;
+  cursor: pointer;
+  color: #000;
+}
+
+.topbar-reload:hover {
+  background: #bbb;
+  border-color: #000;
+}
+
+.topbar-reload svg {
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.title {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.title h1 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+.title p {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.topbar-clock {
+  display: none;
+}
+
+.intro-card {
+  padding: 4px 0 16px;
+  margin-bottom: 0;
+}
+
+.intro-card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.load-older-wrap,
+.load-newer-wrap {
+  display: flex;
+  justify-content: center;
+}
+
+.load-older-wrap { margin: 8px 0 18px; }
+.load-newer-wrap { margin: 18px 0 8px; }
+
+.return-latest-wrap {
+  position: fixed;
+  bottom: 76px;
+  right: 14px;
+  z-index: 25;
+  display: flex;
+}
+
+#loadOlder, #loadNewer {
+  font-size: 0.82rem;
+}
+
+#returnLatest {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  flex-shrink: 0;
+  border: 1px solid #888;
+  background: #ddd;
+  cursor: pointer;
+  color: #000;
+}
+
+#returnLatest:hover {
+  background: #bbb;
+  border-color: #000;
+}
+
+#returnLatest svg {
+  width: 16px;
+  height: 16px;
+}
+
+.load-older-wrap[hidden],
+.load-newer-wrap[hidden],
+.return-latest-wrap[hidden] {
+  display: none;
+}
+
+.empty {
+  background: var(--paper);
+  border: 2px solid #000;
+  padding: 18px;
+  color: var(--muted);
+}
+
+.footer-note {
+  margin-top: 22px;
+  color: var(--muted);
+  font-size: 0.86rem;
+  text-align: center;
+}
+
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid #888;
+  background: #ddd;
+  cursor: pointer;
+  color: #000;
+}
+
+.icon-btn:hover {
+  background: #bbb;
+  border-color: #000;
+}
+
+.icon-btn svg {
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.6;
+}
+
+@media (min-width: 1024px) {
+  :root { --max: 500px; }
+  .entry-media { width: 40%; }
+}
+
+@media (max-width: 720px) {
+  html { font-size: 87.5%; }
+  .title p { display: none; }
+}
