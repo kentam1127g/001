@@ -96,10 +96,11 @@
   border: 0;
 }
 
-#imageModalClose {
+#imageModalClose,
+#randomModalClose {
   position: absolute;
-  top: 0;
-  right: 0;
+  top: 20px;
+  right: 20px;
   z-index: 10;
   /* .icon-btn のスタイルを継承 */
 }
@@ -140,8 +141,7 @@
 #randomPreview .preview-bubble {
   padding: 9px 0;
   margin-bottom: 12px;
-  max-height: 220px;
-  overflow-y: auto;
+  /* max-height を削除し、コンテンツに合わせて伸びるように変更 */
 }
 
 #randomPreview .bubble::after {
@@ -150,19 +150,25 @@
 
 #randomPreview .entry-media {
   cursor: default;
-  width: 55%;
+  width: 100%; /* プレビューでも画像は横幅いっぱいに表示 */
+  margin: 10px 0;
 }
-
 .random-go-btn {
   display: block;
   width: 100%;
-  padding: 9px 0;
-  background: #000;
-  color: #fff;
-  border: none;
-  font-size: 0.88rem;
-  letter-spacing: 0.06em;
+  background: #ddd;
+  color: #000;
+  border: 1px solid #888;
+  font-size: 0.82rem;
+  letter-spacing: 0.04em;
   cursor: pointer;
+}
+
+.random-go-btn:hover {
+  background: #bbb;
+  border-color: #000;
+}
+
   font-family: inherit;
 }
 
