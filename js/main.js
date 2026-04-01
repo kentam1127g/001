@@ -53,9 +53,7 @@ async function init() {
       }
     }
 
-    state.visibleEntryCount = state.anchoredEntryId
-      ? INITIAL_VISIBLE_COUNT + INITIAL_EXTRA_COUNT
-      : INITIAL_VISIBLE_COUNT;
+    state.visibleEntryCount = INITIAL_VISIBLE_COUNT;
     render();
 
     requestAnimationFrame(() => {

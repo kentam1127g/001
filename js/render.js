@@ -371,24 +371,36 @@ export function showNewerEntries() {
 }
 
 export function returnToLatest() {
-  state.anchoredEntryId  = null;
-  state.newerEntryCount  = 0;
-  state.visibleEntryCount = INITIAL_VISIBLE_COUNT + INITIAL_EXTRA_COUNT;
-
-  if (history.replaceState) {
-    history.replaceState(null, '', location.pathname + location.search);
+  const modal     = document.getElementById('returnLatestModal');
+  const loaderWrap = document.getElementById('returnLatestPixelLoader')?.parentElement;
+  if (loaderWrap) {
+    const fresh = loaderWrap.cloneNode(true);
+    loaderWrap.replaceWith(fresh);
   }
+  modal?.classList.add('is-open');
+  lockScroll();
 
-  render();
+  setTimeout(() => {
+    modal?.classList.remove('is-open');
+    unlockScroll();
 
-  // render() 内の animateEntriesInOrder() が is-visible を除去する前に
-  // 全エントリを即座に表示し、observer も止める
-  if (state.revealObserver) state.revealObserver.disconnect();
-  document.querySelectorAll('.entry, .day-divider').forEach(node => {
-    node.classList.add('is-visible');
-  });
+    state.anchoredEntryId   = null;
+    state.newerEntryCount   = 0;
+    state.visibleEntryCount = INITIAL_VISIBLE_COUNT + INITIAL_EXTRA_COUNT;
 
-  scrollToLatest(true);
+    if (history.replaceState) {
+      history.replaceState(null, '', location.pathname + location.search);
+    }
+
+    render();
+
+    if (state.revealObserver) state.revealObserver.disconnect();
+    document.querySelectorAll('.entry, .day-divider').forEach(node => {
+      node.classList.add('is-visible');
+    });
+
+    scrollToLatest(true);
+  }, 650);
 }
 
 export function handleHashChange() {

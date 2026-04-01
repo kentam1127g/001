@@ -108,9 +108,17 @@ button, a {
 .return-latest-wrap {
   position: fixed;
   bottom: 76px;
-  right: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(calc(100% - 28px), var(--max));
   z-index: 25;
   display: flex;
+  justify-content: flex-end;
+  pointer-events: none;
+}
+
+#returnLatest {
+  pointer-events: auto;
 }
 
 #loadOlder, #loadNewer {
