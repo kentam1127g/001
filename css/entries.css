@@ -54,7 +54,7 @@
 }
 
 .bubble {
-  padding: 14px 0;
+  padding: 9px 0;
   position: relative;
 }
 
@@ -71,7 +71,7 @@
 
 .entry:has(+ .day-divider) .bubble,
 #entries .entry:last-child .bubble {
-  padding-bottom: 6px;
+  padding-bottom: 4px;
 }
 
 .entry:has(+ .day-divider) .bubble::after,
@@ -100,9 +100,9 @@
   justify-content: space-between;
   gap: 10px;
   color: var(--muted);
-  font-size: 0.78rem;
-  line-height: 1.45;
-  margin-bottom: 10px;
+  font-size: 0.73rem;
+  line-height: 1.35;
+  margin-bottom: 6px;
   word-break: break-word;
 }
 
@@ -112,7 +112,7 @@
   gap: 4px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  font-size: 0.82rem;
+  font-size: 0.76rem;
   color: var(--muted);
   flex-shrink: 0;
 }
@@ -129,7 +129,7 @@
   margin: 0;
   white-space: pre-wrap;
   word-break: break-word;
-  font-size: 0.98rem;
+  font-size: 0.88rem;
 }
 
 .entry-media {
@@ -145,13 +145,13 @@
 }
 
 .entry-caption {
-  margin-top: 8px;
+  margin-top: 4px;
   color: var(--muted);
-  font-size: 0.87rem;
+  font-size: 0.81rem;
 }
 
 .entry-actions {
-  margin-top: 12px;
+  margin-top: 7px;
   display: flex;
   justify-content: flex-end;
   gap: 6px;
