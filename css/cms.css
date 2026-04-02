@@ -208,6 +208,35 @@ body.is-admin .modal-edit-row.admin-only {
   align-items: center;
   gap: 8px;
   margin-top: 14px;
+  position: relative;
+}
+
+.cms-btn-icon {
+  position: absolute;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: #aaa;
+}
+
+.cms-btn-icon:hover {
+  color: #c00;
+}
+
+.cms-btn-icon:active:not(:disabled) {
+  transform: translate(1px, 1px);
+}
+
+.cms-btn-icon:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 .cms-btn {

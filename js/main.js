@@ -130,7 +130,9 @@ async function init() {
           syncLastViewedToDOM(id, state.sharedLastViewed[id]);
         });
 
-        const hasReaderCrossedNotice = Object.values(state.sharedLastViewed).some(isJustNowTimestamp);
+        const alreadyShownCrossed = sessionStorage.getItem('enpitu-reader-crossed-shown');
+        const hasReaderCrossedNotice = !alreadyShownCrossed && Object.values(state.sharedLastViewed).some(isJustNowTimestamp);
+        if (hasReaderCrossedNotice) sessionStorage.setItem('enpitu-reader-crossed-shown', '1');
         const priorityModal = hasReaderCrossedNotice
           ? document.getElementById('readerCrossedModal')
           : (hasNewPostsNotice ? document.getElementById('newPostsModal') : null);
