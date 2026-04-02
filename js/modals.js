@@ -5,6 +5,39 @@ import { lockScroll, unlockScroll } from './scroll.js';
 import { render } from './render.js';
 import { escapeHtml, normalizeImagePath, formatOnlyTime } from './utils.js';
 
+// ---- ページコンテンツ動的読み込み ----
+
+const AUTHOR_ICON_SVG = '<svg class="author-icon" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>';
+
+export function renderAboutBody(body) {
+  const el = document.getElementById('aboutModalBody');
+  if (!el) return;
+  el.innerHTML = '<p>' + escapeHtml(body).replace(/\n/g, '<br>') + '</p>';
+}
+
+export function renderWriterBody(writers) {
+  const el = document.getElementById('writerModalBody');
+  if (!el) return;
+  el.innerHTML = writers.map((w, i) =>
+    `<p>${AUTHOR_ICON_SVG}${escapeHtml(w.name)}</p>` +
+    `<p>${escapeHtml(w.bio).replace(/\n/g, '<br>')}</p>` +
+    (i < writers.length - 1 ? '<hr>' : '')
+  ).join('');
+}
+
+async function loadPageContent() {
+  try {
+    const res = await fetch(`./content/pages/about.json?t=${Date.now()}`, { cache: 'no-store' });
+    if (res.ok) { const d = await res.json(); renderAboutBody(d.body || ''); }
+  } catch {}
+  try {
+    const res = await fetch(`./content/pages/writer.json?t=${Date.now()}`, { cache: 'no-store' });
+    if (res.ok) { const d = await res.json(); if (d.writers) renderWriterBody(d.writers); }
+  } catch {}
+}
+
+loadPageContent();
+
 const aboutModal    = document.getElementById('aboutModal');
 const writerModal   = document.getElementById('writerModal');
 const newPostsModal = document.getElementById('newPostsModal');

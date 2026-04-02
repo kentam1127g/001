@@ -1,6 +1,8 @@
 /* ===== cms.js — CMS認証・投稿管理モーダル ===== */
 
 import { state } from './state.js';
+import { escapeHtml } from './utils.js';
+import { renderAboutBody, renderWriterBody } from './modals.js';
 
 const GITHUB_REPO   = 'kentam1127g/001';
 const GITHUB_BRANCH = 'main';
@@ -178,12 +180,18 @@ const cmsDeleteCancel  = document.getElementById('cmsDeleteCancelBtn');
 const cmsDeleteConfirm = document.getElementById('cmsDeleteConfirmBtn');
 const cmsStatus        = document.getElementById('cmsStatus');
 const cmsLoader        = document.getElementById('cmsLoader');
+const cmsField1Label   = document.getElementById('cmsField1Label');
+const cmsField2Label   = document.getElementById('cmsField2Label');
+const cmsTextarea2     = document.getElementById('cmsTextarea2');
+const cmsExtraField    = document.getElementById('cmsExtraField');
+const cmsImageSection  = document.getElementById('cmsImageSection');
 
 // ---- モーダル状態 ----
 
 let editEntry     = null;  // 編集中エントリ（null = 新規）
 let editSha       = null;  // 編集ファイルの SHA
 let keptImagePath = null;  // 保持する既存画像パス
+let pageEditMode  = null;  // null | 'about' | 'writer'
 
 // ---- UI ヘルパー ----
 
@@ -230,10 +238,20 @@ function normalizeSrc(img) {
 
 // ---- モーダル開閉 ----
 
+// ---- モーダル共通リセット ----
+
+function resetToPostMode() {
+  pageEditMode = null;
+  if (cmsExtraField)   cmsExtraField.hidden   = true;
+  if (cmsImageSection) cmsImageSection.hidden = false;
+  if (cmsField1Label)  cmsField1Label.hidden  = true;
+}
+
 export function openNewPostModal() {
   editEntry     = null;
   editSha       = null;
   keptImagePath = null;
+  resetToPostMode();
 
   if (cmsModalTitle) cmsModalTitle.textContent = '新しい記録';
   if (cmsTextarea)   cmsTextarea.value = '';
@@ -252,6 +270,7 @@ export function openEditModal(entry) {
   editEntry     = entry;
   editSha       = null;
   keptImagePath = entry.image || null;
+  resetToPostMode();
 
   if (cmsModalTitle) cmsModalTitle.textContent = '記録を編集';
   if (cmsTextarea)   cmsTextarea.value = entry.text || '';
@@ -265,8 +284,70 @@ export function openEditModal(entry) {
   cmsModal?.classList.add('is-open');
   cmsTextarea?.focus();
 
-  // SHA を非同期で取得
   getFileSha(`content/posts/${entry.id}.json`).then(sha => { editSha = sha; });
+}
+
+export async function openAboutEditModal() {
+  pageEditMode  = 'about';
+  editEntry     = null;
+  editSha       = null;
+  keptImagePath = null;
+
+  if (cmsExtraField)   cmsExtraField.hidden   = true;
+  if (cmsImageSection) cmsImageSection.hidden = true;
+  if (cmsField1Label)  cmsField1Label.hidden  = true;
+  if (cmsDeleteBtn)    cmsDeleteBtn.hidden     = true;
+  if (cmsSaveBtn)      cmsSaveBtn.textContent  = '保存する';
+  if (cmsModalTitle)   cmsModalTitle.textContent = 'Aboutの編集';
+
+  setStatus('');
+  setLoading(false);
+  showFormScreen();
+
+  try {
+    const res = await fetch(`./content/pages/about.json?t=${Date.now()}`, { cache: 'no-store' });
+    const d   = res.ok ? await res.json() : { body: '' };
+    if (cmsTextarea) cmsTextarea.value = d.body || '';
+  } catch {
+    if (cmsTextarea) cmsTextarea.value = '';
+  }
+
+  cmsModal?.classList.add('is-open');
+  cmsTextarea?.focus();
+}
+
+export async function openWriterEditModal() {
+  pageEditMode  = 'writer';
+  editEntry     = null;
+  editSha       = null;
+  keptImagePath = null;
+
+  if (cmsImageSection) cmsImageSection.hidden = true;
+  if (cmsDeleteBtn)    cmsDeleteBtn.hidden     = true;
+  if (cmsSaveBtn)      cmsSaveBtn.textContent  = '保存する';
+  if (cmsModalTitle)   cmsModalTitle.textContent = '書いてる人の編集';
+
+  setStatus('');
+  setLoading(false);
+  showFormScreen();
+
+  try {
+    const res = await fetch(`./content/pages/writer.json?t=${Date.now()}`, { cache: 'no-store' });
+    const d   = res.ok ? await res.json() : { writers: [{name:'わかこ',bio:''},{name:'まつけん',bio:''}] };
+    const w   = d.writers || [];
+    if (cmsField1Label)  { cmsField1Label.textContent  = w[0]?.name || 'わかこ';   cmsField1Label.hidden  = false; }
+    if (cmsTextarea)       cmsTextarea.value  = w[0]?.bio  || '';
+    if (cmsField2Label)    cmsField2Label.textContent  = w[1]?.name || 'まつけん';
+    if (cmsTextarea2)      cmsTextarea2.value = w[1]?.bio  || '';
+    if (cmsExtraField)     cmsExtraField.hidden = false;
+  } catch {
+    if (cmsTextarea)  cmsTextarea.value  = '';
+    if (cmsTextarea2) cmsTextarea2.value = '';
+    if (cmsExtraField) cmsExtraField.hidden = false;
+  }
+
+  cmsModal?.classList.add('is-open');
+  cmsTextarea?.focus();
 }
 
 function closeCmsModal() {
@@ -274,11 +355,47 @@ function closeCmsModal() {
   editEntry     = null;
   editSha       = null;
   keptImagePath = null;
+  pageEditMode  = null;
+  resetToPostMode();
 }
 
 // ---- 保存処理 ----
 
+async function handlePageSave() {
+  setLoading(true);
+  setStatus('保存中...');
+
+  try {
+    if (pageEditMode === 'about') {
+      const body = cmsTextarea?.value?.trim() || '';
+      const sha  = await getFileSha('content/pages/about.json');
+      await putTextFile('content/pages/about.json', JSON.stringify({ body }, null, 2) + '\n', 'Update about page', sha);
+      renderAboutBody(body);
+
+    } else if (pageEditMode === 'writer') {
+      const bio1 = cmsTextarea?.value?.trim()  || '';
+      const bio2 = cmsTextarea2?.value?.trim() || '';
+      const data = { writers: [
+        { name: 'わかこ',   bio: bio1 },
+        { name: 'まつけん', bio: bio2 },
+      ]};
+      const sha  = await getFileSha('content/pages/writer.json');
+      await putTextFile('content/pages/writer.json', JSON.stringify(data, null, 2) + '\n', 'Update writer page', sha);
+      renderWriterBody(data.writers);
+    }
+
+    setStatus('保存しました！');
+    setTimeout(closeCmsModal, 900);
+  } catch (err) {
+    console.error('[cms] page save failed:', err);
+    setStatus('エラー: ' + err.message, true);
+    setLoading(false);
+  }
+}
+
 async function handleSave() {
+  if (pageEditMode) { await handlePageSave(); return; }
+
   const text      = cmsTextarea?.value?.trim() || '';
   const imageFile = cmsImageInput?.files?.[0] || null;
 
@@ -436,6 +553,10 @@ document.getElementById('entries')?.addEventListener('click', (e) => {
 
 // 新規投稿ボタン
 document.getElementById('floatPost')?.addEventListener('click', openNewPostModal);
+
+// About・書いてる人 編集ボタン
+document.getElementById('editAboutBtn')?.addEventListener('click',  openAboutEditModal);
+document.getElementById('editWriterBtn')?.addEventListener('click', openWriterEditModal);
 
 // ---- 初期化 ----
 

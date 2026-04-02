@@ -177,8 +177,15 @@
         </button>
       </div>
       <div class="modal-body">
-        <p>とりとめのない記憶たちをたれながし。</p>
-        <br><br><br><br>
+        <div id="aboutModalBody"></div>
+        <div class="modal-edit-row admin-only">
+          <button id="editAboutBtn" class="icon-btn" type="button" aria-label="Aboutを編集">
+            <svg viewBox="0 0 24 24">
+              <path d="M12 20h9"></path>
+              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+            </svg>
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -204,13 +211,15 @@
         </button>
       </div>
       <div class="modal-body">
-        <p><svg class="author-icon" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>わかこ</p>
-        <p>在内都住</p>
-        <p></p>
-        <hr>
-        <p><svg class="author-icon" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>まつけん</p>
-        <p>1996年生まれ／都内在住<br>
-        割り箸に入ってる爪楊枝がきらい。民主主義みたいで。</p>
+        <div id="writerModalBody"></div>
+        <div class="modal-edit-row admin-only">
+          <button id="editWriterBtn" class="icon-btn" type="button" aria-label="書いてる人を編集">
+            <svg viewBox="0 0 24 24">
+              <path d="M12 20h9"></path>
+              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+            </svg>
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -306,9 +315,15 @@
           </button>
         </div>
         <div class="modal-body">
+          <div id="cmsField1Label" class="cms-field-label" hidden></div>
           <textarea id="cmsTextarea" class="cms-textarea" placeholder="なんでもないただの記録。" rows="5"></textarea>
 
-          <div class="cms-image-section">
+          <div id="cmsExtraField" hidden>
+            <div id="cmsField2Label" class="cms-field-label"></div>
+            <textarea id="cmsTextarea2" class="cms-textarea" rows="4"></textarea>
+          </div>
+
+          <div id="cmsImageSection" class="cms-image-section">
             <label class="cms-image-label" for="cmsImageInput">
               <svg viewBox="0 0 24 24">
                 <rect x="3" y="3" width="18" height="18" rx="2"/>
