@@ -49,6 +49,10 @@ body.is-admin .modal-edit-row.admin-only {
   align-items: flex-start;
 }
 
+.cms-image-section[hidden] {
+  display: none !important;
+}
+
 .cms-image-label {
   display: inline-flex;
   align-items: center;
@@ -232,6 +236,10 @@ body.is-admin .modal-edit-row.admin-only {
 
 .cms-btn-icon:active:not(:disabled) {
   transform: translate(1px, 1px);
+}
+
+.cms-btn-icon[hidden] {
+  display: none !important;
 }
 
 .cms-btn-icon:disabled {
