@@ -259,6 +259,48 @@
   transform: translate(1px, 1px);
 }
 
+.modal-login-row {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 10px;
+  margin-left: -6px;
+  margin-bottom: -4px;
+}
+
+.modal-login-btn {
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #b0b0b0;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-login-btn:hover {
+  background: transparent;
+  color: #8f8f8f;
+}
+
+.modal-login-btn:active {
+  transform: translate(1px, 1px);
+}
+
+.modal-login-btn svg {
+  width: 14px;
+  height: 14px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.9;
+}
+
+.modal-login-btn[hidden] {
+  display: none !important;
+}
+
 .image-modal-author {
   display: flex;
   gap: 4px;

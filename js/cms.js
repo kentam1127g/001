@@ -30,7 +30,9 @@ export function applyAuthState() {
   const loggedIn = isLoggedIn();
   document.body.classList.toggle('is-admin', loggedIn);
   const loginStatusFloat = document.getElementById('loginStatusFloat');
+  const writerLoginBtn = document.getElementById('writerLoginBtn');
   if (loginStatusFloat) loginStatusFloat.hidden = !loggedIn;
+  if (writerLoginBtn) writerLoginBtn.hidden = loggedIn;
 }
 
 function logout() {
@@ -597,6 +599,9 @@ export function initCms() {
     document.body.style.overflow = 'hidden';
   });
   document.getElementById('logoutConfirmYes')?.addEventListener('click', logout);
+  document.getElementById('writerLoginBtn')?.addEventListener('click', () => {
+    window.open('./admin/', 'decap-cms-login', 'width=1200,height=800,resizable=yes,scrollbars=yes');
+  });
   window.addEventListener('storage', (e) => {
     if (e.key === 'decap-cms-user') applyAuthState();
   });
