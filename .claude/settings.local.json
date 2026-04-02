@@ -3,7 +3,9 @@
     "allow": [
       "WebFetch(domain:zenn.dev)",
       "WebFetch(domain:ja.wikipedia.org)",
-      "WebFetch(domain:www.data.jma.go.jp)"
+      "WebFetch(domain:www.data.jma.go.jp)",
+      "Bash(cat c:/Users/kenta/Downloads/001/scripts/*.js)",
+      "Bash(cat c:/Users/kenta/Downloads/001/scripts/*.mjs)"
     ]
   }
 }

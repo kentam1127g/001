@@ -7,6 +7,7 @@ import { updateClock } from './utils.js';
 import { loadEntriesFromContent, loadSharedCounts } from './data.js';
 import { render, showMoreEntries, showNewerEntries, returnToLatest, handleHashChange } from './render.js';
 import { showEntryPreviewModal } from './modals.js';
+import { initCms } from './cms.js';
 import './ticker.js';
 
 // ---- ナビゲーションボタン ----
@@ -20,6 +21,7 @@ window.addEventListener('hashchange', handleHashChange);
 
 async function init() {
   try {
+    initCms();
     updateClock();
     setInterval(updateClock, 1000);
 

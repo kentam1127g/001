@@ -1,0 +1,179 @@
+/* ===== cms.css — 管理者UI表示制御・CMSモーダル ===== */
+
+/* ---- admin-only 表示制御 ---- */
+
+.admin-only {
+  display: none !important;
+}
+
+body.is-admin .admin-only {
+  display: inline-flex !important;
+}
+
+/* ---- CMSモーダル内フォーム ---- */
+
+.cms-textarea {
+  width: 100%;
+  min-height: 130px;
+  padding: 10px;
+  border: 1px solid #888;
+  background: var(--paper);
+  color: var(--ink, #000);
+  font-family: inherit;
+  font-size: 0.9rem;
+  line-height: 1.75;
+  resize: vertical;
+  box-sizing: border-box;
+  display: block;
+}
+
+.cms-textarea:focus {
+  outline: none;
+  border-color: #000;
+}
+
+/* ---- 画像エリア ---- */
+
+.cms-image-section {
+  margin-top: 12px;
+}
+
+.cms-image-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  font-size: 0.82rem;
+  color: var(--muted, #555);
+  border: 1px solid #888;
+  padding: 4px 12px;
+  background: #ddd;
+  user-select: none;
+  font-family: inherit;
+}
+
+.cms-image-label:hover {
+  background: #bbb;
+  border-color: #000;
+  color: #000;
+}
+
+.cms-image-label svg {
+  width: 14px;
+  height: 14px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.8;
+  flex-shrink: 0;
+}
+
+.cms-image-input {
+  display: none;
+}
+
+.cms-image-preview {
+  display: block;
+  width: 100%;
+  max-height: 220px;
+  object-fit: contain;
+  margin-top: 10px;
+  border: 1px solid #ccc;
+  background: #eee;
+}
+
+.cms-image-clear {
+  display: inline-block;
+  margin-top: 6px;
+  font-size: 0.78rem;
+  color: #c00;
+  border: none;
+  background: none;
+  cursor: pointer;
+  padding: 0;
+  font-family: inherit;
+  text-decoration: underline;
+}
+
+.cms-image-clear:hover {
+  color: #900;
+}
+
+/* ---- ステータス ---- */
+
+.cms-status {
+  margin-top: 10px;
+  font-size: 0.82rem;
+  min-height: 1.3em;
+  color: var(--muted, #555);
+}
+
+/* ---- ボタン群 ---- */
+
+.cms-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.cms-btn {
+  padding: 6px 18px;
+  border: 1px solid #888;
+  background: #ddd;
+  color: #000;
+  font-family: inherit;
+  font-size: 0.82rem;
+  cursor: pointer;
+  letter-spacing: 0.04em;
+}
+
+.cms-btn:hover {
+  background: #bbb;
+  border-color: #000;
+}
+
+.cms-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.cms-btn:active:not(:disabled) {
+  transform: translate(1px, 1px);
+}
+
+.cms-btn-primary {
+  background: #000;
+  color: #fff;
+  border-color: #000;
+}
+
+.cms-btn-primary:hover {
+  background: #333;
+}
+
+.cms-btn-danger {
+  color: #c00;
+  border-color: #c00;
+  background: #fff;
+}
+
+.cms-btn-danger:hover {
+  background: #c00;
+  color: #fff;
+  border-color: #c00;
+}
+
+/* ---- 削除確認画面 ---- */
+
+#cmsDeleteScreen p {
+  font-size: 0.92rem;
+  margin: 0 0 18px;
+  line-height: 1.75;
+}
+
+/* ---- ローダー（modal-loader を流用） ---- */
+
+#cmsLoader.modal-loader {
+  border-radius: 0;
+}

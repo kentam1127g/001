@@ -70,12 +70,6 @@ writerModal?.addEventListener('click', (e) => {
   if (e.target === writerModal) { writerModal.classList.remove('is-open'); unlockScroll(); }
 });
 
-// ---- 投稿ボタン (Admin) ----
-
-document.getElementById('floatPost')?.addEventListener('click', () => {
-  window.location.href = './admin/';
-});
-
 // ---- 新着投稿モーダル ----
 
 document.getElementById('newPostsModalClose')?.addEventListener('click', () => {
