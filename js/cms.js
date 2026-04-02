@@ -345,7 +345,7 @@ export function openNewPostModal() {
 
   if (cmsModalTitle) cmsModalTitle.textContent = '新しい記録';
   setAuthorBadge(getAuthor());
-  if (cmsTextarea)   cmsTextarea.value = '';
+  if (cmsTextarea)   cmsTextarea.value = localStorage.getItem('cms-draft') || '';
   if (cmsImageInput) cmsImageInput.value = '';
   if (cmsDeleteBtn)  cmsDeleteBtn.hidden = true;
   if (cmsSaveBtn)    cmsSaveBtn.textContent = '投稿する';
@@ -573,6 +573,7 @@ async function handleSave() {
     setStatus('インデックスを更新中...');
     await pushIndexJson(entries);
 
+    localStorage.removeItem('cms-draft');
     setStatus('保存しました！');
     setTimeout(() => { closeCmsModal(); location.reload(); }, 900);
   } catch (err) {
@@ -636,6 +637,14 @@ cmsImageInput?.addEventListener('change', () => {
   setImagePreview(URL.createObjectURL(file));
 });
 
+cmsTextarea?.addEventListener('input', () => {
+  if (!editEntry && !pageEditMode) {
+    const val = cmsTextarea.value;
+    if (val.trim()) localStorage.setItem('cms-draft', val);
+    else localStorage.removeItem('cms-draft');
+  }
+});
+
 // エントリの編集ボタン（イベント委譲）
 document.getElementById('entries')?.addEventListener('click', (e) => {
   const editBtn = e.target.closest('[data-edit-id]');
@@ -654,6 +663,12 @@ document.getElementById('editAboutBtn')?.addEventListener('click',  openAboutEdi
 document.getElementById('editWriterBtn')?.addEventListener('click', openWriterEditModal);
 
 // ---- 初期化 ----
+
+window.addEventListener('beforeunload', (e) => {
+  if (cmsModal?.classList.contains('is-open') && cmsTextarea?.value.trim()) {
+    e.preventDefault();
+  }
+});
 
 export function initCms() {
   applyAuthState();
