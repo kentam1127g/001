@@ -657,10 +657,7 @@ document.getElementById('editWriterBtn')?.addEventListener('click', openWriterEd
 
 export function initCms() {
   applyAuthState();
-  document.getElementById('loginStatusFloat')?.addEventListener('click', () => {
-    document.getElementById('logoutConfirmModal')?.classList.add('is-open');
-    document.body.style.overflow = 'hidden';
-  });
+  document.getElementById('loginStatusFloat')?.addEventListener('click', logout);
   document.getElementById('logoutConfirmYes')?.addEventListener('click', logout);
   document.getElementById('writerLoginBtn')?.addEventListener('click', openLoginModal);
   document.getElementById('loginModalClose')?.addEventListener('click', closeLoginModal);

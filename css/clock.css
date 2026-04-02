@@ -207,3 +207,22 @@
   color: #444;
   white-space: nowrap;
 }
+
+.login-status-text-logout {
+  display: none;
+  white-space: nowrap;
+}
+
+.login-status-float:hover .login-status-text {
+  display: none;
+}
+
+.login-status-float:hover .login-status-text-logout {
+  display: inline;
+}
+
+.login-status-float:hover {
+  background: #bbb;
+  border-color: #777;
+  color: #333;
+}
