@@ -85,7 +85,6 @@ body.is-admin .modal-edit-row.admin-only {
   max-height: 220px;
   object-fit: contain;
   margin-top: 10px;
-  border: 1px solid #ccc;
   background: #eee;
 }
 

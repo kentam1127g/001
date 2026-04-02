@@ -101,18 +101,30 @@
     </div>
   </div>
 
+  <!-- ランダム投稿ローディングモーダル -->
   <div id="randomModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="randomModalTitle">
     <div class="modal-box">
+      <div class="modal-header">
+        <h2 class="modal-title" id="randomModalTitle">ランダム投稿</h2>
+      </div>
       <div class="modal-body">
-        <button id="randomModalClose" class="icon-btn" type="button" aria-label="閉じる">
+        <div class="random-modal-loader" id="randomLoaderWrap" data-loader="LOADING"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ランダム投稿プレビューモーダル（タイトルなし） -->
+  <div id="randomPreviewModal" class="modal-overlay" role="dialog" aria-modal="true" aria-label="ランダム投稿プレビュー">
+    <div class="modal-box">
+      <div class="modal-body">
+        <button id="randomPreviewClose" class="icon-btn" type="button" aria-label="閉じる">
           <svg viewBox="0 0 24 24">
             <line x1="18" y1="6" x2="6" y2="18"></line>
             <line x1="6" y1="6" x2="18" y2="18"></line>
           </svg>
         </button>
-        <div class="random-modal-loader" id="randomLoaderWrap" data-loader="LOADING"></div>
-        <div id="randomPreview" hidden></div>
-        <button id="randomGoToEntry" class="random-go-btn" type="button" hidden>投稿に移動</button>
+        <div id="randomPreview"></div>
+        <button id="randomGoToEntry" class="random-go-btn" type="button">投稿に移動</button>
       </div>
     </div>
   </div>
@@ -131,7 +143,6 @@
   <!-- とは？モーダル -->
   <div id="aboutModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="aboutModalTitle">
     <div class="modal-box">
-      <div class="modal-loader hidden" id="aboutModalLoader" data-loader="LOADING"></div>
       <div class="modal-header">
         <h2 class="modal-title" id="aboutModalTitle">えんぴつだいあろーぐ。とは</h2>
         <button id="aboutModalClose" class="icon-btn" type="button" aria-label="閉じる">
@@ -142,6 +153,7 @@
         </button>
       </div>
       <div class="modal-body">
+        <div class="random-modal-loader hidden" id="aboutModalLoader" data-loader="LOADING"></div>
         <div id="aboutModalBody"></div>
         <div class="modal-edit-row admin-only">
           <button id="editAboutBtn" class="icon-btn" type="button" aria-label="Aboutを編集">
@@ -158,7 +170,6 @@
   <!-- 書いてる人モーダル -->
   <div id="writerModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="writerModalTitle">
     <div class="modal-box">
-      <div class="modal-loader hidden" id="writerModalLoader" data-loader="LOADING"></div>
       <div class="modal-header">
         <h2 class="modal-title" id="writerModalTitle">書いてる人</h2>
         <button id="writerModalClose" class="icon-btn" type="button" aria-label="閉じる">
@@ -169,6 +180,7 @@
         </button>
       </div>
       <div class="modal-body">
+        <div class="random-modal-loader hidden" id="writerModalLoader" data-loader="LOADING"></div>
         <div id="writerModalBody"></div>
         <div class="modal-edit-row admin-only">
           <button id="editWriterBtn" class="icon-btn" type="button" aria-label="書いてる人を編集">

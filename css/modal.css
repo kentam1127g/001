@@ -38,6 +38,25 @@
   display: none;
 }
 
+/* modal-body内ローダー表示中は後続コンテンツを非表示にしてサイズを揃える */
+/* About・Writerモーダル限定（ランダムモーダルに影響しないよう明示スコープ） */
+#aboutModal .random-modal-loader:not(.hidden) ~ *,
+#writerModal .random-modal-loader:not(.hidden) ~ * {
+  display: none;
+}
+
+/* .hidden クラスでローダー自体を非表示 */
+.random-modal-loader.hidden {
+  display: none;
+}
+
+/* About/Writer: ローダー表示中はヘッダー下マージンをboxの下パディング(20px)と揃える
+   → ヘッダー下線〜loader上端 = loader下端〜modal下辺 になり pixel-loader が縦中央に */
+#aboutModal .modal-box:has(.random-modal-loader:not(.hidden)) .modal-header,
+#writerModal .modal-box:has(.random-modal-loader:not(.hidden)) .modal-header {
+  margin-bottom: 20px;
+}
+
 .modal-header {
   position: relative;
   z-index: 11;
@@ -96,13 +115,8 @@
   border: 0;
 }
 
-#imageModalClose{
-    position: absolute;
-    top: 0px;
-    right: 0px;
-    z-index: 10;
-}
-#randomModalClose {
+#imageModalClose,
+#randomPreviewClose {
   position: absolute;
   top: 20px;
   right: 20px;

@@ -193,50 +193,39 @@ function buildPreviewHTML(entry) {
 }
 
 export function showEntryPreviewModal(entry, { skipLoader = false, onNavigate = null } = {}) {
-  const modal     = document.getElementById('randomModal');
-  const previewEl = document.getElementById('randomPreview');
-  const goBtn     = document.getElementById('randomGoToEntry');
-  const closeBtn  = document.getElementById('randomModalClose');
+  const loadingModal = document.getElementById('randomModal');
+  const previewModal = document.getElementById('randomPreviewModal');
+  const previewEl    = document.getElementById('randomPreview');
+  const goBtn        = document.getElementById('randomGoToEntry');
+  const closeBtn     = document.getElementById('randomPreviewClose');
 
-  if (!modal || !previewEl || !goBtn) return;
-
-  previewEl.hidden = true;
-  previewEl.innerHTML = '';
-  goBtn.hidden = true;
-
-  const loaderWrap = document.getElementById('randomLoaderWrap');
-  if (loaderWrap) loaderWrap.hidden = false;
-
-  openModal(modal);
+  if (!previewModal || !previewEl || !goBtn) return;
 
   const showPreview = () => {
-    const currentLoaderWrap = document.getElementById('randomLoaderWrap');
-    if (currentLoaderWrap) currentLoaderWrap.hidden = true;
+    if (loadingModal) closeModal(loadingModal);
     previewEl.innerHTML = buildPreviewHTML(entry);
-    previewEl.hidden = false;
-    goBtn.hidden = false;
+    openModal(previewModal);
   };
 
   if (skipLoader) {
     showPreview();
   } else {
-    restartLoader(loaderWrap);
+    restartLoader(document.getElementById('randomLoaderWrap'));
+    openModal(loadingModal);
     setTimeout(showPreview, 650);
   }
 
   const close = () => {
-    closeModal(modal);
-    previewEl.hidden = true;
+    closeModal(previewModal);
     previewEl.innerHTML = '';
-    goBtn.hidden = true;
-    modal.onclick  = null;
-    goBtn.onclick  = null;
+    previewModal.onclick = null;
+    goBtn.onclick        = null;
     if (closeBtn) closeBtn.onclick = null;
   };
 
   goBtn.onclick  = () => { close(); if (onNavigate) onNavigate(); };
   if (closeBtn) closeBtn.onclick = close;
-  modal.onclick  = (e) => { if (e.target === modal) close(); };
+  previewModal.onclick = (e) => { if (e.target === previewModal) close(); };
 }
 
 document.getElementById('floatRandom')?.addEventListener('click', () => {
