@@ -33,6 +33,12 @@ export function applyAuthState() {
   if (loginStatusFloat) loginStatusFloat.hidden = !loggedIn;
 }
 
+function logout() {
+  localStorage.removeItem('decap-cms-user');
+  applyAuthState();
+  location.reload();
+}
+
 // ---- GitHub Contents API ----
 
 async function ghFetch(path, options = {}) {
@@ -586,6 +592,11 @@ document.getElementById('editWriterBtn')?.addEventListener('click', openWriterEd
 
 export function initCms() {
   applyAuthState();
+  document.getElementById('loginStatusFloat')?.addEventListener('click', () => {
+    document.getElementById('logoutConfirmModal')?.classList.add('is-open');
+    document.body.style.overflow = 'hidden';
+  });
+  document.getElementById('logoutConfirmYes')?.addEventListener('click', logout);
   window.addEventListener('storage', (e) => {
     if (e.key === 'decap-cms-user') applyAuthState();
   });

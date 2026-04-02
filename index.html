@@ -248,6 +248,21 @@
     </div>
   </div>
 
+  <div id="logoutConfirmModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="logoutConfirmTitle">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2 class="modal-title" id="logoutConfirmTitle">ログアウト</h2>
+      </div>
+      <div class="modal-body">
+        <p class="modal-confirm-text">ログアウトしますか？</p>
+        <div class="modal-actions">
+          <button id="logoutConfirmYes" class="modal-btn modal-btn-primary" type="button">はい</button>
+          <button id="logoutConfirmNo" class="modal-btn" type="button">いいえ</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- 時計 -->
   <div class="clock-wrap">
     <div class="ticker-bar">
@@ -255,10 +270,10 @@
         <div class="ticker-track-wrap">
           <span id="tickerTrack" class="ticker-track">―</span>
         </div>
-        <div id="loginStatusFloat" class="login-status-float" hidden>
+        <button id="loginStatusFloat" class="login-status-float" type="button" hidden>
           <span class="login-status-dot" aria-hidden="true"></span>
           <span class="login-status-text">ログイン中</span>
-        </div>
+        </button>
       </div>
     </div>
     <div class="clock-inner">

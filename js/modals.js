@@ -126,6 +126,7 @@ const aboutModal       = document.getElementById('aboutModal');
 const writerModal      = document.getElementById('writerModal');
 const newPostsModal    = document.getElementById('newPostsModal');
 const readerCrossedModal = document.getElementById('readerCrossedModal');
+const logoutConfirmModal = document.getElementById('logoutConfirmModal');
 const imageModal       = document.getElementById('imageModal');
 const imageModalImg    = document.getElementById('imageModalImg');
 const imageModalLoader = document.getElementById('imageModalLoader');
@@ -172,6 +173,10 @@ setupModal(writerModal, 'writerModalClose');
 
 setupModal(newPostsModal, 'newPostsModalClose');
 setupModal(readerCrossedModal, 'readerCrossedModalClose');
+document.getElementById('logoutConfirmNo')?.addEventListener('click', () => closeModal(logoutConfirmModal));
+logoutConfirmModal?.addEventListener('click', (e) => {
+  if (e.target === logoutConfirmModal) closeModal(logoutConfirmModal);
+});
 
 // ---- 画像モーダル ----
 
