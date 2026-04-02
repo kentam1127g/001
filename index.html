@@ -267,16 +267,24 @@
       <div class="modal-loader hidden" id="cmsLoader" data-loader="SAVING"></div>
 
       <!-- フォーム画面 -->
-      <div id="cmsFormScreen">
-        <div class="modal-header">
-          <h2 class="modal-title" id="cmsModalTitle">新しい記録</h2>
-          <button id="cmsModalClose" class="icon-btn" type="button" aria-label="閉じる">
-            <svg viewBox="0 0 24 24">
-              <line x1="18" y1="6" x2="6" y2="18"></line>
-              <line x1="6" y1="6" x2="18" y2="18"></line>
-            </svg>
-          </button>
-        </div>
+        <div id="cmsFormScreen">
+          <div class="modal-header">
+            <h2 class="modal-title" id="cmsModalTitle">新しい記録</h2>
+            <div class="cms-modal-header-actions">
+              <div id="cmsAuthorBadge" class="cms-author-badge" hidden>
+                <svg class="cms-author-badge-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
+                </svg>
+                <span id="cmsAuthorName"></span>
+              </div>
+              <button id="cmsModalClose" class="icon-btn" type="button" aria-label="閉じる">
+                <svg viewBox="0 0 24 24">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+            </div>
+          </div>
         <div class="modal-body">
           <div id="cmsField1Label" class="cms-field-label" hidden></div>
           <textarea id="cmsTextarea" class="cms-textarea" placeholder="なんでもないただの記録。" rows="5"></textarea>

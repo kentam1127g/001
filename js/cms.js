@@ -169,6 +169,8 @@ const cmsModal         = document.getElementById('cmsModal');
 const cmsFormScreen    = document.getElementById('cmsFormScreen');
 const cmsDeleteScreen  = document.getElementById('cmsDeleteScreen');
 const cmsModalTitle    = document.getElementById('cmsModalTitle');
+const cmsAuthorBadge   = document.getElementById('cmsAuthorBadge');
+const cmsAuthorName    = document.getElementById('cmsAuthorName');
 const cmsModalClose    = document.getElementById('cmsModalClose');
 const cmsTextarea      = document.getElementById('cmsTextarea');
 const cmsImageInput    = document.getElementById('cmsImageInput');
@@ -205,6 +207,11 @@ function setLoading(on) {
   if (cmsLoader)    cmsLoader.classList.toggle('hidden', !on);
   if (cmsSaveBtn)   cmsSaveBtn.disabled   = on;
   if (cmsDeleteBtn) cmsDeleteBtn.disabled = on;
+}
+
+function setAuthorBadge(name = '') {
+  if (cmsAuthorName) cmsAuthorName.textContent = name;
+  if (cmsAuthorBadge) cmsAuthorBadge.hidden = !name;
 }
 
 function showFormScreen() {
@@ -254,6 +261,7 @@ export function openNewPostModal() {
   resetToPostMode();
 
   if (cmsModalTitle) cmsModalTitle.textContent = '新しい記録';
+  setAuthorBadge(getAuthor());
   if (cmsTextarea)   cmsTextarea.value = '';
   if (cmsImageInput) cmsImageInput.value = '';
   if (cmsDeleteBtn)  cmsDeleteBtn.hidden = true;
@@ -273,6 +281,7 @@ export function openEditModal(entry) {
   resetToPostMode();
 
   if (cmsModalTitle) cmsModalTitle.textContent = '記録を編集';
+  setAuthorBadge(entry.author || getAuthor());
   if (cmsTextarea)   cmsTextarea.value = entry.text || '';
   if (cmsImageInput) cmsImageInput.value = '';
   if (cmsDeleteBtn)  cmsDeleteBtn.hidden = false;
@@ -299,6 +308,7 @@ export async function openAboutEditModal() {
   if (cmsDeleteBtn)    cmsDeleteBtn.hidden     = true;
   if (cmsSaveBtn)      cmsSaveBtn.textContent  = '保存する';
   if (cmsModalTitle)   cmsModalTitle.textContent = 'Aboutの編集';
+  setAuthorBadge('');
 
   setStatus('');
   setLoading(false);
@@ -326,6 +336,7 @@ export async function openWriterEditModal() {
   if (cmsDeleteBtn)    cmsDeleteBtn.hidden     = true;
   if (cmsSaveBtn)      cmsSaveBtn.textContent  = '保存する';
   if (cmsModalTitle)   cmsModalTitle.textContent = '書いてる人の編集';
+  setAuthorBadge('');
 
   setStatus('');
   setLoading(false);
@@ -356,6 +367,7 @@ function closeCmsModal() {
   editSha       = null;
   keptImagePath = null;
   pageEditMode  = null;
+  setAuthorBadge('');
   resetToPostMode();
 }
 
