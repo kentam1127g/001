@@ -125,6 +125,7 @@ function openModalWithLoader(modalEl, loaderId, timerRef, duration = 300) {
 const aboutModal       = document.getElementById('aboutModal');
 const writerModal      = document.getElementById('writerModal');
 const newPostsModal    = document.getElementById('newPostsModal');
+const readerCrossedModal = document.getElementById('readerCrossedModal');
 const imageModal       = document.getElementById('imageModal');
 const imageModalImg    = document.getElementById('imageModalImg');
 const imageModalLoader = document.getElementById('imageModalLoader');
@@ -170,6 +171,7 @@ setupModal(writerModal, 'writerModalClose');
 // ---- 新着投稿モーダル ----
 
 setupModal(newPostsModal, 'newPostsModalClose');
+setupModal(readerCrossedModal, 'readerCrossedModalClose');
 
 // ---- 画像モーダル ----
 

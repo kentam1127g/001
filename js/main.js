@@ -10,6 +10,12 @@ import { showEntryPreviewModal } from './modals.js';
 import { initCms } from './cms.js';
 import './ticker.js';
 
+function isJustNowTimestamp(timestamp) {
+  const viewedAt = new Date(timestamp).getTime();
+  if (!viewedAt) return false;
+  return (Date.now() - viewedAt) < 5 * 60 * 1000;
+}
+
 // ---- ナビゲーションボタン ----
 
 document.getElementById('loadOlder')?.addEventListener('click', showMoreEntries);
@@ -52,6 +58,8 @@ async function init() {
       }
     }
 
+    let hasNewPostsNotice = false;
+
     // 新着投稿チェック
     {
       const lastLatestId    = localStorage.getItem(LAST_LATEST_ID_KEY);
@@ -60,11 +68,7 @@ async function init() {
         localStorage.setItem(LAST_LATEST_ID_KEY, currentLatestId);
       }
       if (lastLatestId && currentLatestId && lastLatestId !== currentLatestId) {
-        const modal = document.getElementById('newPostsModal');
-        if (modal) {
-          modal.classList.add('is-open');
-          lockScroll();
-        }
+        hasNewPostsNotice = true;
       }
     }
 
@@ -125,6 +129,16 @@ async function init() {
           numberEl.textContent = String(shared !== undefined ? shared : 0);
           syncLastViewedToDOM(id, state.sharedLastViewed[id]);
         });
+
+        const hasReaderCrossedNotice = Object.values(state.sharedLastViewed).some(isJustNowTimestamp);
+        const priorityModal = hasReaderCrossedNotice
+          ? document.getElementById('readerCrossedModal')
+          : (hasNewPostsNotice ? document.getElementById('newPostsModal') : null);
+
+        if (priorityModal) {
+          priorityModal.classList.add('is-open');
+          lockScroll();
+        }
       }).catch(err => console.error('[counts] background load failed:', err));
     }
   } catch (error) {
