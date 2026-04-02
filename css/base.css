@@ -87,12 +87,13 @@ button, a {
   display: flex;
   align-items: center;
   gap: 8px;
+  position: relative;
 }
 
 .transfer-modal {
-  position: fixed;
-  top: 36px;
-  right: 14px;
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
   z-index: 25;
   background: #fff;
   border: 1px solid #ccc;

@@ -31,15 +31,15 @@
       <div class="topbar-right">
         <span id="transferKB" class="transfer-kb" role="button" tabindex="0"></span>
         <div id="topbarClock" class="topbar-clock">--:--:--</div>
+        <div id="transferModal" class="transfer-modal" hidden>
+          <p class="transfer-modal-title">通信量</p>
+          <ul class="transfer-modal-list">
+            <li><span class="transfer-label">スマホの写真</span><span class="transfer-value"><span id="transferPhotos"></span>枚分</span></li>
+            <li><span class="transfer-label">動画</span><span class="transfer-value"><span id="transferVideo"></span>分再生分</span></li>
+          </ul>
+        </div>
       </div>
     </div>
-  </div>
-  <div id="transferModal" class="transfer-modal" hidden>
-    <p class="transfer-modal-title">通信量</p>
-    <ul class="transfer-modal-list">
-      <li><span class="transfer-label">スマホの写真</span><span class="transfer-value"><span id="transferPhotos"></span>枚分</span></li>
-      <li><span class="transfer-label">動画</span><span class="transfer-value"><span id="transferVideo"></span>分再生分</span></li>
-    </ul>
   </div>
 
   <main class="wrap">
@@ -314,6 +314,16 @@
           <span class="login-status-text">ログイン中</span>
           <span class="login-status-text-logout">ログアウト</span>
         </button>
+        <div id="loginToast" class="logout-popup" hidden>
+          <p class="logout-popup-text">ログインしました。</p>
+        </div>
+        <div id="logoutPopup" class="logout-popup" hidden>
+          <p class="logout-popup-text">ログアウトしますか？</p>
+          <div class="logout-popup-actions">
+            <button id="logoutPopupYes" class="logout-popup-btn logout-popup-btn-primary" type="button">する</button>
+            <button id="logoutPopupNo" class="logout-popup-btn" type="button">しない</button>
+          </div>
+        </div>
       </div>
     </div>
     <div class="clock-inner">

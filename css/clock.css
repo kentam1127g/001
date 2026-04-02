@@ -68,6 +68,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  position: relative;
 }
 
 .ticker-track-wrap {
@@ -169,6 +170,51 @@
 #floatWriter svg {
   fill: currentColor;
   stroke: none;
+}
+
+.logout-popup {
+  position: absolute;
+  bottom: calc(100% + 4px);
+  right: 0;
+  z-index: 35;
+  background: #fff;
+  border: 1px solid #ccc;
+  padding: 10px 14px;
+  box-shadow: 2px 2px 0 #ccc;
+}
+
+.logout-popup[hidden] {
+  display: none !important;
+}
+
+.logout-popup-text {
+  margin: 0 0 8px;
+  font-family: "Courier New", monospace;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #333;
+  white-space: nowrap;
+}
+
+.logout-popup-actions {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.logout-popup-btn {
+  font-family: inherit;
+  font-size: 0.68rem;
+  padding: 2px 10px;
+  border: 1px solid #888;
+  background: #ddd;
+  cursor: pointer;
+}
+
+.logout-popup-btn-primary {
+  background: #000;
+  color: #fff;
+  border-color: #000;
 }
 
 .login-status-float {

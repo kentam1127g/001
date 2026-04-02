@@ -101,6 +101,12 @@ async function handleOAuthMessage(e) {
     loginPopup = null;
     closeLoginModal();
     applyAuthState();
+
+    const toast = document.getElementById('loginToast');
+    if (toast) {
+      toast.hidden = false;
+      setTimeout(() => { toast.hidden = true; }, 2000);
+    }
   }
 }
 
@@ -672,7 +678,26 @@ window.addEventListener('beforeunload', (e) => {
 
 export function initCms() {
   applyAuthState();
-  document.getElementById('loginStatusFloat')?.addEventListener('click', logout);
+  const logoutPopup = document.getElementById('logoutPopup');
+  const loginStatusFloat = document.getElementById('loginStatusFloat');
+  loginStatusFloat?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (logoutPopup) logoutPopup.hidden = !logoutPopup.hidden;
+  });
+  document.getElementById('logoutPopupYes')?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (logoutPopup) logoutPopup.hidden = true;
+    logout();
+  });
+  document.getElementById('logoutPopupNo')?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (logoutPopup) logoutPopup.hidden = true;
+  });
+  document.addEventListener('click', (e) => {
+    if (!logoutPopup?.hidden && !logoutPopup.contains(e.target)) {
+      logoutPopup.hidden = true;
+    }
+  });
   document.getElementById('logoutConfirmYes')?.addEventListener('click', logout);
   document.getElementById('writerLoginBtn')?.addEventListener('click', openLoginModal);
   document.getElementById('loginModalClose')?.addEventListener('click', closeLoginModal);
