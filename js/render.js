@@ -208,9 +208,10 @@ function formatLastViewedLabel(timestamp) {
   const viewedAt = new Date(timestamp).getTime();
   if (!viewedAt) return '';
   const diffMs = Date.now() - viewedAt;
-  if (diffMs < 60 * 1000) return '最終表示：たった今';
+  if (diffMs < 5 * 60 * 1000) return '最終表示：たった今';
   const diffMin = Math.floor(diffMs / (60 * 1000));
-  if (diffMin < 60) return `最終表示：${diffMin}分前`;
+  if (diffMin < 31) return '最終表示：ちょっと前';
+  if (diffMin < 60) return '最終表示：30分くらい前';
   const diffHour = Math.floor(diffMin / 60);
   if (diffHour < 24) return `最終表示：${diffHour}時間前`;
   const diffDay = Math.floor(diffHour / 24);
