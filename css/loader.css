@@ -69,20 +69,52 @@
 .random-modal-loader .pixel-loader-bar span:nth-child(4) { animation-delay: 236ms; animation-duration: 0.03s; }
 .random-modal-loader .pixel-loader-bar span:nth-child(5) { animation-delay: 315ms; animation-duration: 0.03s; }
 
-/* ランダム投稿専用：シャッフルアニメーション */
+/* ランダム投稿専用：抽選中っぽいスペシャルアニメーション */
+#randomLoaderWrap {
+  height: 88px;
+}
+
+#randomLoaderWrap .random-special-loader {
+  gap: 8px;
+}
+
+#randomLoaderWrap .pixel-loader-bar {
+  gap: 4px;
+}
+
 #randomLoaderWrap .pixel-loader-bar span {
-  animation: pixelShuffle 0.6s steps(1) infinite;
+  width: 7px;
+  height: 7px;
+  animation: pixelShuffleSpecial 0.9s steps(1) infinite;
   background: #ddd;
 }
 
-@keyframes pixelShuffle {
-  0%, 100% { background: #ddd; }
-  50% { background: #000; }
+#randomLoaderWrap .pixel-loader-bar span:nth-child(1) { animation-delay: -0.48s; }
+#randomLoaderWrap .pixel-loader-bar span:nth-child(2) { animation-delay: -0.36s; }
+#randomLoaderWrap .pixel-loader-bar span:nth-child(3) { animation-delay: -0.24s; }
+#randomLoaderWrap .pixel-loader-bar span:nth-child(4) { animation-delay: -0.12s; }
+#randomLoaderWrap .pixel-loader-bar span:nth-child(5) { animation-delay: -0.00s; }
+
+#randomLoaderWrap .pixel-loader-label {
+  color: #555;
+  letter-spacing: 0.22em;
 }
 
-#randomLoaderWrap .pixel-loader-bar span:nth-child(1) { animation-delay: 0.0s; }
-#randomLoaderWrap .pixel-loader-bar span:nth-child(2) { animation-delay: 0.2s; }
-#randomLoaderWrap .pixel-loader-bar span:nth-child(3) { animation-delay: 0.4s; }
-#randomLoaderWrap .pixel-loader-bar span:nth-child(4) { animation-delay: 0.1s; }
-#randomLoaderWrap .pixel-loader-bar span:nth-child(5) { animation-delay: 0.3s; }
-
+@keyframes pixelShuffleSpecial {
+  0%, 100% {
+    background: #ddd;
+    transform: translateY(0);
+  }
+  35% {
+    background: #000;
+    transform: translateY(-2px);
+  }
+  50% {
+    background: #000;
+    transform: translateY(0);
+  }
+  65% {
+    background: #ddd;
+    transform: translateY(2px);
+  }
+}

@@ -41,7 +41,24 @@ loadPageContent();
 // ---- Pixel-loaderの注入 ----
 // <template id="pixelLoaderTpl"> の内容を [data-loader] 要素に注入する
 
-function createPixelLoader(label = 'LOADING') {
+function createRandomSpecialLoader(label = 'SEARCHING...') {
+  const frag = document.createDocumentFragment();
+  const wrap = document.createElement('div');
+  wrap.className = 'pixel-loader random-special-loader';
+  wrap.innerHTML = `
+    <div class="pixel-loader-bar" aria-hidden="true">
+      <span></span><span></span><span></span><span></span><span></span>
+    </div>
+    <div class="pixel-loader-label"></div>
+  `;
+  const labelEl = wrap.querySelector('.pixel-loader-label');
+  if (labelEl) labelEl.textContent = label;
+  frag.appendChild(wrap);
+  return frag;
+}
+
+function createPixelLoader(label = 'LOADING', variant = '') {
+  if (variant === 'random-special') return createRandomSpecialLoader(label);
   const tpl = document.getElementById('pixelLoaderTpl');
   if (!tpl) return null;
   const frag = tpl.content.cloneNode(true);
@@ -51,7 +68,7 @@ function createPixelLoader(label = 'LOADING') {
 }
 
 document.querySelectorAll('[data-loader]').forEach(wrap => {
-  const loader = createPixelLoader(wrap.dataset.loader || 'LOADING');
+  const loader = createPixelLoader(wrap.dataset.loader || 'LOADING', wrap.dataset.loaderVariant || '');
   if (loader) wrap.appendChild(loader);
 });
 
@@ -84,8 +101,9 @@ function setupModal(modalEl, closeBtnId, onClose) {
 export function restartLoader(wrapEl) {
   if (!wrapEl) return;
   const label = wrapEl.dataset.loader || 'LOADING';
+  const variant = wrapEl.dataset.loaderVariant || '';
   wrapEl.innerHTML = '';
-  const loader = createPixelLoader(label);
+  const loader = createPixelLoader(label, variant);
   if (loader) wrapEl.appendChild(loader);
 }
 
