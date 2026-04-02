@@ -128,6 +128,8 @@ const newPostsModal    = document.getElementById('newPostsModal');
 const imageModal       = document.getElementById('imageModal');
 const imageModalImg    = document.getElementById('imageModalImg');
 const imageModalLoader = document.getElementById('imageModalLoader');
+const reloadModal      = document.getElementById('reloadModal');
+const reloadConfirmModal = document.getElementById('reloadConfirmModal');
 
 const aboutLoaderTimer  = { value: null };
 const writerLoaderTimer = { value: null };
@@ -136,8 +138,20 @@ let   imageLoaderTimer  = null;
 // ---- リロードモーダル ----
 
 document.getElementById('topbarReload')?.addEventListener('click', () => {
+  openModal(reloadConfirmModal);
+});
+
+const closeReloadConfirmModal = () => closeModal(reloadConfirmModal);
+
+document.getElementById('reloadConfirmNo')?.addEventListener('click', closeReloadConfirmModal);
+reloadConfirmModal?.addEventListener('click', (e) => {
+  if (e.target === reloadConfirmModal) closeReloadConfirmModal();
+});
+
+document.getElementById('reloadConfirmYes')?.addEventListener('click', () => {
+  closeModal(reloadConfirmModal);
   restartLoader(document.getElementById('reloadLoaderWrap'));
-  openModal(document.getElementById('reloadModal'));
+  openModal(reloadModal);
   setTimeout(() => location.reload(), 450);
 });
 
@@ -165,12 +179,8 @@ function closeImageModal() {
   unlockScroll();
 }
 
-document.getElementById('imageModalClose')?.addEventListener('click', closeImageModal);
-imageModal?.addEventListener('click', (e) => { if (e.target === imageModal) closeImageModal(); });
-
-document.getElementById('entries')?.addEventListener('click', (e) => {
-  const img = e.target.closest('.entry-media')?.querySelector('img');
-  if (!img) return;
+function openImageModalFromImage(img) {
+  if (!img || !imageModalImg) return;
   imageModalImg.src = img.src;
   imageModalImg.alt = img.alt;
   openModal(imageModal);
@@ -179,6 +189,21 @@ document.getElementById('entries')?.addEventListener('click', (e) => {
     imageModalLoader.classList.remove('hidden');
     imageLoaderTimer = window.setTimeout(() => imageModalLoader.classList.add('hidden'), 600);
   }
+}
+
+document.getElementById('imageModalClose')?.addEventListener('click', closeImageModal);
+imageModal?.addEventListener('click', (e) => { if (e.target === imageModal) closeImageModal(); });
+
+document.getElementById('entries')?.addEventListener('click', (e) => {
+  const img = e.target.closest('.entry-media')?.querySelector('img');
+  if (!img) return;
+  openImageModalFromImage(img);
+});
+
+document.getElementById('randomPreview')?.addEventListener('click', (e) => {
+  const img = e.target.closest('.entry-media img');
+  if (!img) return;
+  openImageModalFromImage(img);
 });
 
 // ---- ランダム投稿プレビュー ----

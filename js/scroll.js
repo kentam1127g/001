@@ -41,10 +41,12 @@ export function lockScroll() {
 
 export function unlockScroll() {
   state.modalLockCount = Math.max(0, state.modalLockCount - 1);
-  document.body.style.overflow = '';
   if (state.modalLockCount === 0 && state.loadingCount === 0) {
+    document.body.style.overflow = '';
     window.removeEventListener('wheel',     blockScrollWheel);
     window.removeEventListener('touchmove', blockScrollWheel);
     window.removeEventListener('keydown',   blockScrollKey);
+  } else {
+    document.body.style.overflow = 'hidden';
   }
 }
