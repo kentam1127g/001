@@ -139,6 +139,16 @@
   stroke-width: 1.6;
 }
 
+#floatPost svg {
+  width: 18px;
+  height: 18px;
+}
+
+#floatRandom svg {
+  width: 18px;
+  height: 18px;
+}
+
 #floatWriter svg {
   fill: currentColor;
   stroke: none;

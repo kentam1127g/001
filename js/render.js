@@ -502,8 +502,9 @@ export function render() {
 
               <button class="icon-btn admin-only" type="button" data-edit-id="${escapeHtml(entry.id)}" aria-label="編集">
                 <svg viewBox="0 0 24 24">
-                  <path d="M12 20h9"></path>
-                  <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                  <path d="M8 4.5H6.8A2.8 2.8 0 0 0 4 7.3v9.9A2.8 2.8 0 0 0 6.8 20h9.9a2.8 2.8 0 0 0 2.8-2.8V16"></path>
+                  <path d="M11.3 14.8l-2.8.4.4-2.8 8.5-8.5a1.8 1.8 0 0 1 2.6 0l.2.2a1.8 1.8 0 0 1 0 2.6z"></path>
+                  <path d="M16.6 4.7l2.8 2.8"></path>
                 </svg>
               </button>
             </div>
