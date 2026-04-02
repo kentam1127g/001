@@ -1,7 +1,7 @@
 /* ===== ticker.js — ニュースフィード（Wikipedia 今日は何の日） ===== */
 
 async function fetchOnThisDay() {
-  const res = await fetch('https://ja.wikipedia.org/w/api.php?action=parse&format=json&page=Template:%E4%BB%8A%E6%97%A5%E3%81%AF%E4%BD%95%E3%81%AE%E6%97%A5&prop=text&origin=*');
+  const res = await fetch(`https://ja.wikipedia.org/w/api.php?action=parse&format=json&page=Template:%E4%BB%8A%E6%97%A5%E3%81%AF%E4%BD%95%E3%81%AE%E6%97%A5&prop=text&origin=*&_t=${Date.now()}`);
   if (!res.ok) throw new Error('fetch error');
   const data = await res.json();
   const html = data?.parse?.text?.['*'];

@@ -164,6 +164,17 @@
   align-items: center;
 }
 
+.icon-btn.is-danger {
+  background: #ff4444;
+  color: #fff;
+  border-color: #cc0000;
+}
+
+.icon-btn.is-danger:hover {
+  background: #cc0000;
+  border-color: #990000;
+}
+
 .view-count {
   margin-right: auto;
   display: inline-flex;
