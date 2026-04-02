@@ -3,6 +3,7 @@
 import { state } from './state.js';
 import { escapeHtml } from './utils.js';
 import { renderAboutBody, renderWriterBody } from './modals.js';
+import { COUNTS_API_BASE } from './config.js';
 
 const GITHUB_REPO   = 'kentam1127g/001';
 const GITHUB_BRANCH = 'main';
@@ -51,25 +52,56 @@ function stopLoginPopupWatcher() {
   }
 }
 
+function openLoginModal() {
+  document.getElementById('loginModal')?.classList.add('is-open');
+}
+
+function closeLoginModal() {
+  document.getElementById('loginModal')?.classList.remove('is-open');
+}
+
 function openLoginPopup() {
-  loginPopup = window.open('./admin/', 'decap-cms-login', 'width=1200,height=800,resizable=yes,scrollbars=yes');
+  loginPopup = window.open(`${COUNTS_API_BASE}/auth`, 'github-oauth-login', 'width=600,height=700,resizable=yes,scrollbars=yes');
   stopLoginPopupWatcher();
   loginPopupTimer = window.setInterval(() => {
-    if (isLoggedIn()) {
-      stopLoginPopupWatcher();
-      try {
-        if (loginPopup && !loginPopup.closed) loginPopup.close();
-      } catch {}
-      loginPopup = null;
-      applyAuthState();
-      return;
-    }
-
     if (!loginPopup || loginPopup.closed) {
       stopLoginPopupWatcher();
       loginPopup = null;
     }
   }, 500);
+}
+
+async function handleOAuthMessage(e) {
+  if (typeof e.data !== 'string') return;
+
+  if (e.data === 'authorizing:github') {
+    e.source?.postMessage('authorizing:github', e.origin);
+    return;
+  }
+
+  if (e.data.startsWith('authorization:github:success:')) {
+    const payload = JSON.parse(e.data.replace('authorization:github:success:', ''));
+    const token = payload.token;
+    try {
+      const res = await fetch('https://api.github.com/user', {
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+      const user = await res.json();
+      localStorage.setItem('decap-cms-user', JSON.stringify({
+        token,
+        provider: 'github',
+        login: user.login || '',
+        name: user.name || '',
+      }));
+    } catch {
+      localStorage.setItem('decap-cms-user', JSON.stringify({ token, provider: 'github' }));
+    }
+    stopLoginPopupWatcher();
+    try { if (loginPopup && !loginPopup.closed) loginPopup.close(); } catch {}
+    loginPopup = null;
+    closeLoginModal();
+    applyAuthState();
+  }
 }
 
 // ---- GitHub Contents API ----
@@ -630,7 +662,13 @@ export function initCms() {
     document.body.style.overflow = 'hidden';
   });
   document.getElementById('logoutConfirmYes')?.addEventListener('click', logout);
-  document.getElementById('writerLoginBtn')?.addEventListener('click', openLoginPopup);
+  document.getElementById('writerLoginBtn')?.addEventListener('click', openLoginModal);
+  document.getElementById('loginModalClose')?.addEventListener('click', closeLoginModal);
+  document.getElementById('loginModal')?.addEventListener('click', (e) => {
+    if (e.target === document.getElementById('loginModal')) closeLoginModal();
+  });
+  document.getElementById('githubLoginBtn')?.addEventListener('click', openLoginPopup);
+  window.addEventListener('message', handleOAuthMessage);
   window.addEventListener('storage', (e) => {
     if (e.key === 'decap-cms-user') applyAuthState();
   });
