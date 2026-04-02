@@ -27,7 +27,10 @@ function getAuthor() { return AUTHOR_MAP[getLogin()] || ''; }
 function isLoggedIn() { return !!getToken(); }
 
 export function applyAuthState() {
-  document.body.classList.toggle('is-admin', isLoggedIn());
+  const loggedIn = isLoggedIn();
+  document.body.classList.toggle('is-admin', loggedIn);
+  const loginStatusFloat = document.getElementById('loginStatusFloat');
+  if (loginStatusFloat) loginStatusFloat.hidden = !loggedIn;
 }
 
 // ---- GitHub Contents API ----

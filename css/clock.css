@@ -62,10 +62,18 @@
   align-items: center;
 }
 
-.ticker-track-wrap {
-  overflow: hidden;
+.ticker-bar-inner {
   width: min(calc(100% - 28px), var(--max));
   margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ticker-track-wrap {
+  overflow: hidden;
+  flex: 1 1 auto;
+  min-width: 0;
   position: relative;
 }
 
@@ -152,4 +160,48 @@
 #floatWriter svg {
   fill: currentColor;
   stroke: none;
+}
+
+.login-status-float {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 8px;
+  border: 1px solid #888;
+  border-radius: 999px;
+  background: #ddd;
+  color: #000;
+  font-size: 0.68rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.login-status-float[hidden] {
+  display: none !important;
+}
+
+.login-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #22a447;
+  box-shadow: 0 0 0 2px rgba(34, 164, 71, 0.18);
+  flex-shrink: 0;
+  animation: loginStatusPulse 1.4s steps(1) infinite;
+}
+
+@keyframes loginStatusPulse {
+  0%, 100% {
+    opacity: 1;
+    box-shadow: 0 0 0 2px rgba(34, 164, 71, 0.38);
+  }
+  50% {
+    opacity: 0.35;
+    box-shadow: 0 0 0 2px rgba(34, 164, 71, 0.02);
+  }
+}
+
+.login-status-text {
+  color: #444;
+  white-space: nowrap;
 }
