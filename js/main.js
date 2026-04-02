@@ -29,19 +29,24 @@ async function init() {
 
     if (initialHashId) {
       state.anchoredEntryId = initialHashId;
-      state.visibleEntryCount = 4;
-      state.newerEntryCount   = 3;
+      state.visibleEntryCount = 4; // ターゲット 1 + 古い方 3
+      state.newerEntryCount   = 3; // 新しい方 3
     }
 
     state.allEntries = await loadEntriesFromContent();
 
-    // URL ハッシュがない場合、前回読み終えた位置を復元
-    if (!state.anchoredEntryId) {
-      const lastReadId = localStorage.getItem(LAST_READ_ID_KEY);
-      if (lastReadId && state.allEntries.find(e => e.id === lastReadId)) {
-        state.anchoredEntryId = lastReadId;
-        state.visibleEntryCount = 4;
-        state.newerEntryCount   = 3;
+    // アンカー時の表示バランスを調整（合計7件）
+    if (state.anchoredEntryId) {
+      const anchorIndex = state.allEntries.findIndex(e => e.id === state.anchoredEntryId);
+      if (anchorIndex !== -1) {
+        // ターゲットより新しい投稿の実際の件数
+        const actualNewerCount = state.allEntries.length - 1 - anchorIndex;
+        
+        // 新しい方は最大 3件。足りない分は古い方に回す
+        state.newerEntryCount   = Math.min(actualNewerCount, 3);
+        // 合計7件にするための visibleEntryCount (ターゲット1 + 古い方)
+        // visibleEntryCount = 7 - newerEntryCount
+        state.visibleEntryCount = 7 - state.newerEntryCount;
       }
     }
 

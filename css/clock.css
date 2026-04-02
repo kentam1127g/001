@@ -79,7 +79,7 @@
 }
 
 .ticker-track.is-scrolling {
-  animation: ticker-scroll linear infinite alternate;
+  /* Dynamic animation from ticker.js */
 }
 
 .ticker-loading-text {
@@ -103,10 +103,7 @@
   text-decoration: underline;
 }
 
-@keyframes ticker-scroll {
-  from { transform: translateX(0); }
-  to   { transform: translateX(var(--ticker-dist)); }
-}
+/* Dynamic @keyframes from ticker.js */
 
 /* ボタン群 */
 .clock-btns {
