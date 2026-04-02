@@ -212,7 +212,7 @@ export function showEntryPreviewModal(entry, { skipLoader = false, onNavigate = 
   } else {
     restartLoader(document.getElementById('randomLoaderWrap'));
     openModal(loadingModal);
-    setTimeout(showPreview, 650);
+    setTimeout(showPreview, 2000);
   }
 
   const close = () => {
