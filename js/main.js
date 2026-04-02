@@ -5,7 +5,7 @@ import { state } from './state.js';
 import { lockScroll } from './scroll.js';
 import { updateClock } from './utils.js';
 import { loadEntriesFromContent, loadSharedCounts } from './data.js';
-import { render, showMoreEntries, showNewerEntries, returnToLatest, handleHashChange } from './render.js';
+import { render, showMoreEntries, showNewerEntries, returnToLatest, handleHashChange, syncLastViewedToDOM } from './render.js';
 import { showEntryPreviewModal } from './modals.js';
 import { initCms } from './cms.js';
 import './ticker.js';
@@ -111,9 +111,10 @@ async function init() {
     // 既読カウントのバックグラウンド取得（全エントリIDを渡して一括取得）
     {
       const countsPromise = loadSharedCounts(state.allEntries.map(e => e.id));
-      countsPromise.then(counts => {
+      countsPromise.then(({ counts, lastViewedAt }) => {
         console.log('[counts] server data loaded:', counts);
         state.sharedCounts = counts;
+        state.sharedLastViewed = lastViewedAt || {};
         state.countsLoaded = true;
 
         document.querySelectorAll('[data-view-count-id]').forEach(badge => {
@@ -122,6 +123,7 @@ async function init() {
           if (!numberEl) return;
           const shared  = state.sharedCounts[id];
           numberEl.textContent = String(shared !== undefined ? shared : 0);
+          syncLastViewedToDOM(id, state.sharedLastViewed[id]);
         });
       }).catch(err => console.error('[counts] background load failed:', err));
     }

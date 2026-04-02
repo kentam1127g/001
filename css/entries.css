@@ -194,6 +194,17 @@
   display: none;
 }
 
+.view-last-read {
+  margin-left: 6px;
+  color: #9a9a9a;
+  font-size: 0.64rem;
+  white-space: nowrap;
+}
+
+.view-last-read[hidden] {
+  display: none !important;
+}
+
 @keyframes countBlink {
   0%, 100% { opacity: 1; }
   25%      { opacity: 0; }

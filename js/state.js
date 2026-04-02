@@ -3,6 +3,7 @@
 export const state = {
   allEntries: [],
   sharedCounts: {},
+  sharedLastViewed: {},
   countsLoaded: false,
   visibleEntryCount: 1,   // INITIAL_VISIBLE_COUNT と同値で初期化
   anchoredEntryId: null,

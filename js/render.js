@@ -204,6 +204,29 @@ export function syncViewCountsToDOM(entryId, count) {
   }
 }
 
+function formatLastViewedLabel(timestamp) {
+  const viewedAt = new Date(timestamp).getTime();
+  if (!viewedAt) return '';
+  const diffMs = Date.now() - viewedAt;
+  if (diffMs < 60 * 1000) return '最終表示：たった今';
+  const diffMin = Math.floor(diffMs / (60 * 1000));
+  if (diffMin < 60) return `最終表示：${diffMin}分前`;
+  const diffHour = Math.floor(diffMin / 60);
+  if (diffHour < 24) return `最終表示：${diffHour}時間前`;
+  const diffDay = Math.floor(diffHour / 24);
+  return `最終表示：${diffDay}日前`;
+}
+
+export function syncLastViewedToDOM(entryId, timestamp) {
+  const badge = document.querySelector(`[data-view-count-id="${entryId}"]`);
+  if (!badge) return;
+  const labelEl = badge.querySelector('.view-last-read');
+  if (!labelEl) return;
+  const label = formatLastViewedLabel(timestamp);
+  labelEl.textContent = label;
+  labelEl.hidden = !label;
+}
+
 export function setupViewObservers() {
   if (!('IntersectionObserver' in window)) return;
 
@@ -227,15 +250,18 @@ export function setupViewObservers() {
         const timerId = window.setTimeout(async () => {
           if (seenIds.has(entryIdValue)) return;
           console.log('[counts] bump triggered for entry:', entryIdValue);
-
           seenIds.add(entryIdValue);
           saveSeenEntries([...seenIds]);
           localStorage.setItem(LAST_READ_ID_KEY, entryIdValue);
 
           const changed = await bumpSharedCounts([entryIdValue]);
-          if (changed && changed[entryIdValue] != null) {
-            state.sharedCounts[entryIdValue] = Number(changed[entryIdValue]);
+          if (changed?.counts && changed.counts[entryIdValue] != null) {
+            state.sharedCounts[entryIdValue] = Number(changed.counts[entryIdValue]);
             syncViewCountsToDOM(entryIdValue, state.sharedCounts[entryIdValue]);
+          }
+          if (changed?.lastViewedAt && changed.lastViewedAt[entryIdValue]) {
+            state.sharedLastViewed[entryIdValue] = changed.lastViewedAt[entryIdValue];
+            syncLastViewedToDOM(entryIdValue, changed.lastViewedAt[entryIdValue]);
           }
 
           if (state.viewObserver) {
@@ -430,6 +456,7 @@ export function handleHashChange() {
 export function render() {
   try {
     ensureHashedEntryVisible();
+    const sharedLastViewed = state.sharedLastViewed || {};
 
     if (!state.allEntries.length) {
       if (loadOlderWrap)    loadOlderWrap.hidden    = true;
@@ -473,6 +500,7 @@ export function render() {
 
       const sharedCount  = state.sharedCounts[entry.id];
       const displayCount = state.countsLoaded ? (sharedCount !== undefined ? sharedCount : 0) : '';
+      const lastViewedLabel = formatLastViewedLabel(sharedLastViewed[entry.id]);
 
       htmlParts.push(`
         <article class="entry" id="entry-${escapeHtml(entry.id)}" data-entry-id="${escapeHtml(entry.id)}">
@@ -491,6 +519,7 @@ export function render() {
                 <span class="view-count-label">既読：</span>
                 <span class="view-count-number">${displayCount}</span>
                 <span class="view-count-plus">+1</span>
+                <span class="view-last-read"${lastViewedLabel ? '' : ' hidden'}>${escapeHtml(lastViewedLabel)}</span>
               </span>
 
               <button class="icon-btn" type="button" data-share-id="${escapeHtml(entry.id)}" aria-label="共有">
