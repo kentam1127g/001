@@ -64,6 +64,7 @@ button, a {
   display: flex;
   align-items: baseline;
   gap: 10px;
+  flex: 1;
 }
 
 .title h1 {
@@ -79,6 +80,61 @@ button, a {
   font-size: 0.78rem;
   color: var(--muted);
   white-space: nowrap;
+}
+
+.topbar-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.transfer-modal {
+  position: fixed;
+  top: 36px;
+  right: 14px;
+  z-index: 25;
+  background: #fff;
+  border: 1px solid #ccc;
+  padding: 10px 14px;
+  box-shadow: 2px 2px 0 #ccc;
+}
+
+.transfer-modal[hidden] {
+  display: none !important;
+}
+
+.transfer-modal-title {
+  margin: 0 0 6px;
+  font-family: "Courier New", monospace;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #333;
+}
+
+.transfer-modal-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-family: "Courier New", monospace;
+  font-size: 0.68rem;
+  color: #444;
+  line-height: 1.9;
+  white-space: nowrap;
+}
+
+.transfer-modal-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.transfer-value {
+  text-align: right;
+}
+
+.transfer-kb {
+  cursor: pointer;
 }
 
 .topbar-clock {

@@ -90,6 +90,15 @@
   /* Dynamic animation from ticker.js */
 }
 
+.transfer-kb {
+  font-family: "Courier New", monospace;
+  font-size: 0.6rem;
+  color: #777;
+  white-space: nowrap;
+  flex-shrink: 0;
+  letter-spacing: 0.04em;
+}
+
 .ticker-loading-text {
   position: absolute;
   top: 50%;
