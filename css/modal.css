@@ -213,7 +213,9 @@
 #randomPreview .preview-bubble {
   padding: 9px 0;
   margin-bottom: 12px;
-  /* max-height を削除し、コンテンツに合わせて伸びるように変更 */
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
 }
 
 #randomPreview .bubble::after {
@@ -222,8 +224,19 @@
 
 #randomPreview .entry-media {
   cursor: default;
-  width: 100%; /* プレビューでも画像は横幅いっぱいに表示 */
+  display: inline-block;
+  width: auto;
+  max-width: 100%;
   margin: 10px 0;
+}
+
+#randomPreview .entry-media img {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  max-height: min(46vh, 420px);
+  height: auto;
+  object-fit: contain;
 }
 .random-go-btn {
   display: block;
