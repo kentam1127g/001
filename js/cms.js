@@ -41,6 +41,37 @@ function logout() {
   location.reload();
 }
 
+let loginPopup = null;
+let loginPopupTimer = null;
+
+function stopLoginPopupWatcher() {
+  if (loginPopupTimer) {
+    window.clearInterval(loginPopupTimer);
+    loginPopupTimer = null;
+  }
+}
+
+function openLoginPopup() {
+  loginPopup = window.open('./admin/', 'decap-cms-login', 'width=1200,height=800,resizable=yes,scrollbars=yes');
+  stopLoginPopupWatcher();
+  loginPopupTimer = window.setInterval(() => {
+    if (isLoggedIn()) {
+      stopLoginPopupWatcher();
+      try {
+        if (loginPopup && !loginPopup.closed) loginPopup.close();
+      } catch {}
+      loginPopup = null;
+      applyAuthState();
+      return;
+    }
+
+    if (!loginPopup || loginPopup.closed) {
+      stopLoginPopupWatcher();
+      loginPopup = null;
+    }
+  }, 500);
+}
+
 // ---- GitHub Contents API ----
 
 async function ghFetch(path, options = {}) {
@@ -599,9 +630,7 @@ export function initCms() {
     document.body.style.overflow = 'hidden';
   });
   document.getElementById('logoutConfirmYes')?.addEventListener('click', logout);
-  document.getElementById('writerLoginBtn')?.addEventListener('click', () => {
-    window.open('./admin/', 'decap-cms-login', 'width=1200,height=800,resizable=yes,scrollbars=yes');
-  });
+  document.getElementById('writerLoginBtn')?.addEventListener('click', openLoginPopup);
   window.addEventListener('storage', (e) => {
     if (e.key === 'decap-cms-user') applyAuthState();
   });
