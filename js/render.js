@@ -138,7 +138,7 @@ export function shareEntry(id) {
   if (!entry) return;
 
   const shareModal = document.getElementById('shareModal');
-  const loaderWrap = document.getElementById('sharePixelLoader')?.parentElement;
+  const loaderWrap = document.getElementById('shareLoaderWrap');
   if (loaderWrap) {
     const fresh = loaderWrap.cloneNode(true);
     loaderWrap.replaceWith(fresh);
@@ -381,7 +381,7 @@ export function showNewerEntries() {
 
 export function returnToLatest() {
   const modal     = document.getElementById('returnLatestModal');
-  const loaderWrap = document.getElementById('returnLatestPixelLoader')?.parentElement;
+  const loaderWrap = document.getElementById('returnLatestLoaderWrap');
   if (loaderWrap) {
     const fresh = loaderWrap.cloneNode(true);
     loaderWrap.replaceWith(fresh);

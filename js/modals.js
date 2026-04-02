@@ -3,7 +3,7 @@
 import { state } from './state.js';
 import { lockScroll, unlockScroll } from './scroll.js';
 import { render } from './render.js';
-import { escapeHtml, normalizeImagePath, formatOnlyTime } from './utils.js';
+import { escapeHtml, normalizeImagePath } from './utils.js';
 
 // ---- ページコンテンツ動的読み込み ----
 
@@ -38,105 +38,124 @@ async function loadPageContent() {
 
 loadPageContent();
 
-const aboutModal    = document.getElementById('aboutModal');
-const writerModal   = document.getElementById('writerModal');
-const newPostsModal = document.getElementById('newPostsModal');
-const imageModal      = document.getElementById('imageModal');
-const imageModalImg   = document.getElementById('imageModalImg');
+// ---- Pixel-loaderの注入 ----
+// <template id="pixelLoaderTpl"> の内容を [data-loader] 要素に注入する
+
+function createPixelLoader(label = 'LOADING') {
+  const tpl = document.getElementById('pixelLoaderTpl');
+  if (!tpl) return null;
+  const frag = tpl.content.cloneNode(true);
+  const labelEl = frag.querySelector('.pixel-loader-label');
+  if (labelEl) labelEl.textContent = label;
+  return frag;
+}
+
+document.querySelectorAll('[data-loader]').forEach(wrap => {
+  const loader = createPixelLoader(wrap.dataset.loader || 'LOADING');
+  if (loader) wrap.appendChild(loader);
+});
+
+// ---- モーダル共通ヘルパー ----
+
+function openModal(el) {
+  el?.classList.add('is-open');
+  lockScroll();
+}
+
+function closeModal(el) {
+  el?.classList.remove('is-open');
+  unlockScroll();
+}
+
+/**
+ * 閉じるボタン＋オーバーレイクリックを一括設定。
+ * onClose が指定された場合、閉じるときに実行される。
+ */
+function setupModal(modalEl, closeBtnId, onClose) {
+  const doClose = () => { closeModal(modalEl); onClose?.(); };
+  document.getElementById(closeBtnId)?.addEventListener('click', doClose);
+  modalEl?.addEventListener('click', (e) => { if (e.target === modalEl) doClose(); });
+}
+
+/**
+ * pixel-loaderアニメーションをリセットして再生する。
+ * 内部HTMLを一旦クリアして再挿入することでCSSアニメーションを再スタートさせる。
+ */
+export function restartLoader(wrapEl) {
+  if (!wrapEl) return;
+  const label = wrapEl.dataset.loader || 'LOADING';
+  wrapEl.innerHTML = '';
+  const loader = createPixelLoader(label);
+  if (loader) wrapEl.appendChild(loader);
+}
+
+/**
+ * モーダルを開き、ローダーを duration ms 後に隠す。
+ * timerRef は { value: timerId } の形で渡すことで clearTimeout に対応する。
+ */
+function openModalWithLoader(modalEl, loaderId, timerRef, duration = 300) {
+  openModal(modalEl);
+  const loader = document.getElementById(loaderId);
+  if (!loader) return;
+  clearTimeout(timerRef.value);
+  loader.classList.remove('hidden');
+  timerRef.value = window.setTimeout(() => loader.classList.add('hidden'), duration);
+}
+
+// ---- 各モーダル要素 ----
+
+const aboutModal       = document.getElementById('aboutModal');
+const writerModal      = document.getElementById('writerModal');
+const newPostsModal    = document.getElementById('newPostsModal');
+const imageModal       = document.getElementById('imageModal');
+const imageModalImg    = document.getElementById('imageModalImg');
 const imageModalLoader = document.getElementById('imageModalLoader');
 
-let aboutLoaderTimer  = null;
-let writerLoaderTimer = null;
-let imageLoaderTimer  = null;
+const aboutLoaderTimer  = { value: null };
+const writerLoaderTimer = { value: null };
+let   imageLoaderTimer  = null;
 
 // ---- リロードモーダル ----
 
 document.getElementById('topbarReload')?.addEventListener('click', () => {
-  const reloadModal = document.getElementById('reloadModal');
-  const loaderWrap = document.getElementById('reloadPixelLoader')?.parentElement;
-  if (loaderWrap) {
-    const fresh = loaderWrap.cloneNode(true);
-    loaderWrap.replaceWith(fresh);
-  }
-  reloadModal?.classList.add('is-open');
-  lockScroll();
+  restartLoader(document.getElementById('reloadLoaderWrap'));
+  openModal(document.getElementById('reloadModal'));
   setTimeout(() => location.reload(), 450);
 });
 
 // ---- Aboutモーダル ----
 
-document.getElementById('floatAbout')?.addEventListener('click', () => {
-  aboutModal?.classList.add('is-open');
-  lockScroll();
-  const loader = document.getElementById('aboutModalLoader');
-  if (loader) {
-    clearTimeout(aboutLoaderTimer);
-    loader.classList.remove('hidden');
-    aboutLoaderTimer = window.setTimeout(() => loader.classList.add('hidden'), 300);
-  }
-});
-document.getElementById('aboutModalClose')?.addEventListener('click', () => {
-  aboutModal?.classList.remove('is-open');
-  unlockScroll();
-});
-aboutModal?.addEventListener('click', (e) => {
-  if (e.target === aboutModal) { aboutModal.classList.remove('is-open'); unlockScroll(); }
-});
+document.getElementById('floatAbout')?.addEventListener('click', () =>
+  openModalWithLoader(aboutModal, 'aboutModalLoader', aboutLoaderTimer));
+setupModal(aboutModal, 'aboutModalClose');
 
 // ---- Writerモーダル ----
 
-document.getElementById('floatWriter')?.addEventListener('click', () => {
-  writerModal?.classList.add('is-open');
-  lockScroll();
-  const loader = document.getElementById('writerModalLoader');
-  if (loader) {
-    clearTimeout(writerLoaderTimer);
-    loader.classList.remove('hidden');
-    writerLoaderTimer = window.setTimeout(() => loader.classList.add('hidden'), 300);
-  }
-});
-document.getElementById('writerModalClose')?.addEventListener('click', () => {
-  writerModal?.classList.remove('is-open');
-  unlockScroll();
-});
-writerModal?.addEventListener('click', (e) => {
-  if (e.target === writerModal) { writerModal.classList.remove('is-open'); unlockScroll(); }
-});
+document.getElementById('floatWriter')?.addEventListener('click', () =>
+  openModalWithLoader(writerModal, 'writerModalLoader', writerLoaderTimer));
+setupModal(writerModal, 'writerModalClose');
 
 // ---- 新着投稿モーダル ----
 
-document.getElementById('newPostsModalClose')?.addEventListener('click', () => {
-  newPostsModal?.classList.remove('is-open');
-  unlockScroll();
-});
-newPostsModal?.addEventListener('click', (e) => {
-  if (e.target === newPostsModal) { newPostsModal.classList.remove('is-open'); unlockScroll(); }
-});
+setupModal(newPostsModal, 'newPostsModalClose');
 
 // ---- 画像モーダル ----
 
-document.getElementById('imageModalClose')?.addEventListener('click', () => {
+function closeImageModal() {
   imageModal.classList.remove('is-open');
   imageModalImg.src = '';
   unlockScroll();
-});
-imageModal?.addEventListener('click', (e) => {
-  if (e.target === imageModal) {
-    imageModal.classList.remove('is-open');
-    imageModalImg.src = '';
-    unlockScroll();
-  }
-});
+}
+
+document.getElementById('imageModalClose')?.addEventListener('click', closeImageModal);
+imageModal?.addEventListener('click', (e) => { if (e.target === imageModal) closeImageModal(); });
 
 document.getElementById('entries')?.addEventListener('click', (e) => {
-  const media = e.target.closest('.entry-media');
-  if (!media) return;
-  const img = media.querySelector('img');
+  const img = e.target.closest('.entry-media')?.querySelector('img');
   if (!img) return;
   imageModalImg.src = img.src;
   imageModalImg.alt = img.alt;
-  imageModal.classList.add('is-open');
-  lockScroll();
+  openModal(imageModal);
   if (imageModalLoader) {
     clearTimeout(imageLoaderTimer);
     imageModalLoader.classList.remove('hidden');
@@ -174,10 +193,10 @@ function buildPreviewHTML(entry) {
 }
 
 export function showEntryPreviewModal(entry, { skipLoader = false, onNavigate = null } = {}) {
-  const modal      = document.getElementById('randomModal');
-  const previewEl  = document.getElementById('randomPreview');
-  const goBtn      = document.getElementById('randomGoToEntry');
-  const closeBtn   = document.getElementById('randomModalClose');
+  const modal     = document.getElementById('randomModal');
+  const previewEl = document.getElementById('randomPreview');
+  const goBtn     = document.getElementById('randomGoToEntry');
+  const closeBtn  = document.getElementById('randomModalClose');
 
   if (!modal || !previewEl || !goBtn) return;
 
@@ -185,15 +204,13 @@ export function showEntryPreviewModal(entry, { skipLoader = false, onNavigate = 
   previewEl.innerHTML = '';
   goBtn.hidden = true;
 
-  const loaderWrap = document.getElementById('randomPixelLoader')?.parentElement;
+  const loaderWrap = document.getElementById('randomLoaderWrap');
   if (loaderWrap) loaderWrap.hidden = false;
 
-  modal.classList.add('is-open');
-  lockScroll();
+  openModal(modal);
 
   const showPreview = () => {
-    // loaderWrap はcloneNode後に付け替わっているので再取得
-    const currentLoaderWrap = document.getElementById('randomPixelLoader')?.parentElement;
+    const currentLoaderWrap = document.getElementById('randomLoaderWrap');
     if (currentLoaderWrap) currentLoaderWrap.hidden = true;
     previewEl.innerHTML = buildPreviewHTML(entry);
     previewEl.hidden = false;
@@ -203,27 +220,23 @@ export function showEntryPreviewModal(entry, { skipLoader = false, onNavigate = 
   if (skipLoader) {
     showPreview();
   } else {
-    if (loaderWrap) {
-      const fresh = loaderWrap.cloneNode(true);
-      loaderWrap.replaceWith(fresh);
-    }
+    restartLoader(loaderWrap);
     setTimeout(showPreview, 650);
   }
 
   const close = () => {
-    modal.classList.remove('is-open');
-    unlockScroll();
+    closeModal(modal);
     previewEl.hidden = true;
     previewEl.innerHTML = '';
     goBtn.hidden = true;
-    modal.onclick   = null;
-    goBtn.onclick   = null;
+    modal.onclick  = null;
+    goBtn.onclick  = null;
     if (closeBtn) closeBtn.onclick = null;
   };
 
-  goBtn.onclick   = () => { close(); if (onNavigate) onNavigate(); };
+  goBtn.onclick  = () => { close(); if (onNavigate) onNavigate(); };
   if (closeBtn) closeBtn.onclick = close;
-  modal.onclick   = (e) => { if (e.target === modal) close(); };
+  modal.onclick  = (e) => { if (e.target === modal) close(); };
 }
 
 document.getElementById('floatRandom')?.addEventListener('click', () => {

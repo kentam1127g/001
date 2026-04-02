@@ -165,15 +165,13 @@
   border: 1px solid #888;
   font-size: 0.82rem;
   letter-spacing: 0.04em;
+  font-family: inherit;
   cursor: pointer;
 }
 
 .random-go-btn:hover {
   background: #bbb;
   border-color: #000;
-}
-
-  font-family: inherit;
 }
 
 .random-go-btn:active {
