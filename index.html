@@ -309,7 +309,7 @@
           </div>
 
           <div id="cmsImageSection" class="cms-image-section">
-            <label class="cms-image-label" for="cmsImageInput">
+            <label id="cmsImageAddLabel" class="cms-image-label" for="cmsImageInput">
               <svg viewBox="0 0 24 24">
                 <rect x="3" y="3" width="18" height="18" rx="2"/>
                 <circle cx="8.5" cy="8.5" r="1.5"/>
@@ -318,7 +318,10 @@
               画像を追加
             </label>
             <input type="file" id="cmsImageInput" class="cms-image-input" accept="image/*" />
-            <img id="cmsImagePreview" class="cms-image-preview" src="" alt="" hidden />
+            <div class="cms-image-preview-wrap" hidden>
+              <img id="cmsImagePreview" class="cms-image-preview" src="" alt="" hidden />
+              <label id="cmsImageReplaceLabel" class="cms-image-replace" for="cmsImageInput" hidden>画像変更</label>
+            </div>
             <button id="cmsImageClear" class="cms-image-clear" type="button" hidden>画像を削除</button>
           </div>
 

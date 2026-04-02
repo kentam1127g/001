@@ -176,6 +176,9 @@ const cmsTextarea      = document.getElementById('cmsTextarea');
 const cmsImageInput    = document.getElementById('cmsImageInput');
 const cmsImagePreview  = document.getElementById('cmsImagePreview');
 const cmsImageClear    = document.getElementById('cmsImageClear');
+const cmsImagePreviewWrap = document.querySelector('.cms-image-preview-wrap');
+const cmsImageAddLabel = document.getElementById('cmsImageAddLabel');
+const cmsImageReplaceLabel = document.getElementById('cmsImageReplaceLabel');
 const cmsSaveBtn       = document.getElementById('cmsSaveBtn');
 const cmsDeleteBtn     = document.getElementById('cmsDeleteBtn');
 const cmsDeleteCancel  = document.getElementById('cmsDeleteCancelBtn');
@@ -229,10 +232,16 @@ function setImagePreview(src) {
   if (src) {
     cmsImagePreview.src    = src;
     cmsImagePreview.hidden = false;
+    if (cmsImagePreviewWrap) cmsImagePreviewWrap.hidden = false;
+    if (cmsImageAddLabel) cmsImageAddLabel.hidden = true;
+    if (cmsImageReplaceLabel) cmsImageReplaceLabel.hidden = false;
     if (cmsImageClear) cmsImageClear.hidden = false;
   } else {
     cmsImagePreview.src    = '';
     cmsImagePreview.hidden = true;
+    if (cmsImagePreviewWrap) cmsImagePreviewWrap.hidden = true;
+    if (cmsImageAddLabel) cmsImageAddLabel.hidden = false;
+    if (cmsImageReplaceLabel) cmsImageReplaceLabel.hidden = true;
     if (cmsImageClear) cmsImageClear.hidden = true;
   }
 }

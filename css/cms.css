@@ -44,6 +44,9 @@ body.is-admin .modal-edit-row.admin-only {
 
 .cms-image-section {
   margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
 }
 
 .cms-image-label {
@@ -58,6 +61,10 @@ body.is-admin .modal-edit-row.admin-only {
   background: #ddd;
   user-select: none;
   font-family: inherit;
+}
+
+.cms-image-label[hidden] {
+  display: none !important;
 }
 
 .cms-image-label:hover {
@@ -77,6 +84,18 @@ body.is-admin .modal-edit-row.admin-only {
 
 .cms-image-input {
   display: none;
+}
+
+.cms-image-preview-wrap {
+  position: relative;
+  display: inline-flex;
+  width: fit-content;
+  margin-top: 10px;
+  overflow: hidden;
+}
+
+.cms-image-preview-wrap[hidden] {
+  display: none !important;
 }
 
 .cms-modal-header-actions {
@@ -106,10 +125,10 @@ body.is-admin .modal-edit-row.admin-only {
 
 .cms-image-preview {
   display: block;
-  width: 100%;
-  max-height: 220px;
+  width: auto;
+  max-width: min(100%, 240px);
+  max-height: 180px;
   object-fit: contain;
-  margin-top: 10px;
   background: #eee;
 }
 
@@ -117,8 +136,42 @@ body.is-admin .modal-edit-row.admin-only {
   display: none !important;
 }
 
+.cms-image-replace {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border: 1px solid #888;
+  background: #ddd;
+  color: var(--muted, #555);
+  font-size: 0.76rem;
+  font-family: inherit;
+  cursor: pointer;
+  z-index: 1;
+  user-select: none;
+  transform: translate(-50%, -50%);
+  white-space: nowrap;
+  line-height: 1;
+  max-width: calc(100% - 16px);
+  box-sizing: border-box;
+}
+
+.cms-image-replace[hidden] {
+  display: none !important;
+}
+
+.cms-image-replace:hover {
+  background: #bbb;
+  border-color: #000;
+  color: #000;
+}
+
 .cms-image-clear {
-  display: inline-block;
+  display: block;
   margin-top: 6px;
   font-size: 0.78rem;
   color: #c00;
