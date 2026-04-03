@@ -10,7 +10,7 @@ import { showEntryPreviewModal, openWelcomeAboutModal, isWelcomeModalOpen, getRe
 import { initCms } from './cms.js';
 import './ticker.js';
 
-const READER_CROSSED_MODAL_DELAY_MS = 3000;
+const READER_CROSSED_MODAL_DELAY_MS = 3500;
 
 function isJustNowTimestamp(timestamp) {
   const viewedAt = new Date(timestamp).getTime();
