@@ -261,7 +261,9 @@ function isRecentReaderCrossed(timestamp) {
 }
 
 function openReaderCrossedModal(name, msg) {
-  if (sessionStorage.getItem('enpitu-reader-crossed-shown')) return;
+  const displayName = name || '名無しの読者';
+  const lastShown = sessionStorage.getItem('enpitu-reader-crossed-shown');
+  if (lastShown === displayName) return;
 
   const modal = document.getElementById('readerCrossedModal');
   const profileEl = document.getElementById('readerCrossedProfile');
@@ -269,13 +271,12 @@ function openReaderCrossedModal(name, msg) {
   const msgEl = document.getElementById('readerCrossedMsg');
   if (!modal || !profileEl) return;
 
-  const displayName = name || '名無しの読者';
   if (nameEl) nameEl.textContent = `${displayName}さん`;
   if (msgEl) msgEl.textContent = msg || '';
   if (msgEl) msgEl.hidden = !msg;
   profileEl.hidden = false;
 
-  sessionStorage.setItem('enpitu-reader-crossed-shown', '1');
+  sessionStorage.setItem('enpitu-reader-crossed-shown', displayName);
   window.setTimeout(() => {
     const welcomeOpen = document.getElementById('aboutModal')?.classList.contains('is-open');
     modal.style.zIndex = welcomeOpen ? '49' : '';
