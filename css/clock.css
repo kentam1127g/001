@@ -87,9 +87,7 @@
   padding: 0!important;
 }
 
-.ticker-track.is-scrolling {
-  /* Dynamic animation from ticker.js */
-}
+/* .ticker-track.is-scrolling — animation set dynamically by ticker.js */
 
 .transfer-kb {
   font-family: "Courier New", monospace;
@@ -303,7 +301,7 @@
 }
 
 .reader-profile-name--unset {
-  color: #999;
+  color: #777;
   animation: readerNameBlink 2.4s steps(1) infinite;
 }
 

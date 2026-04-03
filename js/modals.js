@@ -339,7 +339,7 @@ function updateReaderProfileBtn() {
     nameEl.textContent = `${name}さん`;
     nameEl.classList.remove('reader-profile-name--unset');
   } else {
-    nameEl.textContent = '（お名前未設定）';
+    nameEl.textContent = 'お名前未設定';
     nameEl.classList.add('reader-profile-name--unset');
   }
 }
