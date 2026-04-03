@@ -200,12 +200,12 @@
 
 .reader-crossed-steps {
   position: absolute;
-  right: 12px;
-  bottom: 10px;
-  width: 122px;
-  height: 44px;
+  right: 10px;
+  bottom: 8px;
+  width: 88px;
+  height: 132px;
   pointer-events: none;
-  opacity: 0.82;
+  opacity: 1;
 }
 
 .reader-crossed-steps svg {
@@ -216,35 +216,38 @@
 }
 
 .reader-crossed-step {
-  fill: #8a7c70;
+  fill: #1f1f1f;
   opacity: 0;
   transform-box: fill-box;
   transform-origin: center;
-  filter: drop-shadow(0 1px 0 rgba(0, 0, 0, 0.08));
-  animation: readerCrossedFootsteps 2.8s linear infinite;
+  animation: readerCrossedFootsteps 2.7s steps(1, end) infinite;
 }
 
 .reader-crossed-step.step-1 { animation-delay: 0s; }
-.reader-crossed-step.step-2 { animation-delay: 0.35s; }
-.reader-crossed-step.step-3 { animation-delay: 0.7s; }
-.reader-crossed-step.step-4 { animation-delay: 1.05s; }
-.reader-crossed-step.step-5 { animation-delay: 1.4s; }
-.reader-crossed-step.step-6 { animation-delay: 1.75s; }
+.reader-crossed-step.step-2 { animation-delay: 0.28s; }
+.reader-crossed-step.step-3 { animation-delay: 0.56s; }
+.reader-crossed-step.step-4 { animation-delay: 0.84s; }
+.reader-crossed-step.step-5 { animation-delay: 1.12s; }
+.reader-crossed-step.step-6 { animation-delay: 1.4s; }
 
 @keyframes readerCrossedFootsteps {
   0% {
     opacity: 0;
-    transform: translate(-28px, 7px) rotate(-8deg) scale(0.84);
+    transform: scale(0.92);
   }
-  12% {
-    opacity: 0.84;
+  8% {
+    opacity: 1;
   }
-  48% {
-    opacity: 0.95;
+  20% {
+    opacity: 1;
+  }
+  24% {
+    opacity: 0;
+    transform: scale(1);
   }
   100% {
     opacity: 0;
-    transform: translate(20px, -9px) rotate(6deg) scale(1);
+    transform: scale(1);
   }
 }
 
