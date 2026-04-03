@@ -263,7 +263,12 @@ function markCountIds(ids, requested = true) {
 }
 
 function mergeSharedCounts(payload) {
-  const { counts = {}, lastViewedAt = {}, readerNames = {}, readerMsgs = {} } = payload || {};
+  const {
+    counts = {},
+    lastViewedAt = {},
+    siteReaderName = '',
+    siteReaderMsg = '',
+  } = payload || {};
   Object.entries(counts).forEach(([id, count]) => {
     state.sharedCounts[id] = Number(count);
     syncViewCountsToDOM(id, state.sharedCounts[id]);
@@ -272,13 +277,13 @@ function mergeSharedCounts(payload) {
     state.sharedLastViewed[id] = timestamp;
     syncLastViewedToDOM(id, timestamp);
   });
-  Object.entries(readerNames).forEach(([id, name]) => {
-    state.sharedReaderNames[id] = name || '';
-  });
-  Object.entries(readerMsgs).forEach(([id, msg]) => {
-    state.sharedReaderMsgs[id] = msg || '';
-  });
-  if (Object.keys(counts).length || Object.keys(lastViewedAt).length || Object.keys(readerNames).length || Object.keys(readerMsgs).length) {
+  if (typeof siteReaderName === 'string') {
+    state.siteReaderName = siteReaderName;
+  }
+  if (typeof siteReaderMsg === 'string') {
+    state.siteReaderMsg = siteReaderMsg;
+  }
+  if (Object.keys(counts).length || Object.keys(lastViewedAt).length || siteReaderName || siteReaderMsg) {
     state.countsLoaded = true;
   }
 }
@@ -335,11 +340,11 @@ export function setupViewObservers() {
               name: localStorage.getItem('enpitu-reader-name') || '',
               msg:  localStorage.getItem('enpitu-reader-msg')  || '',
             };
-            const changed = await bumpSharedCounts([entryIdValue], readerInfo);
-            mergeSharedCounts(changed);
-            if (changed?.lastViewedAt?.[entryIdValue] && isRecentReaderCrossed(changed.lastViewedAt[entryIdValue])) {
-              const crossedName = changed?.readerNames?.[entryIdValue] || state.sharedReaderNames[entryIdValue] || '';
-              const crossedMsg = changed?.readerMsgs?.[entryIdValue] || state.sharedReaderMsgs[entryIdValue] || '';
+          const changed = await bumpSharedCounts([entryIdValue], readerInfo);
+          mergeSharedCounts(changed);
+          if (changed?.lastViewedAt?.[entryIdValue] && isRecentReaderCrossed(changed.lastViewedAt[entryIdValue])) {
+              const crossedName = changed?.previousSiteReaderName || state.siteReaderName || '';
+              const crossedMsg = changed?.previousSiteReaderMsg || state.siteReaderMsg || '';
               openReaderCrossedModal(crossedName, crossedMsg);
             }
 

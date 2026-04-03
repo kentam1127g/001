@@ -5,7 +5,6 @@ import { lockScroll, unlockScroll } from './scroll.js';
 import { render } from './render.js';
 import { escapeHtml, normalizeImagePath } from './utils.js';
 import { syncLastReaderProfile } from './data.js';
-import { LAST_READ_ID_KEY } from './config.js';
 
 // ---- ページコンテンツ動的読み込み ----
 
@@ -424,15 +423,12 @@ document.getElementById('readerProfileSave')?.addEventListener('click', () => {
   closeModal(readerProfileModal);
 
   // 直近に読んだエントリの読者名・一言だけを同期する
-  const lastReadId = localStorage.getItem(LAST_READ_ID_KEY);
-  if (lastReadId) {
-    syncLastReaderProfile(lastReadId, { name, msg }).then((changed) => {
-      if (changed?.ok) {
-        state.sharedReaderNames[lastReadId] = name;
-        state.sharedReaderMsgs[lastReadId] = msg;
-      }
-    }).catch(() => {});
-  }
+  syncLastReaderProfile('', { name, msg }).then((changed) => {
+    if (changed?.ok) {
+      state.siteReaderName = name;
+      state.siteReaderMsg = msg;
+    }
+  }).catch(() => {});
 });
 
 export function showReaderCrossedProfile(name, msg) {

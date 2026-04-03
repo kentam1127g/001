@@ -17,7 +17,14 @@ export function saveSeenEntries(ids) {
 
 function normalizeCountsResponse(data) {
   if (!data || typeof data !== 'object' || Array.isArray(data)) {
-    return { counts: {}, lastViewedAt: {}, readerNames: {}, readerMsgs: {} };
+    return {
+      counts: {},
+      lastViewedAt: {},
+      siteReaderName: '',
+      siteReaderMsg: '',
+      previousSiteReaderName: '',
+      previousSiteReaderMsg: '',
+    };
   }
 
   if (data.counts && typeof data.counts === 'object') {
@@ -25,12 +32,21 @@ function normalizeCountsResponse(data) {
       counts: data.counts,
       lastViewedAt: (data.lastViewedAt && typeof data.lastViewedAt === 'object' && !Array.isArray(data.lastViewedAt))
         ? data.lastViewedAt : {},
-      readerNames: (data.readerNames && typeof data.readerNames === 'object') ? data.readerNames : {},
-      readerMsgs:  (data.readerMsgs  && typeof data.readerMsgs  === 'object') ? data.readerMsgs  : {},
+      siteReaderName: typeof data.siteReaderName === 'string' ? data.siteReaderName : '',
+      siteReaderMsg: typeof data.siteReaderMsg === 'string' ? data.siteReaderMsg : '',
+      previousSiteReaderName: typeof data.previousSiteReaderName === 'string' ? data.previousSiteReaderName : '',
+      previousSiteReaderMsg: typeof data.previousSiteReaderMsg === 'string' ? data.previousSiteReaderMsg : '',
     };
   }
 
-  return { counts: data, lastViewedAt: {}, readerNames: {}, readerMsgs: {} };
+  return {
+    counts: data,
+    lastViewedAt: {},
+    siteReaderName: '',
+    siteReaderMsg: '',
+    previousSiteReaderName: '',
+    previousSiteReaderMsg: '',
+  };
 }
 
 export async function loadEntriesFromContent() {
@@ -49,7 +65,7 @@ export async function loadEntriesFromContent() {
 
 export async function loadSharedCounts(ids) {
   try {
-    if (!ids || !ids.length) return { counts: {}, lastViewedAt: {} };
+    if (!ids || !ids.length) return { counts: {}, lastViewedAt: {}, siteReaderName: '', siteReaderMsg: '' };
     console.log('[counts] GET start — entries:', ids.length);
     const url = `${COUNTS_API_BASE}/.netlify/functions/counts-get?ids=${encodeURIComponent(ids.join(','))}`;
     const res = await fetch(url, { cache: 'no-store' });
@@ -57,20 +73,27 @@ export async function loadSharedCounts(ids) {
     console.log('[counts] GET response status:', res.status, '— body:', text);
     if (!res.ok) {
       console.error(`[counts] GET failed: HTTP ${res.status}`, text);
-      return { counts: {}, lastViewedAt: {} };
+      return { counts: {}, lastViewedAt: {}, siteReaderName: '', siteReaderMsg: '' };
     }
     let data;
-    try { data = JSON.parse(text); } catch { console.error('[counts] GET: JSON parse error', text); return { counts: {}, lastViewedAt: {} }; }
+    try { data = JSON.parse(text); } catch { console.error('[counts] GET: JSON parse error', text); return { counts: {}, lastViewedAt: {}, siteReaderName: '', siteReaderMsg: '' }; }
     return normalizeCountsResponse(data);
   } catch (error) {
     console.error('[counts] GET failed (network?):', error);
-    return { counts: {}, lastViewedAt: {} };
+    return { counts: {}, lastViewedAt: {}, siteReaderName: '', siteReaderMsg: '' };
   }
 }
 
 export async function bumpSharedCounts(ids, readerInfo = {}) {
   try {
-    if (!ids.length) return { counts: {}, lastViewedAt: {}, readerNames: {}, readerMsgs: {} };
+    if (!ids.length) return {
+      counts: {},
+      lastViewedAt: {},
+      siteReaderName: '',
+      siteReaderMsg: '',
+      previousSiteReaderName: '',
+      previousSiteReaderMsg: '',
+    };
     console.log('[counts] BUMP start — ids:', ids);
     const nameParam = readerInfo.name ? `&readerName=${encodeURIComponent(readerInfo.name)}` : '';
     const msgParam  = readerInfo.msg  ? `&readerMsg=${encodeURIComponent(readerInfo.msg)}`   : '';
@@ -80,25 +103,25 @@ export async function bumpSharedCounts(ids, readerInfo = {}) {
     console.log('[counts] BUMP response status:', res.status, '— body:', text);
     if (!res.ok) {
       console.error(`[counts] BUMP failed: HTTP ${res.status}`, text);
-      return { counts: {}, lastViewedAt: {} };
+      return { counts: {}, lastViewedAt: {}, siteReaderName: '', siteReaderMsg: '', previousSiteReaderName: '', previousSiteReaderMsg: '' };
     }
     let data;
-    try { data = JSON.parse(text); } catch { console.error('[counts] BUMP: JSON parse error', text); return { counts: {}, lastViewedAt: {} }; }
+    try { data = JSON.parse(text); } catch { console.error('[counts] BUMP: JSON parse error', text); return { counts: {}, lastViewedAt: {}, siteReaderName: '', siteReaderMsg: '', previousSiteReaderName: '', previousSiteReaderMsg: '' }; }
     const normalized = normalizeCountsResponse(data);
     console.log('[counts] BUMP ok:', normalized.counts);
     return normalized;
   } catch (error) {
     console.error('[counts] BUMP failed (network?):', error);
-    return { counts: {}, lastViewedAt: {} };
+    return { counts: {}, lastViewedAt: {}, siteReaderName: '', siteReaderMsg: '', previousSiteReaderName: '', previousSiteReaderMsg: '' };
   }
 }
 
 export async function syncLastReaderProfile(id, readerInfo = {}) {
   try {
-    if (!id) return { ok: true };
+    if (!id && !readerInfo.name && !readerInfo.msg) return { ok: true };
     const nameParam = readerInfo.name ? `&readerName=${encodeURIComponent(readerInfo.name)}` : '';
     const msgParam  = readerInfo.msg  ? `&readerMsg=${encodeURIComponent(readerInfo.msg)}`   : '';
-    const url = `${COUNTS_API_BASE}/.netlify/functions/counts-profile-sync?id=${encodeURIComponent(id)}${nameParam}${msgParam}`;
+    const url = `${COUNTS_API_BASE}/.netlify/functions/counts-profile-sync?noop=1${nameParam}${msgParam}`;
     const res = await fetch(url, { cache: 'no-store' });
     const text = await res.text();
     console.log('[counts] PROFILE response status:', res.status, '— body:', text);
