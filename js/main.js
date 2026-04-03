@@ -10,6 +10,8 @@ import { showEntryPreviewModal, openWelcomeAboutModal, isWelcomeModalOpen, getRe
 import { initCms } from './cms.js';
 import './ticker.js';
 
+const READER_CROSSED_MODAL_DELAY_MS = 3000;
+
 function isJustNowTimestamp(timestamp) {
   const viewedAt = new Date(timestamp).getTime();
   if (!viewedAt) return false;
@@ -152,13 +154,19 @@ async function init() {
         const priorityModal = hasReaderCrossedNotice
           ? document.getElementById('readerCrossedModal')
           : (hasNewPostsNotice ? document.getElementById('newPostsModal') : null);
+        const priorityModalDelay = hasReaderCrossedNotice ? READER_CROSSED_MODAL_DELAY_MS : 0;
 
         if (priorityModal) {
+          const openPriorityModal = () => {
+            window.setTimeout(() => {
+              priorityModal.classList.add('is-open');
+              lockScroll();
+            }, priorityModalDelay);
+          };
           if (isWelcomeModalOpen()) {
-            pendingAfterWelcome = () => { priorityModal.classList.add('is-open'); lockScroll(); };
+            pendingAfterWelcome = openPriorityModal;
           } else {
-            priorityModal.classList.add('is-open');
-            lockScroll();
+            openPriorityModal();
           }
         }
       }).catch(err => console.error('[counts] background load failed:', err));
