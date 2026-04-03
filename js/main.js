@@ -13,7 +13,7 @@ import './ticker.js';
 function isJustNowTimestamp(timestamp) {
   const viewedAt = new Date(timestamp).getTime();
   if (!viewedAt) return false;
-  return (Date.now() - viewedAt) < 5 * 60 * 1000;
+  return (Date.now() - viewedAt) < 31 * 60 * 1000;
 }
 
 // ---- ナビゲーションボタン ----
