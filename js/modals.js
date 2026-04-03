@@ -373,14 +373,11 @@ export function showReaderCrossedProfile(name, msg) {
   const nameEl    = document.getElementById('readerCrossedName');
   const msgEl     = document.getElementById('readerCrossedMsg');
   if (!profileEl) return;
-  if (name) {
-    if (nameEl) nameEl.textContent = `${name}さん`;
-    if (msgEl)  msgEl.textContent  = msg || '';
-    if (msgEl)  msgEl.hidden       = !msg;
-    profileEl.hidden = false;
-  } else {
-    profileEl.hidden = true;
-  }
+  const displayName = name || '名無しの読者';
+  if (nameEl) nameEl.textContent = `${displayName}さん`;
+  if (msgEl)  msgEl.textContent  = msg || '';
+  if (msgEl)  msgEl.hidden       = !msg;
+  profileEl.hidden = false;
 }
 
 // ---- ランダム投稿 ----
