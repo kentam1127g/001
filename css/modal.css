@@ -193,6 +193,61 @@
   margin: 0;
 }
 
+#readerCrossedModal .modal-box {
+  position: relative;
+  overflow: hidden;
+}
+
+.reader-crossed-steps {
+  position: absolute;
+  right: 12px;
+  bottom: 10px;
+  width: 122px;
+  height: 44px;
+  pointer-events: none;
+  opacity: 0.82;
+}
+
+.reader-crossed-steps svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.reader-crossed-step {
+  fill: #8a7c70;
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  filter: drop-shadow(0 1px 0 rgba(0, 0, 0, 0.08));
+  animation: readerCrossedFootsteps 2.8s linear infinite;
+}
+
+.reader-crossed-step.step-1 { animation-delay: 0s; }
+.reader-crossed-step.step-2 { animation-delay: 0.35s; }
+.reader-crossed-step.step-3 { animation-delay: 0.7s; }
+.reader-crossed-step.step-4 { animation-delay: 1.05s; }
+.reader-crossed-step.step-5 { animation-delay: 1.4s; }
+.reader-crossed-step.step-6 { animation-delay: 1.75s; }
+
+@keyframes readerCrossedFootsteps {
+  0% {
+    opacity: 0;
+    transform: translate(-28px, 7px) rotate(-8deg) scale(0.84);
+  }
+  12% {
+    opacity: 0.84;
+  }
+  48% {
+    opacity: 0.95;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(20px, -9px) rotate(6deg) scale(1);
+  }
+}
+
 /* 画像モーダル */
 #imageModal {
   z-index: 60;
