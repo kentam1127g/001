@@ -277,6 +277,8 @@ function openReaderCrossedModal(name, msg) {
 
   sessionStorage.setItem('enpitu-reader-crossed-shown', '1');
   window.setTimeout(() => {
+    const welcomeOpen = document.getElementById('aboutModal')?.classList.contains('is-open');
+    modal.style.zIndex = welcomeOpen ? '49' : '';
     modal.classList.add('is-open');
     lockScroll();
   }, 150);
