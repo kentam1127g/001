@@ -136,6 +136,32 @@
     </div>
   </div>
 
+  <div id="resetSeenModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="resetSeenModalTitle">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2 class="modal-title" id="resetSeenModalTitle">既読リセット</h2>
+      </div>
+      <div class="modal-body">
+        <div class="random-modal-loader" id="resetSeenLoaderWrap" data-loader="SAVING"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="resetSeenConfirmModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="resetSeenConfirmTitle">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2 class="modal-title" id="resetSeenConfirmTitle">既読リセット</h2>
+      </div>
+      <div class="modal-body">
+        <p class="modal-confirm-text">既読数をリセットしますか？</p>
+        <div class="modal-actions">
+          <button id="resetSeenConfirmYes" class="modal-btn modal-btn-primary" type="button">はい</button>
+          <button id="resetSeenConfirmNo" class="modal-btn" type="button">いいえ</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div id="shareModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="shareModalTitle">
     <div class="modal-box">
       <div class="modal-header">

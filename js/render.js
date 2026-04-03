@@ -260,14 +260,26 @@ function isRecentReaderCrossed(timestamp) {
   return (Date.now() - viewedAt) < 31 * 60 * 1000;
 }
 
-// ページロードごとにリセットされるメモリ変数（sessionStorageはリロード後も残るため使わない）
+// 同一ページロード内の多重BUMP対策（メモリ変数）
 let _readerCrossedShownName = null;
+const CROSSED_SESSION_KEY = 'enpitu-reader-crossed-last';
+
+function isSelfReader(name) {
+  const myName = localStorage.getItem('enpitu-reader-name') || '';
+  return myName && myName === name;
+}
 
 function openReaderCrossedModal(name, msg) {
   const displayName = name || '名無しの読者';
-  if (_readerCrossedShownName === displayName) return;
-  // すでに実名で表示済みなら "名無しの読者" で上書きしない
+
+  // 同一ページロード内：実名表示済みなら "名無しの読者" で上書きしない
   if (!name && _readerCrossedShownName && _readerCrossedShownName !== '名無しの読者') return;
+  // 同一ページロード内：同じ名前は再表示しない
+  if (_readerCrossedShownName === displayName) return;
+
+  // タブをまたいで：前回表示した名前と同じなら再表示しない
+  const lastShown = sessionStorage.getItem(CROSSED_SESSION_KEY);
+  if (lastShown === displayName) return;
 
   const modal = document.getElementById('readerCrossedModal');
   const profileEl = document.getElementById('readerCrossedProfile');
@@ -282,6 +294,7 @@ function openReaderCrossedModal(name, msg) {
   profileEl.hidden = false;
 
   _readerCrossedShownName = displayName;
+  sessionStorage.setItem(CROSSED_SESSION_KEY, displayName);
   window.setTimeout(() => {
     const welcomeOpen = document.getElementById('aboutModal')?.classList.contains('is-open');
     modal.style.zIndex = welcomeOpen ? '49' : '';
@@ -339,7 +352,7 @@ function loadVisibleEntryCounts(visibleEntries) {
   markCountIds(missingIds, true);
   loadSharedCounts(missingIds).then((payload) => {
     mergeSharedCounts(payload);
-    if (isRecentReaderCrossed(payload.siteReaderUpdatedAt)) {
+    if (isRecentReaderCrossed(payload.siteReaderUpdatedAt) && !isSelfReader(payload.siteReaderName)) {
       openReaderCrossedModal(payload.siteReaderName || '', payload.siteReaderMsg || '');
     }
   }).catch((error) => {
@@ -386,7 +399,7 @@ export function setupViewObservers() {
             };
           const changed = await bumpSharedCounts([entryIdValue], readerInfo);
           mergeSharedCounts(changed, { animate: true });
-          if (isRecentReaderCrossed(changed?.previousSiteReaderUpdatedAt)) {
+          if (isRecentReaderCrossed(changed?.previousSiteReaderUpdatedAt) && !isSelfReader(changed?.previousSiteReaderName)) {
               const crossedName = changed?.previousSiteReaderName || '';
               const crossedMsg  = changed?.previousSiteReaderMsg  || '';
               openReaderCrossedModal(crossedName, crossedMsg);

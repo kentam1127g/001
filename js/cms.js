@@ -2,8 +2,9 @@
 
 import { state } from './state.js';
 import { escapeHtml } from './utils.js';
-import { renderAboutBody, renderWriterBody } from './modals.js';
+import { restartLoader, renderAboutBody, renderWriterBody } from './modals.js';
 import { COUNTS_API_BASE, SEEN_STORAGE_KEY } from './config.js';
+import { lockScroll, unlockScroll } from './scroll.js';
 
 const GITHUB_REPO   = 'kentam1127g/001';
 const GITHUB_BRANCH = 'main';
@@ -60,6 +61,16 @@ function openLoginModal() {
 
 function closeLoginModal() {
   document.getElementById('loginModal')?.classList.remove('is-open');
+}
+
+function openOverlayModal(el) {
+  el?.classList.add('is-open');
+  lockScroll();
+}
+
+function closeOverlayModal(el) {
+  el?.classList.remove('is-open');
+  unlockScroll();
 }
 
 function openLoginPopup() {
@@ -670,19 +681,32 @@ document.getElementById('entries')?.addEventListener('click', (e) => {
 document.getElementById('floatPost')?.addEventListener('click', openNewPostModal);
 
 // 既読数リセットボタン
-document.getElementById('resetSeenBtn')?.addEventListener('click', async () => {
+const resetSeenModal = document.getElementById('resetSeenModal');
+const resetSeenConfirmModal = document.getElementById('resetSeenConfirmModal');
+
+async function handleResetSeen() {
   const ids = state.allEntries.map(e => e.id).filter(Boolean);
-  if (ids.length) {
-    try {
+  restartLoader(document.getElementById('resetSeenLoaderWrap'));
+  openOverlayModal(resetSeenModal);
+
+  try {
+    if (ids.length) {
       const url = `${COUNTS_API_BASE}/.netlify/functions/counts-reset?ids=${encodeURIComponent(ids.join(','))}`;
-      await fetch(url, { cache: 'no-store' });
-    } catch (e) {
-      console.error('[counts] reset failed:', e);
+      const res = await fetch(url, { cache: 'no-store' });
+      if (!res.ok) throw new Error(`counts-reset failed: ${res.status}`);
     }
+    localStorage.removeItem(SEEN_STORAGE_KEY);
+    if (state.viewSeenIds) state.viewSeenIds.clear();
+    location.reload();
+  } catch (e) {
+    console.error('[counts] reset failed:', e);
+    closeOverlayModal(resetSeenModal);
+    alert('既読リセットに失敗しました。時間をおいてもう一度お試しください。');
   }
-  localStorage.removeItem(SEEN_STORAGE_KEY);
-  if (state.viewSeenIds) state.viewSeenIds.clear();
-  location.reload();
+}
+
+document.getElementById('resetSeenBtn')?.addEventListener('click', () => {
+  openOverlayModal(resetSeenConfirmModal);
 });
 
 // About・書いてる人 編集ボタン
@@ -714,6 +738,14 @@ export function initCms() {
     if (!logoutPopup?.hidden && !logoutPopup.contains(e.target)) {
       logoutPopup.hidden = true;
     }
+  });
+  document.getElementById('resetSeenConfirmNo')?.addEventListener('click', () => closeOverlayModal(resetSeenConfirmModal));
+  resetSeenConfirmModal?.addEventListener('click', (e) => {
+    if (e.target === resetSeenConfirmModal) closeOverlayModal(resetSeenConfirmModal);
+  });
+  document.getElementById('resetSeenConfirmYes')?.addEventListener('click', async () => {
+    closeOverlayModal(resetSeenConfirmModal);
+    await handleResetSeen();
   });
   document.getElementById('logoutConfirmYes')?.addEventListener('click', logout);
   document.getElementById('writerLoginBtn')?.addEventListener('click', openLoginModal);
