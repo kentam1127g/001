@@ -88,5 +88,15 @@
     "caption": "",
     "createdAt": "2026-04-02T05:04:43.000Z",
     "viewCount": 0
+  },
+  {
+    "id": "2026-04-03-00-26-54",
+    "date": "2026-04-03",
+    "author": "まつけん",
+    "image": "images/uploads/2026-04-03-00-26-50.gif",
+    "text": "画像に日付が入るかテスト",
+    "caption": "",
+    "createdAt": "2026-04-02T15:26:54.000Z",
+    "viewCount": 0
   }
 ]

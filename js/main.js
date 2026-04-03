@@ -130,7 +130,9 @@ async function init() {
           syncLastViewedToDOM(id, state.sharedLastViewed[id]);
         });
 
-        const hasReaderCrossedNotice = Object.values(state.sharedLastViewed).some(isJustNowTimestamp);
+        const alreadyShownCrossed = sessionStorage.getItem('enpitu-reader-crossed-shown');
+        const hasReaderCrossedNotice = !alreadyShownCrossed && Object.values(state.sharedLastViewed).some(isJustNowTimestamp);
+        if (hasReaderCrossedNotice) sessionStorage.setItem('enpitu-reader-crossed-shown', '1');
         const priorityModal = hasReaderCrossedNotice
           ? document.getElementById('readerCrossedModal')
           : (hasNewPostsNotice ? document.getElementById('newPostsModal') : null);
@@ -150,3 +152,46 @@ async function init() {
 }
 
 init();
+
+// 通信量表示
+(function () {
+  const el    = document.getElementById('transferKB');
+  const modal = document.getElementById('transferModal');
+  if (!el || !window.PerformanceObserver) return;
+
+  // 目安の定数
+  const BYTES_PER_PHOTO = 4 * 1024 * 1024; // スマホ写真 ≈ 4MB
+  const BYTES_PER_MIN   = 1 * 1024 * 1024; // 動画 ≈ 1MB/分
+
+  let totalBytes = 0;
+
+  function updateKB() {
+    totalBytes = performance.getEntriesByType('resource')
+      .reduce((sum, r) => sum + (r.encodedBodySize || 0), 0);
+    el.textContent = `${(totalBytes / 1024).toFixed(1)} KB`;
+  }
+
+  function updateModal() {
+    const photos = (totalBytes / BYTES_PER_PHOTO).toFixed(2);
+    const video  = (totalBytes / BYTES_PER_MIN).toFixed(2);
+    document.getElementById('transferPhotos').textContent = `約${photos}`;
+    document.getElementById('transferVideo').textContent  = `約${video}`;
+  }
+
+  // トグル
+  el.addEventListener('click', () => {
+    const isOpen = !modal.hidden;
+    if (!isOpen) updateModal();
+    modal.hidden = isOpen;
+  });
+
+  // 外クリックで閉じる
+  document.addEventListener('click', (e) => {
+    if (!modal.hidden && !modal.contains(e.target) && e.target !== el) {
+      modal.hidden = true;
+    }
+  });
+
+  const observer = new PerformanceObserver(() => updateKB());
+  observer.observe({ type: 'resource', buffered: true });
+})();

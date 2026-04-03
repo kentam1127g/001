@@ -31,6 +31,24 @@ async function saveManifest(processed) {
   );
 }
 
+function buildTimestampSvg(width, height, baseName) {
+  const m = baseName.match(/^(\d{4})-(\d{2})-(\d{2})-(\d{2})-(\d{2})/);
+  if (!m) return null;
+  const [, year, month, day, hour, minute] = m;
+  const text = `'${year.slice(2)} ${month}.${day}  ${hour}:${minute}`;
+  const fontSize = 10;
+  const pad = 5;
+  const svg = `<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
+  <text
+    x="${width - pad}" y="${height - pad}"
+    font-family="monospace" font-size="${fontSize}px" font-weight="bold"
+    fill="#f90" text-anchor="end"
+    paint-order="stroke" stroke="#000" stroke-width="2px" stroke-linejoin="round"
+  >${text}</text>
+</svg>`;
+  return Buffer.from(svg);
+}
+
 async function optimizeImage(fileName, processed) {
   const inputPath = path.join(uploadsDir, fileName);
   const ext = path.extname(fileName).toLowerCase();
@@ -42,11 +60,20 @@ async function optimizeImage(fileName, processed) {
     return { original: fileName, converted: outputName, skipped: true };
   }
 
-  await sharp(inputPath)
+  // Step 1: rotate + resize → PNG中間バッファ（実サイズを取得するため）
+  const { data: resizedBuf, info: { width, height } } = await sharp(inputPath)
     .rotate()
     .resize({ width: 240, height: 240, fit: "inside", withoutEnlargement: true })
-    .gif(GIF_OPTIONS)
-    .toFile(outputPath);
+    .png()
+    .toBuffer({ resolveWithObject: true });
+
+  // Step 2: タイムスタンプをオーバーレイしてGIF化
+  const timestampSvg = buildTimestampSvg(width, height, base);
+  const pipeline = timestampSvg
+    ? sharp(resizedBuf).composite([{ input: timestampSvg, blend: "over" }])
+    : sharp(resizedBuf);
+
+  await pipeline.gif(GIF_OPTIONS).toFile(outputPath);
 
   if (path.resolve(outputPath) !== path.resolve(inputPath)) {
     await fs.unlink(inputPath);

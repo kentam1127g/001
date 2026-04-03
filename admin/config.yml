@@ -2,7 +2,7 @@ backend:
   name: github
   repo: kentam1127g/001
   branch: main
-  base_url: https://enpitumark-oath.netlify.app
+  base_url: https://unrivaled-sunshine-fa042c.netlify.app
 
 media_folder: "images/uploads"
 public_folder: "/images/uploads"

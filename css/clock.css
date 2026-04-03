@@ -68,6 +68,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  position: relative;
 }
 
 .ticker-track-wrap {
@@ -88,6 +89,15 @@
 
 .ticker-track.is-scrolling {
   /* Dynamic animation from ticker.js */
+}
+
+.transfer-kb {
+  font-family: "Courier New", monospace;
+  font-size: 0.6rem;
+  color: #777;
+  white-space: nowrap;
+  flex-shrink: 0;
+  letter-spacing: 0.04em;
 }
 
 .ticker-loading-text {
@@ -162,6 +172,51 @@
   stroke: none;
 }
 
+.logout-popup {
+  position: absolute;
+  bottom: calc(100% + 4px);
+  right: 0;
+  z-index: 35;
+  background: #fff;
+  border: 1px solid #ccc;
+  padding: 10px 14px;
+  box-shadow: 2px 2px 0 #ccc;
+}
+
+.logout-popup[hidden] {
+  display: none !important;
+}
+
+.logout-popup-text {
+  margin: 0 0 8px;
+  font-family: "Courier New", monospace;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #333;
+  white-space: nowrap;
+}
+
+.logout-popup-actions {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.logout-popup-btn {
+  font-family: inherit;
+  font-size: 0.68rem;
+  padding: 2px 10px;
+  border: 1px solid #888;
+  background: #ddd;
+  cursor: pointer;
+}
+
+.logout-popup-btn-primary {
+  background: #000;
+  color: #fff;
+  border-color: #000;
+}
+
 .login-status-float {
   display: inline-flex;
   align-items: center;
@@ -206,4 +261,23 @@
 .login-status-text {
   color: #444;
   white-space: nowrap;
+}
+
+.login-status-text-logout {
+  display: none;
+  white-space: nowrap;
+}
+
+.login-status-float:hover .login-status-text {
+  display: none;
+}
+
+.login-status-float:hover .login-status-text-logout {
+  display: inline;
+}
+
+.login-status-float:hover {
+  background: #bbb;
+  border-color: #777;
+  color: #333;
 }

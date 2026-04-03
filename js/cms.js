@@ -3,6 +3,7 @@
 import { state } from './state.js';
 import { escapeHtml } from './utils.js';
 import { renderAboutBody, renderWriterBody } from './modals.js';
+import { COUNTS_API_BASE } from './config.js';
 
 const GITHUB_REPO   = 'kentam1127g/001';
 const GITHUB_BRANCH = 'main';
@@ -51,25 +52,62 @@ function stopLoginPopupWatcher() {
   }
 }
 
+function openLoginModal() {
+  document.getElementById('loginModal')?.classList.add('is-open');
+}
+
+function closeLoginModal() {
+  document.getElementById('loginModal')?.classList.remove('is-open');
+}
+
 function openLoginPopup() {
-  loginPopup = window.open('./admin/', 'decap-cms-login', 'width=1200,height=800,resizable=yes,scrollbars=yes');
+  loginPopup = window.open(`${COUNTS_API_BASE}/auth`, 'github-oauth-login', 'width=600,height=700,resizable=yes,scrollbars=yes');
   stopLoginPopupWatcher();
   loginPopupTimer = window.setInterval(() => {
-    if (isLoggedIn()) {
-      stopLoginPopupWatcher();
-      try {
-        if (loginPopup && !loginPopup.closed) loginPopup.close();
-      } catch {}
-      loginPopup = null;
-      applyAuthState();
-      return;
-    }
-
     if (!loginPopup || loginPopup.closed) {
       stopLoginPopupWatcher();
       loginPopup = null;
     }
   }, 500);
+}
+
+async function handleOAuthMessage(e) {
+  if (typeof e.data !== 'string') return;
+
+  if (e.data === 'authorizing:github') {
+    e.source?.postMessage('authorizing:github', e.origin);
+    return;
+  }
+
+  if (e.data.startsWith('authorization:github:success:')) {
+    const payload = JSON.parse(e.data.replace('authorization:github:success:', ''));
+    const token = payload.token;
+    try {
+      const res = await fetch('https://api.github.com/user', {
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+      const user = await res.json();
+      localStorage.setItem('decap-cms-user', JSON.stringify({
+        token,
+        provider: 'github',
+        login: user.login || '',
+        name: user.name || '',
+      }));
+    } catch {
+      localStorage.setItem('decap-cms-user', JSON.stringify({ token, provider: 'github' }));
+    }
+    stopLoginPopupWatcher();
+    try { if (loginPopup && !loginPopup.closed) loginPopup.close(); } catch {}
+    loginPopup = null;
+    closeLoginModal();
+    applyAuthState();
+
+    const toast = document.getElementById('loginToast');
+    if (toast) {
+      toast.hidden = false;
+      setTimeout(() => { toast.hidden = true; }, 2000);
+    }
+  }
 }
 
 // ---- GitHub Contents API ----
@@ -313,7 +351,7 @@ export function openNewPostModal() {
 
   if (cmsModalTitle) cmsModalTitle.textContent = '新しい記録';
   setAuthorBadge(getAuthor());
-  if (cmsTextarea)   cmsTextarea.value = '';
+  if (cmsTextarea)   cmsTextarea.value = localStorage.getItem('cms-draft') || '';
   if (cmsImageInput) cmsImageInput.value = '';
   if (cmsDeleteBtn)  cmsDeleteBtn.hidden = true;
   if (cmsSaveBtn)    cmsSaveBtn.textContent = '投稿する';
@@ -541,6 +579,7 @@ async function handleSave() {
     setStatus('インデックスを更新中...');
     await pushIndexJson(entries);
 
+    localStorage.removeItem('cms-draft');
     setStatus('保存しました！');
     setTimeout(() => { closeCmsModal(); location.reload(); }, 900);
   } catch (err) {
@@ -604,6 +643,14 @@ cmsImageInput?.addEventListener('change', () => {
   setImagePreview(URL.createObjectURL(file));
 });
 
+cmsTextarea?.addEventListener('input', () => {
+  if (!editEntry && !pageEditMode) {
+    const val = cmsTextarea.value;
+    if (val.trim()) localStorage.setItem('cms-draft', val);
+    else localStorage.removeItem('cms-draft');
+  }
+});
+
 // エントリの編集ボタン（イベント委譲）
 document.getElementById('entries')?.addEventListener('click', (e) => {
   const editBtn = e.target.closest('[data-edit-id]');
@@ -623,14 +670,42 @@ document.getElementById('editWriterBtn')?.addEventListener('click', openWriterEd
 
 // ---- 初期化 ----
 
+window.addEventListener('beforeunload', (e) => {
+  if (cmsModal?.classList.contains('is-open') && cmsTextarea?.value.trim()) {
+    e.preventDefault();
+  }
+});
+
 export function initCms() {
   applyAuthState();
-  document.getElementById('loginStatusFloat')?.addEventListener('click', () => {
-    document.getElementById('logoutConfirmModal')?.classList.add('is-open');
-    document.body.style.overflow = 'hidden';
+  const logoutPopup = document.getElementById('logoutPopup');
+  const loginStatusFloat = document.getElementById('loginStatusFloat');
+  loginStatusFloat?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (logoutPopup) logoutPopup.hidden = !logoutPopup.hidden;
+  });
+  document.getElementById('logoutPopupYes')?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (logoutPopup) logoutPopup.hidden = true;
+    logout();
+  });
+  document.getElementById('logoutPopupNo')?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (logoutPopup) logoutPopup.hidden = true;
+  });
+  document.addEventListener('click', (e) => {
+    if (!logoutPopup?.hidden && !logoutPopup.contains(e.target)) {
+      logoutPopup.hidden = true;
+    }
   });
   document.getElementById('logoutConfirmYes')?.addEventListener('click', logout);
-  document.getElementById('writerLoginBtn')?.addEventListener('click', openLoginPopup);
+  document.getElementById('writerLoginBtn')?.addEventListener('click', openLoginModal);
+  document.getElementById('loginModalClose')?.addEventListener('click', closeLoginModal);
+  document.getElementById('loginModal')?.addEventListener('click', (e) => {
+    if (e.target === document.getElementById('loginModal')) closeLoginModal();
+  });
+  document.getElementById('githubLoginBtn')?.addEventListener('click', openLoginPopup);
+  window.addEventListener('message', handleOAuthMessage);
   window.addEventListener('storage', (e) => {
     if (e.key === 'decap-cms-user') applyAuthState();
   });
