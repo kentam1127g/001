@@ -1,6 +1,6 @@
 /* ===== data.js — データ取得・ストレージ ===== */
 
-import { CONTENT_INDEX_PATH, COUNTS_API_BASE, SEEN_STORAGE_KEY } from './config.js';
+import { CONTENT_INDEX_PATH, COUNTS_API_BASE, SEEN_STORAGE_KEY, READER_ID_STORAGE_KEY } from './config.js';
 
 export function loadSeenEntries() {
   try {
@@ -34,8 +34,10 @@ function normalizeCountsResponse(data) {
         ? data.lastViewedAt : {},
       siteReaderName: typeof data.siteReaderName === 'string' ? data.siteReaderName : '',
       siteReaderMsg: typeof data.siteReaderMsg === 'string' ? data.siteReaderMsg : '',
+      siteReaderId: typeof data.siteReaderId === 'string' ? data.siteReaderId : '',
       previousSiteReaderName: typeof data.previousSiteReaderName === 'string' ? data.previousSiteReaderName : '',
       previousSiteReaderMsg: typeof data.previousSiteReaderMsg === 'string' ? data.previousSiteReaderMsg : '',
+      previousSiteReaderId: typeof data.previousSiteReaderId === 'string' ? data.previousSiteReaderId : '',
       previousSiteReaderUpdatedAt: data.previousSiteReaderUpdatedAt || null,
       siteReaderUpdatedAt: data.siteReaderUpdatedAt || null,
     };
@@ -46,10 +48,21 @@ function normalizeCountsResponse(data) {
     lastViewedAt: {},
     siteReaderName: '',
     siteReaderMsg: '',
+    siteReaderId: '',
     previousSiteReaderName: '',
     previousSiteReaderMsg: '',
+    previousSiteReaderId: '',
     previousSiteReaderUpdatedAt: null,
   };
+}
+
+export function getReaderId() {
+  let readerId = localStorage.getItem(READER_ID_STORAGE_KEY) || '';
+  if (!readerId) {
+    readerId = `reader-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+    localStorage.setItem(READER_ID_STORAGE_KEY, readerId);
+  }
+  return readerId;
 }
 
 export async function loadEntriesFromContent() {
@@ -68,7 +81,7 @@ export async function loadEntriesFromContent() {
 
 export async function loadSharedCounts(ids) {
   try {
-    if (!ids || !ids.length) return { counts: {}, lastViewedAt: {}, siteReaderName: '', siteReaderMsg: '' };
+    if (!ids || !ids.length) return { counts: {}, lastViewedAt: {}, siteReaderName: '', siteReaderMsg: '', siteReaderId: '' };
     console.log('[counts] GET start — entries:', ids.length);
     const url = `${COUNTS_API_BASE}/.netlify/functions/counts-get?ids=${encodeURIComponent(ids.join(','))}`;
     const res = await fetch(url, { cache: 'no-store' });
@@ -76,14 +89,14 @@ export async function loadSharedCounts(ids) {
     console.log('[counts] GET response status:', res.status, '— body:', text);
     if (!res.ok) {
       console.error(`[counts] GET failed: HTTP ${res.status}`, text);
-      return { counts: {}, lastViewedAt: {}, siteReaderName: '', siteReaderMsg: '' };
+      return { counts: {}, lastViewedAt: {}, siteReaderName: '', siteReaderMsg: '', siteReaderId: '' };
     }
     let data;
-    try { data = JSON.parse(text); } catch { console.error('[counts] GET: JSON parse error', text); return { counts: {}, lastViewedAt: {}, siteReaderName: '', siteReaderMsg: '' }; }
+    try { data = JSON.parse(text); } catch { console.error('[counts] GET: JSON parse error', text); return { counts: {}, lastViewedAt: {}, siteReaderName: '', siteReaderMsg: '', siteReaderId: '' }; }
     return normalizeCountsResponse(data);
   } catch (error) {
     console.error('[counts] GET failed (network?):', error);
-    return { counts: {}, lastViewedAt: {}, siteReaderName: '', siteReaderMsg: '' };
+    return { counts: {}, lastViewedAt: {}, siteReaderName: '', siteReaderMsg: '', siteReaderId: '' };
   }
 }
 
@@ -94,28 +107,31 @@ export async function bumpSharedCounts(ids, readerInfo = {}) {
       lastViewedAt: {},
       siteReaderName: '',
       siteReaderMsg: '',
+      siteReaderId: '',
       previousSiteReaderName: '',
       previousSiteReaderMsg: '',
+      previousSiteReaderId: '',
     };
     console.log('[counts] BUMP start — ids:', ids);
     const nameParam = readerInfo.name ? `&readerName=${encodeURIComponent(readerInfo.name)}` : '';
     const msgParam  = readerInfo.msg  ? `&readerMsg=${encodeURIComponent(readerInfo.msg)}`   : '';
-    const url = `${COUNTS_API_BASE}/.netlify/functions/counts-bump?ids=${encodeURIComponent(ids.join(','))}${nameParam}${msgParam}`;
+    const readerIdParam = `&readerId=${encodeURIComponent(getReaderId())}`;
+    const url = `${COUNTS_API_BASE}/.netlify/functions/counts-bump?ids=${encodeURIComponent(ids.join(','))}${nameParam}${msgParam}${readerIdParam}`;
     const res = await fetch(url, { cache: 'no-store' });
     const text = await res.text();
     console.log('[counts] BUMP response status:', res.status, '— body:', text);
     if (!res.ok) {
       console.error(`[counts] BUMP failed: HTTP ${res.status}`, text);
-      return { counts: {}, lastViewedAt: {}, siteReaderName: '', siteReaderMsg: '', previousSiteReaderName: '', previousSiteReaderMsg: '' };
+      return { counts: {}, lastViewedAt: {}, siteReaderName: '', siteReaderMsg: '', siteReaderId: '', previousSiteReaderName: '', previousSiteReaderMsg: '', previousSiteReaderId: '' };
     }
     let data;
-    try { data = JSON.parse(text); } catch { console.error('[counts] BUMP: JSON parse error', text); return { counts: {}, lastViewedAt: {}, siteReaderName: '', siteReaderMsg: '', previousSiteReaderName: '', previousSiteReaderMsg: '' }; }
+    try { data = JSON.parse(text); } catch { console.error('[counts] BUMP: JSON parse error', text); return { counts: {}, lastViewedAt: {}, siteReaderName: '', siteReaderMsg: '', siteReaderId: '', previousSiteReaderName: '', previousSiteReaderMsg: '', previousSiteReaderId: '' }; }
     const normalized = normalizeCountsResponse(data);
     console.log('[counts] BUMP ok:', normalized.counts);
     return normalized;
   } catch (error) {
     console.error('[counts] BUMP failed (network?):', error);
-    return { counts: {}, lastViewedAt: {}, siteReaderName: '', siteReaderMsg: '', previousSiteReaderName: '', previousSiteReaderMsg: '' };
+    return { counts: {}, lastViewedAt: {}, siteReaderName: '', siteReaderMsg: '', siteReaderId: '', previousSiteReaderName: '', previousSiteReaderMsg: '', previousSiteReaderId: '' };
   }
 }
 
@@ -124,7 +140,8 @@ export async function syncLastReaderProfile(id, readerInfo = {}) {
     if (!id && !readerInfo.name && !readerInfo.msg) return { ok: true };
     const nameParam = readerInfo.name ? `&readerName=${encodeURIComponent(readerInfo.name)}` : '';
     const msgParam  = readerInfo.msg  ? `&readerMsg=${encodeURIComponent(readerInfo.msg)}`   : '';
-    const url = `${COUNTS_API_BASE}/.netlify/functions/counts-profile-sync?noop=1${nameParam}${msgParam}`;
+    const readerIdParam = `&readerId=${encodeURIComponent(getReaderId())}`;
+    const url = `${COUNTS_API_BASE}/.netlify/functions/counts-profile-sync?noop=1${nameParam}${msgParam}${readerIdParam}`;
     const res = await fetch(url, { cache: 'no-store' });
     const text = await res.text();
     console.log('[counts] PROFILE response status:', res.status, '— body:', text);

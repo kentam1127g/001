@@ -5,6 +5,7 @@ export const COUNTS_API_BASE      = 'https://unrivaled-sunshine-fa042c.netlify.a
 export const SEEN_STORAGE_KEY     = 'quiet-broadcast-seen-entries-v1';
 export const LAST_LATEST_ID_KEY   = 'enpitu-last-latest-id';
 export const LAST_READ_ID_KEY     = 'enpitu-last-read-id';
+export const READER_ID_STORAGE_KEY = 'enpitu-reader-id';
 export const INITIAL_VISIBLE_COUNT = 1;
 export const INITIAL_EXTRA_COUNT   = 6;
 export const LOAD_MORE_COUNT       = 10;

@@ -4,7 +4,7 @@ import { INITIAL_VISIBLE_COUNT, INITIAL_EXTRA_COUNT, LOAD_MORE_COUNT, VIEW_COUNT
 import { state } from './state.js';
 import { disableScroll, enableScroll, lockScroll, unlockScroll } from './scroll.js';
 import { escapeHtml, normalizeImagePath, formatOnlyTime, enumerateDayLabels } from './utils.js';
-import { loadSeenEntries, saveSeenEntries, loadSharedCounts, bumpSharedCounts, syncLastReaderProfile } from './data.js';
+import { loadSeenEntries, saveSeenEntries, loadSharedCounts, bumpSharedCounts, syncLastReaderProfile, getReaderId } from './data.js';
 
 const entriesEl        = document.getElementById('entries');
 const loadOlderWrap    = document.getElementById('loadOlderWrap');
@@ -264,9 +264,8 @@ function isRecentReaderCrossed(timestamp) {
 let _readerCrossedShownName = null;
 const CROSSED_SESSION_KEY = 'enpitu-reader-crossed-last';
 
-function isSelfReader(name) {
-  const myName = localStorage.getItem('enpitu-reader-name') || '';
-  return myName && myName === name;
+function isSelfReader(readerId) {
+  return Boolean(readerId) && getReaderId() === readerId;
 }
 
 function openReaderCrossedModal(name, msg) {
@@ -315,6 +314,7 @@ function mergeSharedCounts(payload, { animate = false } = {}) {
     lastViewedAt = {},
     siteReaderName = '',
     siteReaderMsg = '',
+    siteReaderId = '',
   } = payload || {};
   Object.entries(counts).forEach(([id, count]) => {
     state.sharedCounts[id] = Number(count);
@@ -334,7 +334,10 @@ function mergeSharedCounts(payload, { animate = false } = {}) {
   if (typeof siteReaderMsg === 'string') {
     state.siteReaderMsg = siteReaderMsg;
   }
-  if (Object.keys(counts).length || Object.keys(lastViewedAt).length || siteReaderName || siteReaderMsg) {
+  if (typeof siteReaderId === 'string') {
+    state.siteReaderId = siteReaderId;
+  }
+  if (Object.keys(counts).length || Object.keys(lastViewedAt).length || siteReaderName || siteReaderMsg || siteReaderId) {
     state.countsLoaded = true;
   }
 }
@@ -352,7 +355,7 @@ function loadVisibleEntryCounts(visibleEntries) {
   markCountIds(missingIds, true);
   loadSharedCounts(missingIds).then((payload) => {
     mergeSharedCounts(payload);
-    if (isRecentReaderCrossed(payload.siteReaderUpdatedAt) && !isSelfReader(payload.siteReaderName)) {
+    if (isRecentReaderCrossed(payload.siteReaderUpdatedAt) && !isSelfReader(payload.siteReaderId)) {
       openReaderCrossedModal(payload.siteReaderName || '', payload.siteReaderMsg || '');
     }
     // counts-get 完了後に自分の名前を書き込む（先に書くと前の読者名が上書きされる）
@@ -405,7 +408,7 @@ export function setupViewObservers() {
             };
           const changed = await bumpSharedCounts([entryIdValue], readerInfo);
           mergeSharedCounts(changed, { animate: true });
-          if (isRecentReaderCrossed(changed?.previousSiteReaderUpdatedAt) && !isSelfReader(changed?.previousSiteReaderName)) {
+          if (isRecentReaderCrossed(changed?.previousSiteReaderUpdatedAt) && !isSelfReader(changed?.previousSiteReaderId)) {
               const crossedName = changed?.previousSiteReaderName || '';
               const crossedMsg  = changed?.previousSiteReaderMsg  || '';
               openReaderCrossedModal(crossedName, crossedMsg);

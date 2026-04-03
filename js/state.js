@@ -6,6 +6,7 @@ export const state = {
   sharedLastViewed: {},
   siteReaderName: '',
   siteReaderMsg: '',
+  siteReaderId: '',
   requestedCountIds: {},
   countsLoaded: false,
   viewSeenIds: null,
