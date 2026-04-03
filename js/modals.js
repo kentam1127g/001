@@ -376,7 +376,17 @@ document.getElementById('readerProfileSave')?.addEventListener('click', () => {
   // 直近に読んだエントリにプロフィールを反映するため再bump
   const lastReadId = localStorage.getItem(LAST_READ_ID_KEY);
   if (lastReadId) {
-    bumpSharedCounts([lastReadId], { name, msg }).catch(() => {});
+    bumpSharedCounts([lastReadId], { name, msg }).then((changed) => {
+      if (changed?.readerNames && Object.prototype.hasOwnProperty.call(changed.readerNames, lastReadId)) {
+        state.sharedReaderNames[lastReadId] = changed.readerNames[lastReadId] || '';
+      }
+      if (changed?.readerMsgs && Object.prototype.hasOwnProperty.call(changed.readerMsgs, lastReadId)) {
+        state.sharedReaderMsgs[lastReadId] = changed.readerMsgs[lastReadId] || '';
+      }
+      if (changed?.lastViewedAt && changed.lastViewedAt[lastReadId]) {
+        state.sharedLastViewed[lastReadId] = changed.lastViewedAt[lastReadId];
+      }
+    }).catch(() => {});
   }
 });
 

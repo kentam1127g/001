@@ -268,6 +268,12 @@ export function setupViewObservers() {
             state.sharedLastViewed[entryIdValue] = changed.lastViewedAt[entryIdValue];
             syncLastViewedToDOM(entryIdValue, changed.lastViewedAt[entryIdValue]);
           }
+          if (changed?.readerNames && Object.prototype.hasOwnProperty.call(changed.readerNames, entryIdValue)) {
+            state.sharedReaderNames[entryIdValue] = changed.readerNames[entryIdValue] || '';
+          }
+          if (changed?.readerMsgs && Object.prototype.hasOwnProperty.call(changed.readerMsgs, entryIdValue)) {
+            state.sharedReaderMsgs[entryIdValue] = changed.readerMsgs[entryIdValue] || '';
+          }
 
           if (state.viewObserver) {
             state.viewObserver.unobserve(target);
