@@ -70,6 +70,7 @@ async function init() {
     if (!state.anchoredEntryId) {
       state.visibleEntryCount = INITIAL_VISIBLE_COUNT;
     }
+    state.deferInitialVisibleCountLoad = !state.anchoredEntryId && state.allEntries.length > INITIAL_VISIBLE_COUNT;
     render();
 
     // 直リンクの場合はプレビューモーダルを表示

@@ -284,6 +284,11 @@ function mergeSharedCounts(payload) {
 }
 
 function loadVisibleEntryCounts(visibleEntries) {
+  if (state.deferInitialVisibleCountLoad) {
+    state.deferInitialVisibleCountLoad = false;
+    return;
+  }
+
   const visibleIds = visibleEntries.map((entry) => entry.id).filter(Boolean);
   const missingIds = visibleIds.filter((id) => !state.requestedCountIds[id]);
   if (!missingIds.length) return;
@@ -304,9 +309,11 @@ export function setupViewObservers() {
     state.viewObserver.disconnect();
   }
 
-  const seenIds = new Set(loadSeenEntries());
-  console.log('[counts] seenIds on setup:', [...seenIds]);
-  const pendingTimers = new Map();
+  if (!state.viewSeenIds) {
+    state.viewSeenIds = new Set(loadSeenEntries());
+  }
+  const seenIds = state.viewSeenIds;
+  const pendingTimers = state.viewPendingTimers;
 
   state.viewObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
@@ -318,29 +325,30 @@ export function setupViewObservers() {
         if (pendingTimers.has(entryIdValue)) return;
 
         const timerId = window.setTimeout(async () => {
-          if (seenIds.has(entryIdValue)) return;
-          console.log('[counts] bump triggered for entry:', entryIdValue);
-          seenIds.add(entryIdValue);
-          saveSeenEntries([...seenIds]);
-          localStorage.setItem(LAST_READ_ID_KEY, entryIdValue);
+          try {
+            if (seenIds.has(entryIdValue)) return;
+            seenIds.add(entryIdValue);
+            saveSeenEntries([...seenIds]);
+            localStorage.setItem(LAST_READ_ID_KEY, entryIdValue);
 
-          const readerInfo = {
-            name: localStorage.getItem('enpitu-reader-name') || '',
-            msg:  localStorage.getItem('enpitu-reader-msg')  || '',
-          };
-          const changed = await bumpSharedCounts([entryIdValue], readerInfo);
-          mergeSharedCounts(changed);
-          if (changed?.lastViewedAt?.[entryIdValue] && isRecentReaderCrossed(changed.lastViewedAt[entryIdValue])) {
-            const crossedName = changed?.readerNames?.[entryIdValue] || state.sharedReaderNames[entryIdValue] || '';
-            const crossedMsg = changed?.readerMsgs?.[entryIdValue] || state.sharedReaderMsgs[entryIdValue] || '';
-            openReaderCrossedModal(crossedName, crossedMsg);
+            const readerInfo = {
+              name: localStorage.getItem('enpitu-reader-name') || '',
+              msg:  localStorage.getItem('enpitu-reader-msg')  || '',
+            };
+            const changed = await bumpSharedCounts([entryIdValue], readerInfo);
+            mergeSharedCounts(changed);
+            if (changed?.lastViewedAt?.[entryIdValue] && isRecentReaderCrossed(changed.lastViewedAt[entryIdValue])) {
+              const crossedName = changed?.readerNames?.[entryIdValue] || state.sharedReaderNames[entryIdValue] || '';
+              const crossedMsg = changed?.readerMsgs?.[entryIdValue] || state.sharedReaderMsgs[entryIdValue] || '';
+              openReaderCrossedModal(crossedName, crossedMsg);
+            }
+
+            if (state.viewObserver) {
+              state.viewObserver.unobserve(target);
+            }
+          } finally {
+            pendingTimers.delete(entryIdValue);
           }
-
-          if (state.viewObserver) {
-            state.viewObserver.unobserve(target);
-          }
-
-          pendingTimers.delete(entryIdValue);
         }, VIEW_COUNT_DELAY_MS);
 
         pendingTimers.set(entryIdValue, timerId);

@@ -8,6 +8,9 @@ export const state = {
   sharedReaderMsgs: {},
   requestedCountIds: {},
   countsLoaded: false,
+  viewSeenIds: null,
+  viewPendingTimers: new Map(),
+  deferInitialVisibleCountLoad: false,
   visibleEntryCount: 1,   // INITIAL_VISIBLE_COUNT と同値で初期化
   anchoredEntryId: null,
   newerEntryCount: 0,
