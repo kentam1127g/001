@@ -264,12 +264,15 @@ function openReaderCrossedModal(name, msg) {
   const displayName = name || '名無しの読者';
   const lastShown = sessionStorage.getItem('enpitu-reader-crossed-shown');
   if (lastShown === displayName) return;
+  // すでに実名で表示済みなら "名無しの読者" で上書きしない
+  if (!name && lastShown && lastShown !== '名無しの読者') return;
 
   const modal = document.getElementById('readerCrossedModal');
   const profileEl = document.getElementById('readerCrossedProfile');
   const nameEl = document.getElementById('readerCrossedName');
   const msgEl = document.getElementById('readerCrossedMsg');
   if (!modal || !profileEl) return;
+  if (modal.classList.contains('is-open')) return;
 
   if (nameEl) nameEl.textContent = `${displayName}さん`;
   if (msgEl) msgEl.textContent = msg || '';

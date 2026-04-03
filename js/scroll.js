@@ -9,6 +9,25 @@ function blockScrollKey(e) {
   if (SCROLL_BLOCK_KEYS.includes(e.key)) e.preventDefault();
 }
 
+function removeScrollListeners() {
+  document.body.style.overflow = '';
+  window.removeEventListener('wheel',     blockScrollWheel);
+  window.removeEventListener('touchmove', blockScrollWheel);
+  window.removeEventListener('keydown',   blockScrollKey);
+}
+
+// loadingCount がズレた場合のフォールバック
+let _loadingSafetyTimer = null;
+function resetLoadingSafetyTimer() {
+  clearTimeout(_loadingSafetyTimer);
+  _loadingSafetyTimer = setTimeout(() => {
+    if (state.loadingCount > 0) {
+      state.loadingCount = 0;
+      if (state.modalLockCount === 0) removeScrollListeners();
+    }
+  }, 2000);
+}
+
 export function disableScroll() {
   if (state.loadingCount === 0 && state.modalLockCount === 0) {
     document.body.style.overflow = 'hidden';
@@ -17,15 +36,14 @@ export function disableScroll() {
     window.addEventListener('keydown',   blockScrollKey);
   }
   state.loadingCount++;
+  resetLoadingSafetyTimer();
 }
 
 export function enableScroll() {
   state.loadingCount = Math.max(0, state.loadingCount - 1);
-  if (state.loadingCount === 0 && state.modalLockCount === 0) {
-    document.body.style.overflow = '';
-    window.removeEventListener('wheel',     blockScrollWheel);
-    window.removeEventListener('touchmove', blockScrollWheel);
-    window.removeEventListener('keydown',   blockScrollKey);
+  if (state.loadingCount === 0) {
+    clearTimeout(_loadingSafetyTimer);
+    if (state.modalLockCount === 0) removeScrollListeners();
   }
 }
 
@@ -42,10 +60,7 @@ export function lockScroll() {
 export function unlockScroll() {
   state.modalLockCount = Math.max(0, state.modalLockCount - 1);
   if (state.modalLockCount === 0 && state.loadingCount === 0) {
-    document.body.style.overflow = '';
-    window.removeEventListener('wheel',     blockScrollWheel);
-    window.removeEventListener('touchmove', blockScrollWheel);
-    window.removeEventListener('keydown',   blockScrollKey);
+    removeScrollListeners();
   } else {
     document.body.style.overflow = 'hidden';
   }
