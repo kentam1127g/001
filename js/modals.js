@@ -369,6 +369,11 @@ function getReaderProfileCooldownRemainingMs() {
   return Math.max(savedAt + READER_PROFILE_COOLDOWN_MS - Date.now(), 0);
 }
 
+function formatReaderProfileCooldownLabel(remainingMs) {
+  const remainingMinutes = Math.max(1, Math.ceil(remainingMs / (60 * 1000)));
+  return `あと${remainingMinutes}分後に変更できます。`;
+}
+
 function updateReaderProfileSaveState() {
   const remainingMs = getReaderProfileCooldownRemainingMs();
   const isCoolingDown = remainingMs > 0;
@@ -377,6 +382,9 @@ function updateReaderProfileSaveState() {
   }
   if (readerProfileSaveNote) {
     readerProfileSaveNote.hidden = !isCoolingDown;
+    readerProfileSaveNote.textContent = isCoolingDown
+      ? formatReaderProfileCooldownLabel(remainingMs)
+      : '';
   }
 
   clearReaderProfileCooldownTimer();
