@@ -263,9 +263,28 @@ function isRecentReaderCrossed(timestamp) {
 // 同一ページロード内の多重BUMP対策（メモリ変数）
 let _readerCrossedShownSignature = null;
 const CROSSED_SESSION_KEY = 'enpitu-reader-crossed-last';
+let _readerCrossedOpenTimer = null;
+
+function getReaderCrossedPriority(name, msg) {
+  if (name && msg) return 4;
+  if (name) return 3;
+  if (msg) return 2;
+  return 1;
+}
 
 function isSelfReader(readerId) {
   return Boolean(readerId) && getReaderId() === readerId;
+}
+
+function isSameNamedReader(name) {
+  if (!name) return false;
+  const myName = (localStorage.getItem('enpitu-reader-name') || '').trim();
+  return Boolean(myName) && myName === String(name).trim();
+}
+
+function resetReaderCrossedCheck() {
+  _readerCrossedShownSignature = null;
+  sessionStorage.removeItem(CROSSED_SESSION_KEY);
 }
 
 function maybeSyncMyReaderProfile() {
@@ -300,9 +319,20 @@ function openReaderCrossedModal(name, msg) {
   const displayName = name || '名無しの読者';
   const displayMsg = msg || '';
   const signature = `${displayName}\n${displayMsg}`;
+  const nextPriority = getReaderCrossedPriority(name, displayMsg);
+  const currentPriority = _readerCrossedShownSignature
+    ? getReaderCrossedPriority(
+        _readerCrossedShownSignature.split('\n')[0] === '名無しの読者' ? '' : _readerCrossedShownSignature.split('\n')[0],
+        _readerCrossedShownSignature.split('\n').slice(1).join('\n')
+      )
+    : 0;
 
   // 同一ページロード内：実名表示済みなら "名無しの読者" で上書きしない
   if (!name && _readerCrossedShownSignature && !_readerCrossedShownSignature.startsWith('名無しの読者\n')) return;
+  // 自分と同じ表示名の読者はスルーする
+  if (isSameNamedReader(name)) return;
+  // 同一ページロード内：より情報量の少ないプロフィールでは上書きしない
+  if (_readerCrossedShownSignature && nextPriority < currentPriority) return;
   // 同一ページロード内：同じ名前・同じコメントは再表示しない
   if (_readerCrossedShownSignature === signature) return;
 
@@ -324,11 +354,15 @@ function openReaderCrossedModal(name, msg) {
 
   _readerCrossedShownSignature = signature;
   sessionStorage.setItem(CROSSED_SESSION_KEY, signature);
-  window.setTimeout(() => {
+  if (_readerCrossedOpenTimer) {
+    clearTimeout(_readerCrossedOpenTimer);
+  }
+  _readerCrossedOpenTimer = window.setTimeout(() => {
     const welcomeOpen = document.getElementById('aboutModal')?.classList.contains('is-open');
     modal.style.zIndex = welcomeOpen ? '49' : '';
     modal.classList.add('is-open');
     lockScroll();
+    _readerCrossedOpenTimer = null;
   }, 150);
 }
 
@@ -538,7 +572,9 @@ export function showMoreEntries() {
 
     const currentStart = Math.max(anchorIndex - state.visibleEntryCount + 1, 0);
     const nextStart    = Math.max(currentStart - LOAD_MORE_COUNT, 0);
+    if (nextStart === currentStart) return;
     state.visibleEntryCount = anchorIndex - nextStart + 1;
+    resetReaderCrossedCheck();
 
     if (history.replaceState) {
       history.replaceState(null, '', location.pathname + location.search);
@@ -557,7 +593,10 @@ export function showMoreEntries() {
   }
 
   const total = state.allEntries.length;
-  state.visibleEntryCount = Math.min(state.visibleEntryCount + LOAD_MORE_COUNT, total);
+  const nextVisibleEntryCount = Math.min(state.visibleEntryCount + LOAD_MORE_COUNT, total);
+  if (nextVisibleEntryCount === state.visibleEntryCount) return;
+  state.visibleEntryCount = nextVisibleEntryCount;
+  resetReaderCrossedCheck();
 
   render();
 
@@ -575,7 +614,10 @@ export function showNewerEntries() {
   const anchorIndex = state.allEntries.findIndex(entry => entry.id === state.anchoredEntryId);
   if (anchorIndex === -1) return;
   const maxNewer = state.allEntries.length - anchorIndex - 1;
-  state.newerEntryCount = Math.min(state.newerEntryCount + LOAD_MORE_COUNT, maxNewer);
+  const nextNewerEntryCount = Math.min(state.newerEntryCount + LOAD_MORE_COUNT, maxNewer);
+  if (nextNewerEntryCount === state.newerEntryCount) return;
+  state.newerEntryCount = nextNewerEntryCount;
+  resetReaderCrossedCheck();
   if (history.replaceState) {
     history.replaceState(null, '', location.pathname + location.search);
   }
