@@ -10,6 +10,7 @@ const entriesEl        = document.getElementById('entries');
 const loadOlderWrap    = document.getElementById('loadOlderWrap');
 const returnLatestWrap = document.getElementById('returnLatestWrap');
 const loadNewerWrap    = document.getElementById('loadNewerWrap');
+const pendingCountAnimationTimers = new Map();
 
 // ---- 表示エントリ抽出 ----
 
@@ -177,6 +178,8 @@ export function bindShareButtons() {
 
 // ---- 既読カウント ----
 
+const VIEW_COUNT_ANIMATION_DELAY_MS = 900;
+
 function formatDisplayViewCount(count) {
   return String(Math.max(Number(count || 0) - 1, 0));
 }
@@ -188,24 +191,34 @@ export function syncViewCountsToDOM(entryId, count) {
   const numberEl = badge.querySelector('.view-count-number');
   const plusEl   = badge.querySelector('.view-count-plus');
 
-  if (numberEl) {
-    numberEl.classList.remove('is-bumping');
-    void numberEl.offsetWidth; // reflow でアニメーションをリセット
-    numberEl.textContent = formatDisplayViewCount(count);
-    numberEl.classList.add('is-bumping');
-    numberEl.addEventListener('animationend', () => {
-      numberEl.classList.remove('is-bumping');
-    }, { once: true });
+  if (pendingCountAnimationTimers.has(entryId)) {
+    clearTimeout(pendingCountAnimationTimers.get(entryId));
   }
 
-  if (plusEl) {
-    plusEl.classList.remove('is-bumping');
-    void plusEl.offsetWidth;
-    plusEl.classList.add('is-bumping');
-    plusEl.addEventListener('animationend', () => {
+  const timerId = window.setTimeout(() => {
+    if (numberEl) {
+      numberEl.classList.remove('is-bumping');
+      void numberEl.offsetWidth; // reflow でアニメーションをリセット
+      numberEl.textContent = formatDisplayViewCount(count);
+      numberEl.classList.add('is-bumping');
+      numberEl.addEventListener('animationend', () => {
+        numberEl.classList.remove('is-bumping');
+      }, { once: true });
+    }
+
+    if (plusEl) {
       plusEl.classList.remove('is-bumping');
-    }, { once: true });
-  }
+      void plusEl.offsetWidth;
+      plusEl.classList.add('is-bumping');
+      plusEl.addEventListener('animationend', () => {
+        plusEl.classList.remove('is-bumping');
+      }, { once: true });
+    }
+
+    pendingCountAnimationTimers.delete(entryId);
+  }, VIEW_COUNT_ANIMATION_DELAY_MS);
+
+  pendingCountAnimationTimers.set(entryId, timerId);
 }
 
 function formatLastViewedLabel(timestamp) {

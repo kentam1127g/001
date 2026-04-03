@@ -3,7 +3,7 @@
 import { state } from './state.js';
 import { escapeHtml } from './utils.js';
 import { renderAboutBody, renderWriterBody } from './modals.js';
-import { COUNTS_API_BASE } from './config.js';
+import { COUNTS_API_BASE, SEEN_STORAGE_KEY } from './config.js';
 
 const GITHUB_REPO   = 'kentam1127g/001';
 const GITHUB_BRANCH = 'main';
@@ -668,6 +668,12 @@ document.getElementById('entries')?.addEventListener('click', (e) => {
 
 // 新規投稿ボタン
 document.getElementById('floatPost')?.addEventListener('click', openNewPostModal);
+
+// 既読数リセットボタン
+document.getElementById('resetSeenBtn')?.addEventListener('click', () => {
+  localStorage.removeItem(SEEN_STORAGE_KEY);
+  if (state.viewSeenIds) state.viewSeenIds.clear();
+});
 
 // About・書いてる人 編集ボタン
 document.getElementById('editAboutBtn')?.addEventListener('click',  openAboutEditModal);
