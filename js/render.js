@@ -4,7 +4,7 @@ import { INITIAL_VISIBLE_COUNT, INITIAL_EXTRA_COUNT, LOAD_MORE_COUNT, VIEW_COUNT
 import { state } from './state.js';
 import { disableScroll, enableScroll, lockScroll, unlockScroll } from './scroll.js';
 import { escapeHtml, normalizeImagePath, formatOnlyTime, enumerateDayLabels } from './utils.js';
-import { loadSeenEntries, saveSeenEntries, loadSharedCounts, bumpSharedCounts } from './data.js';
+import { loadSeenEntries, saveSeenEntries, loadSharedCounts, bumpSharedCounts, syncLastReaderProfile } from './data.js';
 
 const entriesEl        = document.getElementById('entries');
 const loadOlderWrap    = document.getElementById('loadOlderWrap');
@@ -354,6 +354,12 @@ function loadVisibleEntryCounts(visibleEntries) {
     mergeSharedCounts(payload);
     if (isRecentReaderCrossed(payload.siteReaderUpdatedAt) && !isSelfReader(payload.siteReaderName)) {
       openReaderCrossedModal(payload.siteReaderName || '', payload.siteReaderMsg || '');
+    }
+    // counts-get 完了後に自分の名前を書き込む（先に書くと前の読者名が上書きされる）
+    const myName = localStorage.getItem('enpitu-reader-name') || '';
+    const myMsg  = localStorage.getItem('enpitu-reader-msg')  || '';
+    if (myName || myMsg) {
+      syncLastReaderProfile('', { name: myName, msg: myMsg }).catch(() => {});
     }
   }).catch((error) => {
     console.error('[counts] visible load failed:', error);

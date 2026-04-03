@@ -4,7 +4,7 @@ import { INITIAL_VISIBLE_COUNT, INITIAL_EXTRA_COUNT, LAST_LATEST_ID_KEY, LAST_RE
 import { state } from './state.js';
 import { lockScroll } from './scroll.js';
 import { updateClock } from './utils.js';
-import { loadEntriesFromContent, syncLastReaderProfile } from './data.js';
+import { loadEntriesFromContent } from './data.js';
 import { render, showMoreEntries, showNewerEntries, returnToLatest, handleHashChange } from './render.js';
 import { showEntryPreviewModal, openWelcomeAboutModal, isWelcomeModalOpen } from './modals.js';
 import { initCms } from './cms.js';
@@ -37,14 +37,7 @@ async function init() {
 
     state.allEntries = await loadEntriesFromContent();
 
-    // 既読済みで BUMP が発生しない再訪時も名前・コメントをバックエンドに同期
-    const _rName = localStorage.getItem('enpitu-reader-name') || '';
-    const _rMsg  = localStorage.getItem('enpitu-reader-msg')  || '';
-    if (_rName || _rMsg) {
-      syncLastReaderProfile('', { name: _rName, msg: _rMsg }).catch(() => {});
-    }
-
-    // アンカー時の表示バランスを調整（合計7件）
+// アンカー時の表示バランスを調整（合計7件）
     if (state.anchoredEntryId) {
       const anchorIndex = state.allEntries.findIndex(e => e.id === state.anchoredEntryId);
       if (anchorIndex !== -1) {
