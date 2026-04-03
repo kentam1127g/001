@@ -4,7 +4,7 @@ import { state } from './state.js';
 import { lockScroll, unlockScroll } from './scroll.js';
 import { render } from './render.js';
 import { escapeHtml, normalizeImagePath } from './utils.js';
-import { bumpSharedCounts } from './data.js';
+import { syncLastReaderProfile } from './data.js';
 import { LAST_READ_ID_KEY } from './config.js';
 
 // ---- ページコンテンツ動的読み込み ----
@@ -324,6 +324,10 @@ export function showEntryPreviewModal(entry, { skipLoader = false, onNavigate = 
 
 const READER_NAME_KEY = 'enpitu-reader-name';
 const READER_MSG_KEY  = 'enpitu-reader-msg';
+const READER_PROFILE_SAVED_AT_KEY = 'enpitu-reader-profile-saved-at';
+const READER_PROFILE_COOLDOWN_MS = 30 * 60 * 1000;
+
+let readerProfileCooldownTimer = null;
 
 export function getReaderProfile() {
   return {
@@ -349,6 +353,39 @@ function updateReaderProfileBtn() {
 updateReaderProfileBtn();
 
 const readerProfileModal = document.getElementById('readerProfileModal');
+const readerProfileSaveBtn = document.getElementById('readerProfileSave');
+const readerProfileSaveNote = document.getElementById('readerProfileSaveNote');
+
+function clearReaderProfileCooldownTimer() {
+  if (readerProfileCooldownTimer) {
+    clearTimeout(readerProfileCooldownTimer);
+    readerProfileCooldownTimer = null;
+  }
+}
+
+function getReaderProfileCooldownRemainingMs() {
+  const savedAt = Number(localStorage.getItem(READER_PROFILE_SAVED_AT_KEY) || 0);
+  if (!savedAt) return 0;
+  return Math.max(savedAt + READER_PROFILE_COOLDOWN_MS - Date.now(), 0);
+}
+
+function updateReaderProfileSaveState() {
+  const remainingMs = getReaderProfileCooldownRemainingMs();
+  const isCoolingDown = remainingMs > 0;
+  if (readerProfileSaveBtn) {
+    readerProfileSaveBtn.disabled = isCoolingDown;
+  }
+  if (readerProfileSaveNote) {
+    readerProfileSaveNote.hidden = !isCoolingDown;
+  }
+
+  clearReaderProfileCooldownTimer();
+  if (isCoolingDown) {
+    readerProfileCooldownTimer = window.setTimeout(() => {
+      updateReaderProfileSaveState();
+    }, remainingMs + 50);
+  }
+}
 
 document.getElementById('readerProfileBtn')?.addEventListener('click', () => {
   const { name, msg } = getReaderProfile();
@@ -356,6 +393,7 @@ document.getElementById('readerProfileBtn')?.addEventListener('click', () => {
   const msgInput  = document.getElementById('readerProfileMsgInput');
   if (nameInput) nameInput.value = name;
   if (msgInput)  msgInput.value  = msg;
+  updateReaderProfileSaveState();
   openModal(readerProfileModal);
 });
 
@@ -366,25 +404,24 @@ document.getElementById('readerProfileMsgInput')?.addEventListener('keydown', (e
 });
 
 document.getElementById('readerProfileSave')?.addEventListener('click', () => {
+  if (getReaderProfileCooldownRemainingMs() > 0) return;
+
   const name = (document.getElementById('readerProfileNameInput')?.value || '').slice(0, 7).trim();
   const msg  = (document.getElementById('readerProfileMsgInput')?.value  || '').slice(0, 17).trim();
   localStorage.setItem(READER_NAME_KEY, name);
   localStorage.setItem(READER_MSG_KEY,  msg);
+  localStorage.setItem(READER_PROFILE_SAVED_AT_KEY, String(Date.now()));
+  updateReaderProfileSaveState();
   updateReaderProfileBtn();
   closeModal(readerProfileModal);
 
-  // 直近に読んだエントリにプロフィールを反映するため再bump
+  // 直近に読んだエントリの読者名・一言だけを同期する
   const lastReadId = localStorage.getItem(LAST_READ_ID_KEY);
   if (lastReadId) {
-    bumpSharedCounts([lastReadId], { name, msg }).then((changed) => {
-      if (changed?.readerNames && Object.prototype.hasOwnProperty.call(changed.readerNames, lastReadId)) {
-        state.sharedReaderNames[lastReadId] = changed.readerNames[lastReadId] || '';
-      }
-      if (changed?.readerMsgs && Object.prototype.hasOwnProperty.call(changed.readerMsgs, lastReadId)) {
-        state.sharedReaderMsgs[lastReadId] = changed.readerMsgs[lastReadId] || '';
-      }
-      if (changed?.lastViewedAt && changed.lastViewedAt[lastReadId]) {
-        state.sharedLastViewed[lastReadId] = changed.lastViewedAt[lastReadId];
+    syncLastReaderProfile(lastReadId, { name, msg }).then((changed) => {
+      if (changed?.ok) {
+        state.sharedReaderNames[lastReadId] = name;
+        state.sharedReaderMsgs[lastReadId] = msg;
       }
     }).catch(() => {});
   }

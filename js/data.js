@@ -92,3 +92,28 @@ export async function bumpSharedCounts(ids, readerInfo = {}) {
     return { counts: {}, lastViewedAt: {} };
   }
 }
+
+export async function syncLastReaderProfile(id, readerInfo = {}) {
+  try {
+    if (!id) return { ok: true };
+    const nameParam = readerInfo.name ? `&readerName=${encodeURIComponent(readerInfo.name)}` : '';
+    const msgParam  = readerInfo.msg  ? `&readerMsg=${encodeURIComponent(readerInfo.msg)}`   : '';
+    const url = `${COUNTS_API_BASE}/.netlify/functions/counts-profile-sync?id=${encodeURIComponent(id)}${nameParam}${msgParam}`;
+    const res = await fetch(url, { cache: 'no-store' });
+    const text = await res.text();
+    console.log('[counts] PROFILE response status:', res.status, '— body:', text);
+    if (!res.ok) {
+      console.error(`[counts] PROFILE failed: HTTP ${res.status}`, text);
+      return { ok: false };
+    }
+    try {
+      return JSON.parse(text);
+    } catch {
+      console.error('[counts] PROFILE: JSON parse error', text);
+      return { ok: false };
+    }
+  } catch (error) {
+    console.error('[counts] PROFILE failed (network?):', error);
+    return { ok: false };
+  }
+}

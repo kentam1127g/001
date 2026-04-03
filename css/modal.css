@@ -160,6 +160,19 @@
   background: #fff;
 }
 
+.reader-profile-save-note {
+  margin: 10px 0 0;
+  font-size: 0.74rem;
+  color: var(--muted);
+}
+
+#readerProfileSave:disabled {
+  background: #cfcfcf;
+  color: #666;
+  border-color: #aaa;
+  cursor: not-allowed;
+}
+
 /* すれ違いモーダルの読者情報 */
 
 .reader-crossed-profile {

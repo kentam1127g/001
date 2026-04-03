@@ -4,17 +4,11 @@ import { INITIAL_VISIBLE_COUNT, INITIAL_EXTRA_COUNT, LAST_LATEST_ID_KEY, LAST_RE
 import { state } from './state.js';
 import { lockScroll } from './scroll.js';
 import { updateClock } from './utils.js';
-import { loadEntriesFromContent, loadSharedCounts } from './data.js';
-import { render, showMoreEntries, showNewerEntries, returnToLatest, handleHashChange, syncLastViewedToDOM } from './render.js';
-import { showEntryPreviewModal, openWelcomeAboutModal, isWelcomeModalOpen, getReaderProfile } from './modals.js';
+import { loadEntriesFromContent } from './data.js';
+import { render, showMoreEntries, showNewerEntries, returnToLatest, handleHashChange } from './render.js';
+import { showEntryPreviewModal, openWelcomeAboutModal, isWelcomeModalOpen } from './modals.js';
 import { initCms } from './cms.js';
 import './ticker.js';
-
-function isJustNowTimestamp(timestamp) {
-  const viewedAt = new Date(timestamp).getTime();
-  if (!viewedAt) return false;
-  return (Date.now() - viewedAt) < 31 * 60 * 1000;
-}
 
 // ---- ナビゲーションボタン ----
 
@@ -119,40 +113,17 @@ async function init() {
       });
     });
 
-    // 既読カウントのバックグラウンド取得（全エントリIDを渡して一括取得）
-    {
-      const countsPromise = loadSharedCounts(state.allEntries.map(e => e.id));
-      countsPromise.then(({ counts, lastViewedAt, readerNames, readerMsgs }) => {
-        console.log('[counts] server data loaded:', counts);
-        state.sharedCounts      = counts;
-        state.sharedLastViewed  = lastViewedAt  || {};
-        state.sharedReaderNames = readerNames   || {};
-        state.sharedReaderMsgs  = readerMsgs    || {};
-        state.countsLoaded = true;
-
-        document.querySelectorAll('[data-view-count-id]').forEach(badge => {
-          const id      = badge.dataset.viewCountId;
-          const numberEl = badge.querySelector('.view-count-number');
-          if (!numberEl) return;
-          const shared  = state.sharedCounts[id];
-          numberEl.textContent = String(shared !== undefined ? shared : 0);
-          syncLastViewedToDOM(id, state.sharedLastViewed[id]);
-        });
-
-        const priorityModal = hasNewPostsNotice ? document.getElementById('newPostsModal') : null;
-
-        if (priorityModal) {
-          const openPriorityModal = () => {
-            priorityModal.classList.add('is-open');
-            lockScroll();
-          };
-          if (isWelcomeModalOpen()) {
-            pendingAfterWelcome = openPriorityModal;
-          } else {
-            openPriorityModal();
-          }
-        }
-      }).catch(err => console.error('[counts] background load failed:', err));
+    const priorityModal = hasNewPostsNotice ? document.getElementById('newPostsModal') : null;
+    if (priorityModal) {
+      const openPriorityModal = () => {
+        priorityModal.classList.add('is-open');
+        lockScroll();
+      };
+      if (isWelcomeModalOpen()) {
+        pendingAfterWelcome = openPriorityModal;
+      } else {
+        openPriorityModal();
+      }
     }
   } catch (error) {
     console.error('[init] failed:', error);

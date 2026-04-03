@@ -4,7 +4,7 @@ import { INITIAL_VISIBLE_COUNT, INITIAL_EXTRA_COUNT, LOAD_MORE_COUNT, VIEW_COUNT
 import { state } from './state.js';
 import { disableScroll, enableScroll, lockScroll, unlockScroll } from './scroll.js';
 import { escapeHtml, normalizeImagePath, formatOnlyTime, enumerateDayLabels } from './utils.js';
-import { loadSeenEntries, saveSeenEntries, bumpSharedCounts } from './data.js';
+import { loadSeenEntries, saveSeenEntries, loadSharedCounts, bumpSharedCounts } from './data.js';
 
 const entriesEl        = document.getElementById('entries');
 const loadOlderWrap    = document.getElementById('loadOlderWrap');
@@ -256,6 +256,47 @@ function openReaderCrossedModal(name, msg) {
   }, 150);
 }
 
+function markCountIds(ids, requested = true) {
+  ids.forEach((id) => {
+    state.requestedCountIds[id] = requested;
+  });
+}
+
+function mergeSharedCounts(payload) {
+  const { counts = {}, lastViewedAt = {}, readerNames = {}, readerMsgs = {} } = payload || {};
+  Object.entries(counts).forEach(([id, count]) => {
+    state.sharedCounts[id] = Number(count);
+    syncViewCountsToDOM(id, state.sharedCounts[id]);
+  });
+  Object.entries(lastViewedAt).forEach(([id, timestamp]) => {
+    state.sharedLastViewed[id] = timestamp;
+    syncLastViewedToDOM(id, timestamp);
+  });
+  Object.entries(readerNames).forEach(([id, name]) => {
+    state.sharedReaderNames[id] = name || '';
+  });
+  Object.entries(readerMsgs).forEach(([id, msg]) => {
+    state.sharedReaderMsgs[id] = msg || '';
+  });
+  if (Object.keys(counts).length || Object.keys(lastViewedAt).length || Object.keys(readerNames).length || Object.keys(readerMsgs).length) {
+    state.countsLoaded = true;
+  }
+}
+
+function loadVisibleEntryCounts(visibleEntries) {
+  const visibleIds = visibleEntries.map((entry) => entry.id).filter(Boolean);
+  const missingIds = visibleIds.filter((id) => !state.requestedCountIds[id]);
+  if (!missingIds.length) return;
+
+  markCountIds(missingIds, true);
+  loadSharedCounts(missingIds).then((payload) => {
+    mergeSharedCounts(payload);
+  }).catch((error) => {
+    console.error('[counts] visible load failed:', error);
+    markCountIds(missingIds, false);
+  });
+}
+
 export function setupViewObservers() {
   if (!('IntersectionObserver' in window)) return;
 
@@ -288,20 +329,7 @@ export function setupViewObservers() {
             msg:  localStorage.getItem('enpitu-reader-msg')  || '',
           };
           const changed = await bumpSharedCounts([entryIdValue], readerInfo);
-          if (changed?.counts && changed.counts[entryIdValue] != null) {
-            state.sharedCounts[entryIdValue] = Number(changed.counts[entryIdValue]);
-            syncViewCountsToDOM(entryIdValue, state.sharedCounts[entryIdValue]);
-          }
-          if (changed?.lastViewedAt && changed.lastViewedAt[entryIdValue]) {
-            state.sharedLastViewed[entryIdValue] = changed.lastViewedAt[entryIdValue];
-            syncLastViewedToDOM(entryIdValue, changed.lastViewedAt[entryIdValue]);
-          }
-          if (changed?.readerNames && Object.prototype.hasOwnProperty.call(changed.readerNames, entryIdValue)) {
-            state.sharedReaderNames[entryIdValue] = changed.readerNames[entryIdValue] || '';
-          }
-          if (changed?.readerMsgs && Object.prototype.hasOwnProperty.call(changed.readerMsgs, entryIdValue)) {
-            state.sharedReaderMsgs[entryIdValue] = changed.readerMsgs[entryIdValue] || '';
-          }
+          mergeSharedCounts(changed);
           if (changed?.lastViewedAt?.[entryIdValue] && isRecentReaderCrossed(changed.lastViewedAt[entryIdValue])) {
             const crossedName = changed?.readerNames?.[entryIdValue] || state.sharedReaderNames[entryIdValue] || '';
             const crossedMsg = changed?.readerMsgs?.[entryIdValue] || state.sharedReaderMsgs[entryIdValue] || '';
@@ -595,6 +623,7 @@ export function render() {
     entriesEl.innerHTML = htmlParts.join('');
 
     bindShareButtons();
+    loadVisibleEntryCounts(visibleEntries);
     setupViewObservers();
     animateEntriesInOrder(alreadyVisibleIds);
 
