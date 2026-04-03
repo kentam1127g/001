@@ -628,6 +628,9 @@ cmsModalClose?.addEventListener('click',  closeCmsModal);
 cmsModal?.addEventListener('click', (e) => { if (e.target === cmsModal) closeCmsModal(); });
 
 cmsSaveBtn?.addEventListener('click',       handleSave);
+cmsTextarea?.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) handleSave();
+});
 cmsDeleteBtn?.addEventListener('click',     showDeleteScreen);
 cmsDeleteCancel?.addEventListener('click',  showFormScreen);
 cmsDeleteConfirm?.addEventListener('click', handleDeleteConfirm);

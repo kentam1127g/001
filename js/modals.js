@@ -359,6 +359,10 @@ document.getElementById('readerProfileBtn')?.addEventListener('click', () => {
 
 setupModal(readerProfileModal, 'readerProfileModalClose');
 
+document.getElementById('readerProfileMsgInput')?.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') { e.preventDefault(); document.getElementById('readerProfileSave')?.click(); }
+});
+
 document.getElementById('readerProfileSave')?.addEventListener('click', () => {
   const name = (document.getElementById('readerProfileNameInput')?.value || '').slice(0, 7).trim();
   const msg  = (document.getElementById('readerProfileMsgInput')?.value  || '').slice(0, 15).trim();
