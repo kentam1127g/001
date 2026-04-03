@@ -184,7 +184,16 @@ function formatDisplayViewCount(count) {
   return String(Math.max(Number(count || 0) - 1, 0));
 }
 
+// 初期表示用：即時・アニメなし
 export function syncViewCountsToDOM(entryId, count) {
+  const badge = document.querySelector(`[data-view-count-id="${entryId}"]`);
+  if (!badge) return;
+  const numberEl = badge.querySelector('.view-count-number');
+  if (numberEl) numberEl.textContent = formatDisplayViewCount(count);
+}
+
+// bump後用：700ms 遅延 + countBlink + plusFlash
+function bumpViewCountInDOM(entryId, count) {
   const badge = document.querySelector(`[data-view-count-id="${entryId}"]`);
   if (!badge) return;
 
@@ -198,7 +207,7 @@ export function syncViewCountsToDOM(entryId, count) {
   const timerId = window.setTimeout(() => {
     if (numberEl) {
       numberEl.classList.remove('is-bumping');
-      void numberEl.offsetWidth; // reflow でアニメーションをリセット
+      void numberEl.offsetWidth;
       numberEl.textContent = formatDisplayViewCount(count);
       numberEl.classList.add('is-bumping');
       numberEl.addEventListener('animationend', () => {
@@ -279,7 +288,7 @@ function markCountIds(ids, requested = true) {
   });
 }
 
-function mergeSharedCounts(payload) {
+function mergeSharedCounts(payload, { animate = false } = {}) {
   const {
     counts = {},
     lastViewedAt = {},
@@ -288,7 +297,11 @@ function mergeSharedCounts(payload) {
   } = payload || {};
   Object.entries(counts).forEach(([id, count]) => {
     state.sharedCounts[id] = Number(count);
-    syncViewCountsToDOM(id, state.sharedCounts[id]);
+    if (animate) {
+      bumpViewCountInDOM(id, state.sharedCounts[id]);
+    } else {
+      syncViewCountsToDOM(id, state.sharedCounts[id]);
+    }
   });
   Object.entries(lastViewedAt).forEach(([id, timestamp]) => {
     state.sharedLastViewed[id] = timestamp;
@@ -361,7 +374,7 @@ export function setupViewObservers() {
               msg:  localStorage.getItem('enpitu-reader-msg')  || '',
             };
           const changed = await bumpSharedCounts([entryIdValue], readerInfo);
-          mergeSharedCounts(changed);
+          mergeSharedCounts(changed, { animate: true });
           if (changed?.lastViewedAt?.[entryIdValue] && isRecentReaderCrossed(changed.lastViewedAt[entryIdValue])) {
               const crossedName = changed?.previousSiteReaderName || state.siteReaderName || '';
               const crossedMsg = changed?.previousSiteReaderMsg || state.siteReaderMsg || '';
