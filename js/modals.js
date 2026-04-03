@@ -4,6 +4,8 @@ import { state } from './state.js';
 import { lockScroll, unlockScroll } from './scroll.js';
 import { render } from './render.js';
 import { escapeHtml, normalizeImagePath } from './utils.js';
+import { bumpSharedCounts } from './data.js';
+import { LAST_READ_ID_KEY } from './config.js';
 
 // ---- ページコンテンツ動的読み込み ----
 
@@ -365,11 +367,17 @@ document.getElementById('readerProfileMsgInput')?.addEventListener('keydown', (e
 
 document.getElementById('readerProfileSave')?.addEventListener('click', () => {
   const name = (document.getElementById('readerProfileNameInput')?.value || '').slice(0, 7).trim();
-  const msg  = (document.getElementById('readerProfileMsgInput')?.value  || '').slice(0, 15).trim();
+  const msg  = (document.getElementById('readerProfileMsgInput')?.value  || '').slice(0, 17).trim();
   localStorage.setItem(READER_NAME_KEY, name);
   localStorage.setItem(READER_MSG_KEY,  msg);
   updateReaderProfileBtn();
   closeModal(readerProfileModal);
+
+  // 直近に読んだエントリにプロフィールを反映するため再bump
+  const lastReadId = localStorage.getItem(LAST_READ_ID_KEY);
+  if (lastReadId) {
+    bumpSharedCounts([lastReadId], { name, msg }).catch(() => {});
+  }
 });
 
 export function showReaderCrossedProfile(name, msg) {
