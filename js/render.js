@@ -255,7 +255,11 @@ export function setupViewObservers() {
           saveSeenEntries([...seenIds]);
           localStorage.setItem(LAST_READ_ID_KEY, entryIdValue);
 
-          const changed = await bumpSharedCounts([entryIdValue]);
+          const readerInfo = {
+            name: localStorage.getItem('enpitu-reader-name') || '',
+            msg:  localStorage.getItem('enpitu-reader-msg')  || '',
+          };
+          const changed = await bumpSharedCounts([entryIdValue], readerInfo);
           if (changed?.counts && changed.counts[entryIdValue] != null) {
             state.sharedCounts[entryIdValue] = Number(changed.counts[entryIdValue]);
             syncViewCountsToDOM(entryIdValue, state.sharedCounts[entryIdValue]);

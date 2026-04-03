@@ -6,7 +6,7 @@ import { lockScroll } from './scroll.js';
 import { updateClock } from './utils.js';
 import { loadEntriesFromContent, loadSharedCounts } from './data.js';
 import { render, showMoreEntries, showNewerEntries, returnToLatest, handleHashChange, syncLastViewedToDOM } from './render.js';
-import { showEntryPreviewModal, openWelcomeAboutModal, isWelcomeModalOpen } from './modals.js';
+import { showEntryPreviewModal, openWelcomeAboutModal, isWelcomeModalOpen, getReaderProfile, showReaderCrossedProfile } from './modals.js';
 import { initCms } from './cms.js';
 import './ticker.js';
 
@@ -122,10 +122,12 @@ async function init() {
     // 既読カウントのバックグラウンド取得（全エントリIDを渡して一括取得）
     {
       const countsPromise = loadSharedCounts(state.allEntries.map(e => e.id));
-      countsPromise.then(({ counts, lastViewedAt }) => {
+      countsPromise.then(({ counts, lastViewedAt, readerNames, readerMsgs }) => {
         console.log('[counts] server data loaded:', counts);
-        state.sharedCounts = counts;
-        state.sharedLastViewed = lastViewedAt || {};
+        state.sharedCounts      = counts;
+        state.sharedLastViewed  = lastViewedAt  || {};
+        state.sharedReaderNames = readerNames   || {};
+        state.sharedReaderMsgs  = readerMsgs    || {};
         state.countsLoaded = true;
 
         document.querySelectorAll('[data-view-count-id]').forEach(badge => {
@@ -139,7 +141,14 @@ async function init() {
 
         const alreadyShownCrossed = sessionStorage.getItem('enpitu-reader-crossed-shown');
         const hasReaderCrossedNotice = !alreadyShownCrossed && Object.values(state.sharedLastViewed).some(isJustNowTimestamp);
-        if (hasReaderCrossedNotice) sessionStorage.setItem('enpitu-reader-crossed-shown', '1');
+        if (hasReaderCrossedNotice) {
+          sessionStorage.setItem('enpitu-reader-crossed-shown', '1');
+          // すれ違った読者の名前・一言を検索して表示
+          const crossedEntryId = Object.keys(state.sharedLastViewed).find(id => isJustNowTimestamp(state.sharedLastViewed[id]));
+          const crossedName = crossedEntryId ? (state.sharedReaderNames?.[crossedEntryId] || '') : '';
+          const crossedMsg  = crossedEntryId ? (state.sharedReaderMsgs?.[crossedEntryId]  || '') : '';
+          showReaderCrossedProfile(crossedName, crossedMsg);
+        }
         const priorityModal = hasReaderCrossedNotice
           ? document.getElementById('readerCrossedModal')
           : (hasNewPostsNotice ? document.getElementById('newPostsModal') : null);

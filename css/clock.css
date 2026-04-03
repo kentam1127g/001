@@ -285,3 +285,34 @@
   border-color: #777;
   color: #333;
 }
+
+/* ---- 読者プロフィールボタン ---- */
+
+.reader-profile-btn {
+  font-size: 0.68rem;
+}
+
+.reader-profile-btn:hover {
+  background: #bbb;
+  border-color: #777;
+}
+
+.reader-profile-name {
+  white-space: nowrap;
+  color: #444;
+}
+
+.reader-profile-name--unset {
+  color: #999;
+  animation: readerNameBlink 2.4s steps(1) infinite;
+}
+
+@keyframes readerNameBlink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.35; }
+}
+
+/* ログイン中は読者ボタンを非表示 */
+body.is-admin .reader-profile-btn {
+  display: none;
+}

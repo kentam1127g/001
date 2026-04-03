@@ -17,19 +17,20 @@ export function saveSeenEntries(ids) {
 
 function normalizeCountsResponse(data) {
   if (!data || typeof data !== 'object' || Array.isArray(data)) {
-    return { counts: {}, lastViewedAt: {} };
+    return { counts: {}, lastViewedAt: {}, readerNames: {}, readerMsgs: {} };
   }
 
   if (data.counts && typeof data.counts === 'object') {
     return {
       counts: data.counts,
       lastViewedAt: (data.lastViewedAt && typeof data.lastViewedAt === 'object' && !Array.isArray(data.lastViewedAt))
-        ? data.lastViewedAt
-        : {},
+        ? data.lastViewedAt : {},
+      readerNames: (data.readerNames && typeof data.readerNames === 'object') ? data.readerNames : {},
+      readerMsgs:  (data.readerMsgs  && typeof data.readerMsgs  === 'object') ? data.readerMsgs  : {},
     };
   }
 
-  return { counts: data, lastViewedAt: {} };
+  return { counts: data, lastViewedAt: {}, readerNames: {}, readerMsgs: {} };
 }
 
 export async function loadEntriesFromContent() {
@@ -67,11 +68,13 @@ export async function loadSharedCounts(ids) {
   }
 }
 
-export async function bumpSharedCounts(ids) {
+export async function bumpSharedCounts(ids, readerInfo = {}) {
   try {
-    if (!ids.length) return { counts: {}, lastViewedAt: {} };
+    if (!ids.length) return { counts: {}, lastViewedAt: {}, readerNames: {}, readerMsgs: {} };
     console.log('[counts] BUMP start — ids:', ids);
-    const url = `${COUNTS_API_BASE}/.netlify/functions/counts-bump?ids=${encodeURIComponent(ids.join(','))}`;
+    const nameParam = readerInfo.name ? `&readerName=${encodeURIComponent(readerInfo.name)}` : '';
+    const msgParam  = readerInfo.msg  ? `&readerMsg=${encodeURIComponent(readerInfo.msg)}`   : '';
+    const url = `${COUNTS_API_BASE}/.netlify/functions/counts-bump?ids=${encodeURIComponent(ids.join(','))}${nameParam}${msgParam}`;
     const res = await fetch(url, { cache: 'no-store' });
     const text = await res.text();
     console.log('[counts] BUMP response status:', res.status, '— body:', text);

@@ -273,6 +273,34 @@
     </div>
   </div>
 
+  <!-- 読者プロフィールモーダル -->
+  <div id="readerProfileModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="readerProfileModalTitle">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2 class="modal-title" id="readerProfileModalTitle">あなたのプロフィール</h2>
+        <button id="readerProfileModalClose" class="icon-btn" type="button" aria-label="閉じる">
+          <svg viewBox="0 0 24 24">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="reader-profile-field">
+          <label class="reader-profile-label" for="readerProfileNameInput">お名前（最大7文字）</label>
+          <input id="readerProfileNameInput" class="reader-profile-input" type="text" maxlength="7" placeholder="名無しの読者" autocomplete="off" />
+        </div>
+        <div class="reader-profile-field">
+          <label class="reader-profile-label" for="readerProfileMsgInput">一言（最大15文字）</label>
+          <input id="readerProfileMsgInput" class="reader-profile-input" type="text" maxlength="15" placeholder="よんでいます。" autocomplete="off" />
+        </div>
+        <div class="modal-actions">
+          <button id="readerProfileSave" class="modal-btn modal-btn-primary" type="button">保存</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div id="readerCrossedModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="readerCrossedModalTitle">
     <div class="modal-box">
       <div class="modal-header">
@@ -286,6 +314,10 @@
       </div>
       <div class="modal-body">
         <p>読者とすれ違いました。</p>
+        <div id="readerCrossedProfile" class="reader-crossed-profile" hidden>
+          <p id="readerCrossedName" class="reader-crossed-name"></p>
+          <p id="readerCrossedMsg"  class="reader-crossed-msg"></p>
+        </div>
         <br><br><br><br>
       </div>
     </div>
@@ -331,6 +363,9 @@
         <div class="ticker-track-wrap">
           <span id="tickerTrack" class="ticker-track">―</span>
         </div>
+        <button id="readerProfileBtn" class="login-status-float reader-profile-btn" type="button">
+          <span id="readerProfileName" class="reader-profile-name reader-profile-name--unset">（お名前未設定）</span>
+        </button>
         <button id="loginStatusFloat" class="login-status-float" type="button" hidden>
           <span class="login-status-dot" aria-hidden="true"></span>
           <span class="login-status-text">ログイン中</span>

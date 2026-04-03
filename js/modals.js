@@ -318,6 +318,73 @@ export function showEntryPreviewModal(entry, { skipLoader = false, onNavigate = 
   previewModal.onclick = (e) => { if (e.target === previewModal) close(); };
 }
 
+// ---- 読者プロフィール ----
+
+const READER_NAME_KEY = 'enpitu-reader-name';
+const READER_MSG_KEY  = 'enpitu-reader-msg';
+
+export function getReaderProfile() {
+  return {
+    name: localStorage.getItem(READER_NAME_KEY) || '',
+    msg:  localStorage.getItem(READER_MSG_KEY)  || '',
+  };
+}
+
+function updateReaderProfileBtn() {
+  const btn      = document.getElementById('readerProfileBtn');
+  const nameEl   = document.getElementById('readerProfileName');
+  if (!btn || !nameEl) return;
+  const { name } = getReaderProfile();
+  if (name) {
+    nameEl.textContent = `${name}さん`;
+    nameEl.classList.remove('reader-profile-name--unset');
+  } else {
+    nameEl.textContent = '（お名前未設定）';
+    nameEl.classList.add('reader-profile-name--unset');
+  }
+}
+
+updateReaderProfileBtn();
+
+const readerProfileModal = document.getElementById('readerProfileModal');
+
+document.getElementById('readerProfileBtn')?.addEventListener('click', () => {
+  const { name, msg } = getReaderProfile();
+  const nameInput = document.getElementById('readerProfileNameInput');
+  const msgInput  = document.getElementById('readerProfileMsgInput');
+  if (nameInput) nameInput.value = name;
+  if (msgInput)  msgInput.value  = msg;
+  openModal(readerProfileModal);
+});
+
+setupModal(readerProfileModal, 'readerProfileModalClose');
+
+document.getElementById('readerProfileSave')?.addEventListener('click', () => {
+  const name = (document.getElementById('readerProfileNameInput')?.value || '').slice(0, 7).trim();
+  const msg  = (document.getElementById('readerProfileMsgInput')?.value  || '').slice(0, 15).trim();
+  localStorage.setItem(READER_NAME_KEY, name);
+  localStorage.setItem(READER_MSG_KEY,  msg);
+  updateReaderProfileBtn();
+  closeModal(readerProfileModal);
+});
+
+export function showReaderCrossedProfile(name, msg) {
+  const profileEl = document.getElementById('readerCrossedProfile');
+  const nameEl    = document.getElementById('readerCrossedName');
+  const msgEl     = document.getElementById('readerCrossedMsg');
+  if (!profileEl) return;
+  if (name) {
+    if (nameEl) nameEl.textContent = `${name}さん`;
+    if (msgEl)  msgEl.textContent  = msg || '';
+    if (msgEl)  msgEl.hidden       = !msg;
+    profileEl.hidden = false;
+  } else {
+    profileEl.hidden = true;
+  }
+}
+
+// ---- ランダム投稿 ----
+
 document.getElementById('floatRandom')?.addEventListener('click', () => {
   if (!state.allEntries.length) return;
   const entry = state.allEntries[Math.floor(Math.random() * state.allEntries.length)];
