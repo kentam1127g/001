@@ -1,7 +1,41 @@
 /* ===== ticker.js — ニュースフィード（Wikipedia 今日は何の日 & 東京都の天気予報） ===== */
 
+function getJSTMonthDay() {
+  const parts = new Intl.DateTimeFormat('ja-JP', {
+    timeZone: 'Asia/Tokyo',
+    month: 'numeric',
+    day: 'numeric',
+  }).formatToParts(new Date());
+
+  const month = Number(parts.find((part) => part.type === 'month')?.value || 0);
+  const day = Number(parts.find((part) => part.type === 'day')?.value || 0);
+  if (!month || !day) throw new Error('jst date parse error');
+  return { month, day };
+}
+
+function collectSectionListItems(root, headlineText) {
+  const headlines = [...root.querySelectorAll('.mw-headline')];
+  const headline = headlines.find((node) => node.textContent.trim() === headlineText);
+  if (!headline) return [];
+
+  const sectionRoot = headline.closest('h2, h3');
+  if (!sectionRoot) return [];
+
+  const items = [];
+  let cursor = sectionRoot.nextElementSibling;
+  while (cursor && !/^H2$/i.test(cursor.tagName)) {
+    if (/^(UL|OL)$/i.test(cursor.tagName)) {
+      cursor.querySelectorAll(':scope > li').forEach((li) => items.push(li));
+    }
+    cursor = cursor.nextElementSibling;
+  }
+  return items;
+}
+
 async function fetchOnThisDay() {
-  const res = await fetch(`https://ja.wikipedia.org/w/api.php?action=parse&format=json&page=Template:%E4%BB%8A%E6%97%A5%E3%81%AF%E4%BD%95%E3%81%AE%E6%97%A5&prop=text&origin=*&smaxage=0&maxage=0&_t=${Date.now()}`);
+  const { month, day } = getJSTMonthDay();
+  const page = `${month}月${day}日`;
+  const res = await fetch(`https://ja.wikipedia.org/w/api.php?action=parse&format=json&page=${encodeURIComponent(page)}&prop=text&origin=*&smaxage=0&maxage=0&_t=${Date.now()}`);
   if (!res.ok) throw new Error('wikipedia fetch error');
   const data = await res.json();
   const html = data?.parse?.text?.['*'];
@@ -9,7 +43,13 @@ async function fetchOnThisDay() {
   const tmp = document.createElement('div');
   tmp.innerHTML = html;
   const items = [];
-  tmp.querySelectorAll('li').forEach(li => {
+
+  const listItems =
+    collectSectionListItems(tmp, '記念日・年中行事').length
+      ? collectSectionListItems(tmp, '記念日・年中行事')
+      : collectSectionListItems(tmp, 'できごと');
+
+  listItems.forEach(li => {
     const t    = li.textContent.trim().replace(/\s+/g, ' ');
     const a    = li.querySelector('a[href]');
     const href = a ? 'https://ja.wikipedia.org' + a.getAttribute('href') : null;
@@ -18,7 +58,7 @@ async function fetchOnThisDay() {
   if (!items.length) throw new Error('no items');
   const item = items[Math.floor(Math.random() * items.length)];
   return [{
-    t: `今日は何の日：「${item.t}」の日`,
+    t: `今日は何の日（${month}月${day}日）：「${item.t}」`,
     href: item.href,
     icon: null
   }];
