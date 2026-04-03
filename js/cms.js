@@ -670,9 +670,19 @@ document.getElementById('entries')?.addEventListener('click', (e) => {
 document.getElementById('floatPost')?.addEventListener('click', openNewPostModal);
 
 // 既読数リセットボタン
-document.getElementById('resetSeenBtn')?.addEventListener('click', () => {
+document.getElementById('resetSeenBtn')?.addEventListener('click', async () => {
+  const ids = state.allEntries.map(e => e.id).filter(Boolean);
+  if (ids.length) {
+    try {
+      const url = `${COUNTS_API_BASE}/.netlify/functions/counts-reset?ids=${encodeURIComponent(ids.join(','))}`;
+      await fetch(url, { cache: 'no-store' });
+    } catch (e) {
+      console.error('[counts] reset failed:', e);
+    }
+  }
   localStorage.removeItem(SEEN_STORAGE_KEY);
   if (state.viewSeenIds) state.viewSeenIds.clear();
+  location.reload();
 });
 
 // About・書いてる人 編集ボタン
