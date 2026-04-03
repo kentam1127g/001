@@ -177,6 +177,10 @@ export function bindShareButtons() {
 
 // ---- 既読カウント ----
 
+function formatDisplayViewCount(count) {
+  return String(Math.max(Number(count || 0) - 1, 0));
+}
+
 export function syncViewCountsToDOM(entryId, count) {
   const badge = document.querySelector(`[data-view-count-id="${entryId}"]`);
   if (!badge) return;
@@ -187,7 +191,7 @@ export function syncViewCountsToDOM(entryId, count) {
   if (numberEl) {
     numberEl.classList.remove('is-bumping');
     void numberEl.offsetWidth; // reflow でアニメーションをリセット
-    numberEl.textContent = String(count);
+    numberEl.textContent = formatDisplayViewCount(count);
     numberEl.classList.add('is-bumping');
     numberEl.addEventListener('animationend', () => {
       numberEl.classList.remove('is-bumping');
@@ -584,7 +588,9 @@ export function render() {
         : '';
 
       const sharedCount  = state.sharedCounts[entry.id];
-      const displayCount = state.countsLoaded ? (sharedCount !== undefined ? sharedCount : 0) : '';
+      const displayCount = state.countsLoaded
+        ? (sharedCount !== undefined ? formatDisplayViewCount(sharedCount) : '0')
+        : '';
       const lastViewedLabel = formatLastViewedLabel(sharedLastViewed[entry.id]);
 
       htmlParts.push(`
