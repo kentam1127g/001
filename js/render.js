@@ -178,7 +178,7 @@ export function bindShareButtons() {
 
 // ---- 既読カウント ----
 
-const VIEW_COUNT_ANIMATION_DELAY_MS = 900;
+const VIEW_COUNT_ANIMATION_DELAY_MS = 700;
 
 function formatDisplayViewCount(count) {
   return String(Math.max(Number(count || 0) - 1, 0));
@@ -330,6 +330,9 @@ export function setupViewObservers() {
   if (state.viewObserver) {
     state.viewObserver.disconnect();
   }
+
+  state.viewPendingTimers.forEach((timerId) => clearTimeout(timerId));
+  state.viewPendingTimers.clear();
 
   if (!state.viewSeenIds) {
     state.viewSeenIds = new Set(loadSeenEntries());
