@@ -30,6 +30,14 @@
       </div>
       <button id="resetSeenBtn" class="topbar-reset-seen-btn admin-only" type="button" title="既読数カウントリセット">既読リセット</button>
     <div class="topbar-right">
+        <button id="writerLoginBtn" class="modal-login-btn topbar-login-btn" type="button" aria-label="ログイン" hidden>
+          <svg viewBox="0 0 24 24">
+            <path d="M10 3H5v18h5"></path>
+            <path d="M13 5h6v14h-6"></path>
+            <polyline points="11 8 16 12 11 16"></polyline>
+            <line x1="3" y1="12" x2="15.5" y2="12"></line>
+          </svg>
+        </button>
         <span id="transferKB" class="transfer-kb" role="button" tabindex="0"></span>
         <div id="topbarClock" class="topbar-clock">--:--:--</div>
         <div id="transferModal" class="transfer-modal" hidden>
@@ -258,16 +266,6 @@
       <div class="modal-body">
         <div class="random-modal-loader hidden" id="writerModalLoader" data-loader="LOADING"></div>
         <div id="writerModalBody"></div>
-        <div class="modal-login-row">
-          <button id="writerLoginBtn" class="modal-login-btn" type="button" aria-label="ログイン" hidden>
-            <svg viewBox="0 0 24 24">
-              <path d="M10 3H5v18h5"></path>
-              <path d="M13 5h6v14h-6"></path>
-              <polyline points="11 8 16 12 11 16"></polyline>
-              <line x1="3" y1="12" x2="15.5" y2="12"></line>
-            </svg>
-          </button>
-        </div>
         <div class="modal-edit-row admin-only">
           <button id="editWriterBtn" class="icon-btn" type="button" aria-label="書いてる人を編集">
             <svg viewBox="0 0 24 24">
@@ -380,6 +378,7 @@
       </div>
       <div class="modal-body">
         <div class="modal-actions">
+          <br><br><br><br><br>
           <button id="githubLoginBtn" class="modal-btn modal-btn-primary" type="button">GitHubでログイン</button>
         </div>
       </div>

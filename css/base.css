@@ -67,6 +67,17 @@ button, a {
   flex: 1;
 }
 
+.topbar-login-btn {
+  opacity: 0.68;
+  color: #7f7f7f;
+  margin-right: 2px;
+}
+
+.topbar-login-btn:hover {
+  opacity: 1;
+  color: #555;
+}
+
 .title h1 {
   margin: 0;
   font-size: 1rem;

@@ -380,14 +380,6 @@
   transform: translate(1px, 1px);
 }
 
-.modal-login-row {
-  display: flex;
-  justify-content: flex-start;
-  margin-top: 10px;
-  margin-left: -6px;
-  margin-bottom: -4px;
-}
-
 .modal-login-btn {
   width: 18px;
   height: 18px;
