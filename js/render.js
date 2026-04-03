@@ -262,7 +262,6 @@ function isRecentReaderCrossed(timestamp) {
 
 // 同一ページロード内の多重BUMP対策（メモリ変数）
 let _readerCrossedShownSignature = null;
-const CROSSED_SESSION_KEY = 'enpitu-reader-crossed-last';
 let _readerCrossedOpenTimer = null;
 
 function getReaderCrossedPriority(name, msg) {
@@ -284,7 +283,6 @@ function isSameNamedReader(name) {
 
 function resetReaderCrossedCheck() {
   _readerCrossedShownSignature = null;
-  sessionStorage.removeItem(CROSSED_SESSION_KEY);
 }
 
 function maybeSyncMyReaderProfile() {
@@ -336,10 +334,6 @@ function openReaderCrossedModal(name, msg) {
   // 同一ページロード内：同じ名前・同じコメントは再表示しない
   if (_readerCrossedShownSignature === signature) return;
 
-  // タブをまたいで：前回表示した名前・コメントと同じなら再表示しない
-  const lastShown = sessionStorage.getItem(CROSSED_SESSION_KEY);
-  if (lastShown === signature) return;
-
   const modal = document.getElementById('readerCrossedModal');
   const profileEl = document.getElementById('readerCrossedProfile');
   const nameEl = document.getElementById('readerCrossedName');
@@ -353,7 +347,6 @@ function openReaderCrossedModal(name, msg) {
   profileEl.hidden = false;
 
   _readerCrossedShownSignature = signature;
-  sessionStorage.setItem(CROSSED_SESSION_KEY, signature);
   if (_readerCrossedOpenTimer) {
     clearTimeout(_readerCrossedOpenTimer);
   }
