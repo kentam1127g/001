@@ -159,9 +159,50 @@ document.getElementById('reloadConfirmYes')?.addEventListener('click', () => {
 
 // ---- Aboutモーダル ----
 
+let aboutWelcomeMode = false;
+let _welcomeOnEnter  = null;
+
+function closeAboutModal() {
+  if (aboutWelcomeMode) return;
+  closeModal(aboutModal);
+}
+
+document.getElementById('aboutModalClose')?.addEventListener('click', closeAboutModal);
+aboutModal?.addEventListener('click', (e) => { if (e.target === aboutModal) closeAboutModal(); });
+
 document.getElementById('floatAbout')?.addEventListener('click', () =>
   openModalWithLoader(aboutModal, 'aboutModalLoader', aboutLoaderTimer));
-setupModal(aboutModal, 'aboutModalClose');
+
+document.getElementById('aboutEnterBtn')?.addEventListener('click', () => {
+  localStorage.setItem('enpitu-visited', '1');
+  aboutWelcomeMode = false;
+  const titleEl   = document.getElementById('aboutModalTitle');
+  const closeBtn  = document.getElementById('aboutModalClose');
+  const enterWrap = document.getElementById('aboutEnterBtnWrap');
+  if (titleEl)   titleEl.textContent = 'ようこそ';
+  if (closeBtn)  closeBtn.hidden = false;
+  if (enterWrap) enterWrap.hidden = true;
+  closeModal(aboutModal);
+  const cb = _welcomeOnEnter;
+  _welcomeOnEnter = null;
+  cb?.();
+});
+
+export function isWelcomeModalOpen() {
+  return aboutWelcomeMode;
+}
+
+export function openWelcomeAboutModal(onEnter) {
+  aboutWelcomeMode = true;
+  _welcomeOnEnter  = onEnter || null;
+  const titleEl   = document.getElementById('aboutModalTitle');
+  const closeBtn  = document.getElementById('aboutModalClose');
+  const enterWrap = document.getElementById('aboutEnterBtnWrap');
+  if (titleEl)   titleEl.textContent = 'ようこそ';
+  if (closeBtn)  closeBtn.hidden = true;
+  if (enterWrap) enterWrap.hidden = false;
+  openModalWithLoader(aboutModal, 'aboutModalLoader', aboutLoaderTimer);
+}
 
 // ---- Writerモーダル ----
 
@@ -173,7 +214,6 @@ setupModal(writerModal, 'writerModalClose');
 
 setupModal(newPostsModal, 'newPostsModalClose');
 setupModal(readerCrossedModal, 'readerCrossedModalClose');
-document.getElementById('logoutConfirmNo')?.addEventListener('click', () => closeModal(logoutConfirmModal));
 logoutConfirmModal?.addEventListener('click', (e) => {
   if (e.target === logoutConfirmModal) closeModal(logoutConfirmModal);
 });

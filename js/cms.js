@@ -31,9 +31,11 @@ export function applyAuthState() {
   const loggedIn = isLoggedIn();
   document.body.classList.toggle('is-admin', loggedIn);
   const loginStatusFloat = document.getElementById('loginStatusFloat');
-  const writerLoginBtn = document.getElementById('writerLoginBtn');
+  const writerLoginBtn   = document.getElementById('writerLoginBtn');
+  const floatAbout = document.getElementById('floatAbout');
   if (loginStatusFloat) loginStatusFloat.hidden = !loggedIn;
-  if (writerLoginBtn) writerLoginBtn.hidden = loggedIn;
+  if (writerLoginBtn)   writerLoginBtn.hidden = loggedIn;
+  if (floatAbout)       floatAbout.hidden = !loggedIn;
 }
 
 function logout() {
@@ -688,10 +690,6 @@ export function initCms() {
     e.stopPropagation();
     if (logoutPopup) logoutPopup.hidden = true;
     logout();
-  });
-  document.getElementById('logoutPopupNo')?.addEventListener('click', (e) => {
-    e.stopPropagation();
-    if (logoutPopup) logoutPopup.hidden = true;
   });
   document.addEventListener('click', (e) => {
     if (!logoutPopup?.hidden && !logoutPopup.contains(e.target)) {

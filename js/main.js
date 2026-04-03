@@ -6,7 +6,7 @@ import { lockScroll } from './scroll.js';
 import { updateClock } from './utils.js';
 import { loadEntriesFromContent, loadSharedCounts } from './data.js';
 import { render, showMoreEntries, showNewerEntries, returnToLatest, handleHashChange, syncLastViewedToDOM } from './render.js';
-import { showEntryPreviewModal } from './modals.js';
+import { showEntryPreviewModal, openWelcomeAboutModal, isWelcomeModalOpen } from './modals.js';
 import { initCms } from './cms.js';
 import './ticker.js';
 
@@ -59,6 +59,7 @@ async function init() {
     }
 
     let hasNewPostsNotice = false;
+    let pendingAfterWelcome = null;
 
     // 新着投稿チェック
     {
@@ -90,6 +91,12 @@ async function init() {
         }
 
         document.body.classList.add('is-ready');
+
+        if (!localStorage.getItem('enpitu-visited')) {
+          openWelcomeAboutModal(() => {
+            if (pendingAfterWelcome) { pendingAfterWelcome(); pendingAfterWelcome = null; }
+          });
+        }
 
         if (!state.anchoredEntryId && state.allEntries.length > INITIAL_VISIBLE_COUNT) {
           setTimeout(() => {
@@ -138,8 +145,12 @@ async function init() {
           : (hasNewPostsNotice ? document.getElementById('newPostsModal') : null);
 
         if (priorityModal) {
-          priorityModal.classList.add('is-open');
-          lockScroll();
+          if (isWelcomeModalOpen()) {
+            pendingAfterWelcome = () => { priorityModal.classList.add('is-open'); lockScroll(); };
+          } else {
+            priorityModal.classList.add('is-open');
+            lockScroll();
+          }
         }
       }).catch(err => console.error('[counts] background load failed:', err));
     }

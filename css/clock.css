@@ -144,6 +144,10 @@
   color: #000;
 }
 
+.clock-btn[hidden] {
+  display: none;
+}
+
 .clock-btn:hover {
   background: #bbb;
   border-color: #000;
@@ -199,7 +203,7 @@
 .logout-popup-actions {
   display: flex;
   gap: 6px;
-  justify-content: flex-end;
+  justify-content: center;
 }
 
 .logout-popup-btn {

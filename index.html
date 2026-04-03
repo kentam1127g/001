@@ -189,7 +189,7 @@
   <div id="aboutModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="aboutModalTitle">
     <div class="modal-box">
       <div class="modal-header">
-        <h2 class="modal-title" id="aboutModalTitle">えんぴつだいあろーぐ。とは</h2>
+        <h2 class="modal-title" id="aboutModalTitle">ようこそ</h2>
         <button id="aboutModalClose" class="icon-btn" type="button" aria-label="閉じる">
           <svg viewBox="0 0 24 24">
             <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -200,6 +200,9 @@
       <div class="modal-body">
         <div class="random-modal-loader hidden" id="aboutModalLoader" data-loader="LOADING"></div>
         <div id="aboutModalBody"></div>
+        <div id="aboutEnterBtnWrap" class="modal-actions" hidden>
+          <button id="aboutEnterBtn" class="modal-btn modal-btn-primary" type="button">入る</button>
+        </div>
         <div class="modal-edit-row admin-only">
           <button id="editAboutBtn" class="icon-btn" type="button" aria-label="Aboutを編集">
             <svg viewBox="0 0 24 24">
@@ -316,7 +319,6 @@
         <p class="modal-confirm-text">ログアウトしますか？</p>
         <div class="modal-actions">
           <button id="logoutConfirmYes" class="modal-btn modal-btn-primary" type="button">はい</button>
-          <button id="logoutConfirmNo" class="modal-btn" type="button">いいえ</button>
         </div>
       </div>
     </div>
@@ -340,8 +342,7 @@
         <div id="logoutPopup" class="logout-popup" hidden>
           <p class="logout-popup-text">ログアウトしますか？</p>
           <div class="logout-popup-actions">
-            <button id="logoutPopupYes" class="logout-popup-btn logout-popup-btn-primary" type="button">する</button>
-            <button id="logoutPopupNo" class="logout-popup-btn" type="button">しない</button>
+            <button id="logoutPopupYes" class="logout-popup-btn logout-popup-btn-primary" type="button">はい</button>
           </div>
         </div>
       </div>
@@ -357,7 +358,7 @@
             <circle cx="15.5" cy="15.5" r="0.9" fill="currentColor" stroke="none"></circle>
           </svg>
         </button>
-        <button id="floatAbout" class="clock-btn" type="button" aria-label="About" style="font-size:1rem;font-weight:700;line-height:1;">？</button>
+        <button id="floatAbout" class="clock-btn" type="button" aria-label="About" style="font-size:1rem;font-weight:700;line-height:1;" hidden>？</button>
         <button id="floatWriter" class="clock-btn" type="button" aria-label="Writer">
           <svg viewBox="0 0 24 24" fill="currentColor">
             <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
