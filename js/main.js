@@ -6,11 +6,9 @@ import { lockScroll } from './scroll.js';
 import { updateClock } from './utils.js';
 import { loadEntriesFromContent, loadSharedCounts } from './data.js';
 import { render, showMoreEntries, showNewerEntries, returnToLatest, handleHashChange, syncLastViewedToDOM } from './render.js';
-import { showEntryPreviewModal, openWelcomeAboutModal, isWelcomeModalOpen, getReaderProfile, showReaderCrossedProfile } from './modals.js';
+import { showEntryPreviewModal, openWelcomeAboutModal, isWelcomeModalOpen, getReaderProfile } from './modals.js';
 import { initCms } from './cms.js';
 import './ticker.js';
-
-const READER_CROSSED_MODAL_DELAY_MS = 3500;
 
 function isJustNowTimestamp(timestamp) {
   const viewedAt = new Date(timestamp).getTime();
@@ -141,27 +139,12 @@ async function init() {
           syncLastViewedToDOM(id, state.sharedLastViewed[id]);
         });
 
-        const alreadyShownCrossed = sessionStorage.getItem('enpitu-reader-crossed-shown');
-        const hasReaderCrossedNotice = !alreadyShownCrossed && Object.values(state.sharedLastViewed).some(isJustNowTimestamp);
-        if (hasReaderCrossedNotice) {
-          sessionStorage.setItem('enpitu-reader-crossed-shown', '1');
-          // すれ違った読者の名前・一言を検索して表示
-          const crossedEntryId = Object.keys(state.sharedLastViewed).find(id => isJustNowTimestamp(state.sharedLastViewed[id]));
-          const crossedName = crossedEntryId ? (state.sharedReaderNames?.[crossedEntryId] || '') : '';
-          const crossedMsg  = crossedEntryId ? (state.sharedReaderMsgs?.[crossedEntryId]  || '') : '';
-          showReaderCrossedProfile(crossedName, crossedMsg);
-        }
-        const priorityModal = hasReaderCrossedNotice
-          ? document.getElementById('readerCrossedModal')
-          : (hasNewPostsNotice ? document.getElementById('newPostsModal') : null);
-        const priorityModalDelay = hasReaderCrossedNotice ? READER_CROSSED_MODAL_DELAY_MS : 0;
+        const priorityModal = hasNewPostsNotice ? document.getElementById('newPostsModal') : null;
 
         if (priorityModal) {
           const openPriorityModal = () => {
-            window.setTimeout(() => {
-              priorityModal.classList.add('is-open');
-              lockScroll();
-            }, priorityModalDelay);
+            priorityModal.classList.add('is-open');
+            lockScroll();
           };
           if (isWelcomeModalOpen()) {
             pendingAfterWelcome = openPriorityModal;

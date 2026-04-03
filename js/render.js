@@ -228,6 +228,34 @@ export function syncLastViewedToDOM(entryId, timestamp) {
   labelEl.hidden = !label;
 }
 
+function isRecentReaderCrossed(timestamp) {
+  const viewedAt = new Date(timestamp).getTime();
+  if (!viewedAt) return false;
+  return (Date.now() - viewedAt) < 31 * 60 * 1000;
+}
+
+function openReaderCrossedModal(name, msg) {
+  if (sessionStorage.getItem('enpitu-reader-crossed-shown')) return;
+
+  const modal = document.getElementById('readerCrossedModal');
+  const profileEl = document.getElementById('readerCrossedProfile');
+  const nameEl = document.getElementById('readerCrossedName');
+  const msgEl = document.getElementById('readerCrossedMsg');
+  if (!modal || !profileEl) return;
+
+  const displayName = name || '名無しの読者';
+  if (nameEl) nameEl.textContent = `${displayName}さん`;
+  if (msgEl) msgEl.textContent = msg || '';
+  if (msgEl) msgEl.hidden = !msg;
+  profileEl.hidden = false;
+
+  sessionStorage.setItem('enpitu-reader-crossed-shown', '1');
+  window.setTimeout(() => {
+    modal.classList.add('is-open');
+    lockScroll();
+  }, 150);
+}
+
 export function setupViewObservers() {
   if (!('IntersectionObserver' in window)) return;
 
@@ -273,6 +301,11 @@ export function setupViewObservers() {
           }
           if (changed?.readerMsgs && Object.prototype.hasOwnProperty.call(changed.readerMsgs, entryIdValue)) {
             state.sharedReaderMsgs[entryIdValue] = changed.readerMsgs[entryIdValue] || '';
+          }
+          if (changed?.lastViewedAt?.[entryIdValue] && isRecentReaderCrossed(changed.lastViewedAt[entryIdValue])) {
+            const crossedName = changed?.readerNames?.[entryIdValue] || state.sharedReaderNames[entryIdValue] || '';
+            const crossedMsg = changed?.readerMsgs?.[entryIdValue] || state.sharedReaderMsgs[entryIdValue] || '';
+            openReaderCrossedModal(crossedName, crossedMsg);
           }
 
           if (state.viewObserver) {
