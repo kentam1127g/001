@@ -261,7 +261,7 @@ function isRecentReaderCrossed(timestamp) {
 }
 
 // 同一ページロード内の多重BUMP対策（メモリ変数）
-let _readerCrossedShownName = null;
+let _readerCrossedShownSignature = null;
 const CROSSED_SESSION_KEY = 'enpitu-reader-crossed-last';
 
 function isSelfReader(readerId) {
@@ -270,15 +270,17 @@ function isSelfReader(readerId) {
 
 function openReaderCrossedModal(name, msg) {
   const displayName = name || '名無しの読者';
+  const displayMsg = msg || '';
+  const signature = `${displayName}\n${displayMsg}`;
 
   // 同一ページロード内：実名表示済みなら "名無しの読者" で上書きしない
-  if (!name && _readerCrossedShownName && _readerCrossedShownName !== '名無しの読者') return;
-  // 同一ページロード内：同じ名前は再表示しない
-  if (_readerCrossedShownName === displayName) return;
+  if (!name && _readerCrossedShownSignature && !_readerCrossedShownSignature.startsWith('名無しの読者\n')) return;
+  // 同一ページロード内：同じ名前・同じコメントは再表示しない
+  if (_readerCrossedShownSignature === signature) return;
 
-  // タブをまたいで：前回表示した名前と同じなら再表示しない
+  // タブをまたいで：前回表示した名前・コメントと同じなら再表示しない
   const lastShown = sessionStorage.getItem(CROSSED_SESSION_KEY);
-  if (lastShown === displayName) return;
+  if (lastShown === signature) return;
 
   const modal = document.getElementById('readerCrossedModal');
   const profileEl = document.getElementById('readerCrossedProfile');
@@ -288,12 +290,12 @@ function openReaderCrossedModal(name, msg) {
   if (modal.classList.contains('is-open')) return;
 
   if (nameEl) nameEl.textContent = `${displayName}さん`;
-  if (msgEl) msgEl.textContent = msg || '';
-  if (msgEl) msgEl.hidden = !msg;
+  if (msgEl) msgEl.textContent = displayMsg;
+  if (msgEl) msgEl.hidden = !displayMsg;
   profileEl.hidden = false;
 
-  _readerCrossedShownName = displayName;
-  sessionStorage.setItem(CROSSED_SESSION_KEY, displayName);
+  _readerCrossedShownSignature = signature;
+  sessionStorage.setItem(CROSSED_SESSION_KEY, signature);
   window.setTimeout(() => {
     const welcomeOpen = document.getElementById('aboutModal')?.classList.contains('is-open');
     modal.style.zIndex = welcomeOpen ? '49' : '';
