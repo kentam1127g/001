@@ -378,9 +378,9 @@ export function setupViewObservers() {
             };
           const changed = await bumpSharedCounts([entryIdValue], readerInfo);
           mergeSharedCounts(changed, { animate: true });
-          if (changed?.lastViewedAt?.[entryIdValue] && isRecentReaderCrossed(changed.lastViewedAt[entryIdValue])) {
-              const crossedName = changed?.previousSiteReaderName || state.siteReaderName || '';
-              const crossedMsg = changed?.previousSiteReaderMsg || state.siteReaderMsg || '';
+          if (isRecentReaderCrossed(changed?.previousSiteReaderUpdatedAt)) {
+              const crossedName = changed?.previousSiteReaderName || '';
+              const crossedMsg  = changed?.previousSiteReaderMsg  || '';
               openReaderCrossedModal(crossedName, crossedMsg);
             }
 

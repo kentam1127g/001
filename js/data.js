@@ -36,6 +36,7 @@ function normalizeCountsResponse(data) {
       siteReaderMsg: typeof data.siteReaderMsg === 'string' ? data.siteReaderMsg : '',
       previousSiteReaderName: typeof data.previousSiteReaderName === 'string' ? data.previousSiteReaderName : '',
       previousSiteReaderMsg: typeof data.previousSiteReaderMsg === 'string' ? data.previousSiteReaderMsg : '',
+      previousSiteReaderUpdatedAt: data.previousSiteReaderUpdatedAt || null,
     };
   }
 
@@ -46,6 +47,7 @@ function normalizeCountsResponse(data) {
     siteReaderMsg: '',
     previousSiteReaderName: '',
     previousSiteReaderMsg: '',
+    previousSiteReaderUpdatedAt: null,
   };
 }
 
