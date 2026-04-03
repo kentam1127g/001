@@ -37,6 +37,7 @@ function normalizeCountsResponse(data) {
       previousSiteReaderName: typeof data.previousSiteReaderName === 'string' ? data.previousSiteReaderName : '',
       previousSiteReaderMsg: typeof data.previousSiteReaderMsg === 'string' ? data.previousSiteReaderMsg : '',
       previousSiteReaderUpdatedAt: data.previousSiteReaderUpdatedAt || null,
+      siteReaderUpdatedAt: data.siteReaderUpdatedAt || null,
     };
   }
 

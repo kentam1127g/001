@@ -339,6 +339,9 @@ function loadVisibleEntryCounts(visibleEntries) {
   markCountIds(missingIds, true);
   loadSharedCounts(missingIds).then((payload) => {
     mergeSharedCounts(payload);
+    if (isRecentReaderCrossed(payload.siteReaderUpdatedAt)) {
+      openReaderCrossedModal(payload.siteReaderName || '', payload.siteReaderMsg || '');
+    }
   }).catch((error) => {
     console.error('[counts] visible load failed:', error);
     markCountIds(missingIds, false);
