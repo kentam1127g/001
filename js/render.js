@@ -268,6 +268,34 @@ function isSelfReader(readerId) {
   return Boolean(readerId) && getReaderId() === readerId;
 }
 
+function maybeSyncMyReaderProfile() {
+  const myName = localStorage.getItem('enpitu-reader-name') || '';
+  const myMsg  = localStorage.getItem('enpitu-reader-msg')  || '';
+  if (!myName && !myMsg) return;
+
+  const signature = `${myName}\n${myMsg}`;
+  const alreadyCurrentOnServer =
+    state.siteReaderId === getReaderId() &&
+    state.siteReaderName === myName &&
+    state.siteReaderMsg === myMsg;
+
+  if (alreadyCurrentOnServer || state.lastSyncedReaderProfileSignature === signature || state.readerProfileSyncInFlight) {
+    return;
+  }
+
+  state.readerProfileSyncInFlight = true;
+  syncLastReaderProfile('', { name: myName, msg: myMsg }).then((changed) => {
+    if (changed?.ok) {
+      state.lastSyncedReaderProfileSignature = signature;
+      state.siteReaderName = myName;
+      state.siteReaderMsg = myMsg;
+      state.siteReaderId = getReaderId();
+    }
+  }).catch(() => {}).finally(() => {
+    state.readerProfileSyncInFlight = false;
+  });
+}
+
 function openReaderCrossedModal(name, msg) {
   const displayName = name || '名無しの読者';
   const displayMsg = msg || '';
@@ -360,12 +388,8 @@ function loadVisibleEntryCounts(visibleEntries) {
     if (isRecentReaderCrossed(payload.siteReaderUpdatedAt) && !isSelfReader(payload.siteReaderId)) {
       openReaderCrossedModal(payload.siteReaderName || '', payload.siteReaderMsg || '');
     }
-    // counts-get 完了後に自分の名前を書き込む（先に書くと前の読者名が上書きされる）
-    const myName = localStorage.getItem('enpitu-reader-name') || '';
-    const myMsg  = localStorage.getItem('enpitu-reader-msg')  || '';
-    if (myName || myMsg) {
-      syncLastReaderProfile('', { name: myName, msg: myMsg }).catch(() => {});
-    }
+    // counts-get 完了後に必要な時だけ自分の名前を書き込む
+    maybeSyncMyReaderProfile();
   }).catch((error) => {
     console.error('[counts] visible load failed:', error);
     markCountIds(missingIds, false);

@@ -4,7 +4,7 @@ import { state } from './state.js';
 import { lockScroll, unlockScroll } from './scroll.js';
 import { render } from './render.js';
 import { escapeHtml, normalizeImagePath } from './utils.js';
-import { syncLastReaderProfile } from './data.js';
+import { syncLastReaderProfile, getReaderId } from './data.js';
 
 // ---- ページコンテンツ動的読み込み ----
 
@@ -427,6 +427,8 @@ document.getElementById('readerProfileSave')?.addEventListener('click', () => {
     if (changed?.ok) {
       state.siteReaderName = name;
       state.siteReaderMsg = msg;
+      state.siteReaderId = getReaderId();
+      state.lastSyncedReaderProfileSignature = `${name}\n${msg}`;
     }
   }).catch(() => {});
 });

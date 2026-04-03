@@ -9,6 +9,8 @@ export const state = {
   siteReaderId: '',
   requestedCountIds: {},
   countsLoaded: false,
+  lastSyncedReaderProfileSignature: '',
+  readerProfileSyncInFlight: false,
   viewSeenIds: null,
   viewPendingTimers: new Map(),
   deferInitialVisibleCountLoad: false,
