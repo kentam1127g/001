@@ -200,8 +200,8 @@
 
 .reader-crossed-steps {
   position: absolute;
-  right: 10px;
-  bottom: 8px;
+  right: 2px;
+  bottom: 2px;
   width: 88px;
   height: 132px;
   pointer-events: none;
@@ -218,8 +218,6 @@
 .reader-crossed-step {
   fill: #1f1f1f;
   opacity: 0;
-  transform-box: fill-box;
-  transform-origin: center;
   animation: readerCrossedFootsteps 2.7s steps(1, end) infinite;
 }
 
