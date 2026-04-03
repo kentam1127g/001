@@ -201,9 +201,9 @@
 .reader-crossed-steps {
   position: absolute;
   right: 2px;
-  bottom: 2px;
+  bottom: -24px;
   width: 88px;
-  height: 132px;
+  height: 140px;
   pointer-events: none;
   opacity: 1;
 }
@@ -213,6 +213,8 @@
   width: 100%;
   height: 100%;
   overflow: visible;
+  transform: rotate(30deg);
+  transform-origin: center;
 }
 
 .reader-crossed-step {
