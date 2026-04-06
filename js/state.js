@@ -12,6 +12,7 @@ export const state = {
   lastSyncedReaderProfileSignature: '',
   readerProfileSyncInFlight: false,
   viewSeenIds: null,
+  footprintUpdatedIds: null,
   viewPendingTimers: new Map(),
   deferInitialVisibleCountLoad: false,
   visibleEntryCount: 1,   // INITIAL_VISIBLE_COUNT と同値で初期化

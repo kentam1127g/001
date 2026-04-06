@@ -436,14 +436,36 @@ export function setupViewObservers() {
   if (!state.viewSeenIds) {
     state.viewSeenIds = new Set(loadSeenEntries());
   }
+  if (!state.footprintUpdatedIds) {
+    state.footprintUpdatedIds = new Set();
+  }
   const seenIds = state.viewSeenIds;
+  const footprintUpdatedIds = state.footprintUpdatedIds;
   const pendingTimers = state.viewPendingTimers;
 
   state.viewObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       const target = entry.target;
       const entryIdValue = target.dataset.entryId;
-      if (!entryIdValue || seenIds.has(entryIdValue)) return;
+      if (!entryIdValue) return;
+
+      // 既読済み → カウントは増やさず、あしあと時間だけ上書き（ページロードごと1回）
+      if (seenIds.has(entryIdValue)) {
+        if (entry.isIntersecting && entry.intersectionRatio >= 0.6 && !footprintUpdatedIds.has(entryIdValue)) {
+          footprintUpdatedIds.add(entryIdValue);
+          const readerInfo = {
+            name: localStorage.getItem('enpitu-reader-name') || '',
+            msg:  localStorage.getItem('enpitu-reader-msg')  || '',
+          };
+          bumpSharedCounts([entryIdValue], readerInfo, { footprintOnly: true }).then(changed => {
+            mergeSharedCounts(changed);
+          }).catch(() => {});
+          if (state.viewObserver) {
+            state.viewObserver.unobserve(target);
+          }
+        }
+        return;
+      }
 
       if (entry.isIntersecting && entry.intersectionRatio >= 0.6) {
         if (pendingTimers.has(entryIdValue)) return;
@@ -490,7 +512,8 @@ export function setupViewObservers() {
 
   document.querySelectorAll('.entry[data-entry-id]').forEach(entryEl => {
     const entryIdValue = entryEl.dataset.entryId;
-    if (!seenIds.has(entryIdValue)) {
+    // 未読 or 既読だがまだフットプリント更新していない entry を監視
+    if (!seenIds.has(entryIdValue) || !footprintUpdatedIds.has(entryIdValue)) {
       state.viewObserver.observe(entryEl);
     }
   });

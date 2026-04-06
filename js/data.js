@@ -100,7 +100,7 @@ export async function loadSharedCounts(ids) {
   }
 }
 
-export async function bumpSharedCounts(ids, readerInfo = {}) {
+export async function bumpSharedCounts(ids, readerInfo = {}, { footprintOnly = false } = {}) {
   try {
     if (!ids.length) return {
       counts: {},
@@ -112,11 +112,12 @@ export async function bumpSharedCounts(ids, readerInfo = {}) {
       previousSiteReaderMsg: '',
       previousSiteReaderId: '',
     };
-    console.log('[counts] BUMP start — ids:', ids);
+    console.log('[counts] BUMP start — ids:', ids, footprintOnly ? '(footprintOnly)' : '');
     const nameParam = readerInfo.name ? `&readerName=${encodeURIComponent(readerInfo.name)}` : '';
     const msgParam  = readerInfo.msg  ? `&readerMsg=${encodeURIComponent(readerInfo.msg)}`   : '';
     const readerIdParam = `&readerId=${encodeURIComponent(getReaderId())}`;
-    const url = `${COUNTS_API_BASE}/.netlify/functions/counts-bump?ids=${encodeURIComponent(ids.join(','))}${nameParam}${msgParam}${readerIdParam}`;
+    const footprintParam = footprintOnly ? '&footprintOnly=1' : '';
+    const url = `${COUNTS_API_BASE}/.netlify/functions/counts-bump?ids=${encodeURIComponent(ids.join(','))}${nameParam}${msgParam}${readerIdParam}${footprintParam}`;
     const res = await fetch(url, { cache: 'no-store' });
     const text = await res.text();
     console.log('[counts] BUMP response status:', res.status, '— body:', text);
