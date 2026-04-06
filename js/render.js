@@ -449,9 +449,9 @@ export function setupViewObservers() {
       const entryIdValue = target.dataset.entryId;
       if (!entryIdValue) return;
 
-      // 既読済み → カウントは増やさず、あしあと時間だけ上書き（ページロードごと1回）
+      // 既読済み → カウントは増やさず、あしあと時間だけ上書き（ページロードごと1回・is-ready後のみ）
       if (seenIds.has(entryIdValue)) {
-        if (entry.isIntersecting && entry.intersectionRatio >= 0.6 && !footprintUpdatedIds.has(entryIdValue)) {
+        if (entry.isIntersecting && entry.intersectionRatio >= 0.6 && !footprintUpdatedIds.has(entryIdValue) && document.body.classList.contains('is-ready')) {
           footprintUpdatedIds.add(entryIdValue);
           const readerInfo = {
             name: localStorage.getItem('enpitu-reader-name') || '',
