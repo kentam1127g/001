@@ -546,7 +546,7 @@ export function triggerPixelLoad(node) {
     loader.classList.add('done');
     enableScroll();
     window.setTimeout(() => loader.remove(), 150);
-  }, 900);
+  }, 1300);
 }
 
 export function animateEntriesInOrder(alreadyVisibleIds = new Set()) {

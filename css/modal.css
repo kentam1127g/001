@@ -3,7 +3,11 @@
 .modal-overlay {
   display: none;
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100vh;
+  height: 100dvh; /* キーボード表示時に自動縮小（dvh 対応ブラウザ） */
   background: transparent;
   z-index: 50;
   align-items: center;

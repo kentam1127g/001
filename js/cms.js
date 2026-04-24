@@ -284,6 +284,32 @@ const cmsTextarea2     = document.getElementById('cmsTextarea2');
 const cmsExtraField    = document.getElementById('cmsExtraField');
 const cmsImageSection  = document.getElementById('cmsImageSection');
 
+// ---- visualViewport キーボード補正（iOS Safari 対応） ----
+
+function onVisualViewport() {
+  if (!cmsModal || !cmsModal.classList.contains('is-open')) return;
+  const vv = window.visualViewport;
+  cmsModal.style.top    = `${vv.offsetTop}px`;
+  cmsModal.style.height = `${vv.height}px`;
+}
+
+function attachCmsKeyboardGuard() {
+  if (!window.visualViewport) return;
+  window.visualViewport.addEventListener('resize', onVisualViewport);
+  window.visualViewport.addEventListener('scroll', onVisualViewport);
+  onVisualViewport();
+}
+
+function detachCmsKeyboardGuard() {
+  if (!window.visualViewport) return;
+  window.visualViewport.removeEventListener('resize', onVisualViewport);
+  window.visualViewport.removeEventListener('scroll', onVisualViewport);
+  if (cmsModal) {
+    cmsModal.style.top    = '';
+    cmsModal.style.height = '';
+  }
+}
+
 // ---- モーダル状態 ----
 
 let editEntry     = null;  // 編集中エントリ（null = 新規）
@@ -373,6 +399,7 @@ export function openNewPostModal() {
   setLoading(false);
   showFormScreen();
   cmsModal?.classList.add('is-open');
+  attachCmsKeyboardGuard();
   cmsTextarea?.focus();
 }
 
@@ -393,6 +420,7 @@ export function openEditModal(entry) {
   setLoading(false);
   showFormScreen();
   cmsModal?.classList.add('is-open');
+  attachCmsKeyboardGuard();
   cmsTextarea?.focus();
 
   getFileSha(`content/posts/${entry.id}.json`).then(sha => { editSha = sha; });
@@ -425,6 +453,7 @@ export async function openAboutEditModal() {
   }
 
   cmsModal?.classList.add('is-open');
+  attachCmsKeyboardGuard();
   cmsTextarea?.focus();
 }
 
@@ -460,11 +489,13 @@ export async function openWriterEditModal() {
   }
 
   cmsModal?.classList.add('is-open');
+  attachCmsKeyboardGuard();
   cmsTextarea?.focus();
 }
 
 function closeCmsModal() {
   cmsModal?.classList.remove('is-open');
+  detachCmsKeyboardGuard();
   editEntry     = null;
   editSha       = null;
   keptImagePath = null;
