@@ -702,7 +702,17 @@ export function render() {
     }
 
     const visibleEntries = getVisibleEntries(state.allEntries);
-    const dayLabels      = enumerateDayLabels(state.allEntries);
+
+    // 最新エントリが表示中のときだけ今日までの空白日を埋める
+    const lastVisibleId = visibleEntries[visibleEntries.length - 1]?.id;
+    const lastOverallId = state.allEntries[state.allEntries.length - 1]?.id;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const dayLabels = enumerateDayLabels(
+      state.allEntries,
+      lastVisibleId === lastOverallId ? { trailingDate: today } : {}
+    );
+
     updateLoadOlderButton(state.allEntries.length, visibleEntries.length, state.allEntries);
     updateReturnLatestButton();
     updateLoadNewerButton(state.allEntries);
@@ -776,6 +786,16 @@ export function render() {
             </div>
           </div>
         </article>
+      `);
+    });
+
+    // 最後のエントリ以降の空白日（投稿のない日）
+    const trailingLabels = dayLabels.get('after-last') || [];
+    trailingLabels.forEach((label) => {
+      htmlParts.push(`
+        <div class="day-divider">
+          <span>${escapeHtml(label)}</span>
+        </div>
       `);
     });
 

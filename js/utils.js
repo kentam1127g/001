@@ -60,7 +60,7 @@ export function formatDateOnly(date) {
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} (${DAY_JA[date.getDay()]})`;
 }
 
-export function enumerateDayLabels(entries) {
+export function enumerateDayLabels(entries, { trailingDate = null } = {}) {
   const labels = new Map();
   if (!entries.length) return labels;
 
@@ -92,6 +92,23 @@ export function enumerateDayLabels(entries) {
 
     if (days.length) {
       labels.set(`before-${entries[i].id}`, days);
+    }
+  }
+
+  // 最後のエントリ翌日〜trailingDate までの空白日
+  if (trailingDate) {
+    const lastDate = parsedDates[entries.length - 1];
+    if (lastDate) {
+      const cursor = new Date(lastDate);
+      cursor.setDate(cursor.getDate() + 1);
+      const trailing = [];
+      while (cursor <= trailingDate) {
+        trailing.push(formatDateOnly(cursor));
+        cursor.setDate(cursor.getDate() + 1);
+      }
+      if (trailing.length) {
+        labels.set('after-last', trailing);
+      }
     }
   }
 
