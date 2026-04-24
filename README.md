@@ -34,9 +34,9 @@
 | **Vanilla JS** | 限りなく依存関係をなくすため |
 | **GitHub Pages** | 静的配信、CDN・SSL込み、費用ゼロを目指した |
 | **Decap CMS ＋ GitHub** | gitはあくまでも軸として使いつつ、データは手元にも残るように |
-| **Netlify Functions ＋ Blobs** | 仕掛けを実現するためだけに必要だった最小のAPI |
+| **Netlify Functions ＋ Blobs** | 仕掛けを実現するために必要だった最小のAPI |
 | **GitHub Actions ＋ sharp** | ファイルサイズを気にしなくていいよう、投稿時に自動で圧縮 |
-| **Claude code + Notion mcp** | AIをただ使うのではなく、自分でハンドルを握り開発するため  |
+| **Claude code + Notion mcp** | AIをただ使うのではなく、自身でハンドルを握り開発するため  |
 
 ---
 
@@ -45,10 +45,14 @@
 ```
 001/
 ├── index.html          ← アプリのエントリーポイント
+├── package.json
 ├── admin/
 │   ├── index.html      ← Decap CMS 管理画面（カスタマイズ済み）
 │   └── config.yml      ← Decap CMS 設定
 ├── content/
+│   ├── pages/
+│   │   ├── about.json  ← 「このサイトについて」本文
+│   │   └── writer.json ← 書き手プロフィール
 │   └── posts/
 │       ├── index.json              ← 全投稿のコンパイル済みインデックス（自動生成）
 │       └── YYYY-MM-DD-HH-MM-SS.json ← 個別投稿ファイル
@@ -65,16 +69,19 @@
 │   ├── config.js       ← 定数・APIエンドポイント
 │   ├── data.js         ← データ取得・既読管理・API呼び出し
 │   ├── render.js       ← DOM生成・IntersectionObserver・カウント表示
-│   ├── scroll.js       ← ページネーション
 │   ├── modals.js       ← モーダル開閉
+│   ├── scroll.js       ← ページネーション
 │   ├── ticker.js       ← 時計・タイムスタンプ更新
 │   ├── utils.js        ← 汎用ユーティリティ
 │   └── cms.js          ← 管理者向けCMS連携UI
 ├── images/
 │   └── uploads/        ← CMS からアップロードされた画像
-└── scripts/
-    ├── generate-post-index.mjs ← index.json 自動生成スクリプト
-    └── optimize-images.mjs     ← 画像最適化スクリプト
+├── scripts/
+│   ├── generate-post-index.mjs ← index.json 自動生成スクリプト
+│   └── optimize-images.mjs     ← 画像最適化スクリプト
+└── .github/
+    └── workflows/
+        └── deploy-pages.yml    ← 自動デプロイワークフロー
 ```
 
 ---
