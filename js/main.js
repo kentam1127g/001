@@ -145,6 +145,7 @@ init();
   // 目安の定数
   const BYTES_PER_PHOTO = 4 * 1024 * 1024; // スマホ写真 ≈ 4MB
   const BYTES_PER_MIN   = 1 * 1024 * 1024; // 動画 ≈ 1MB/分
+  const BYTES_PER_MARIO = 40 * 1024;        // 初代マリオ ≈ 40KB
 
   let totalBytes = 0;
 
@@ -157,8 +158,10 @@ init();
   function updateModal() {
     const photos = (totalBytes / BYTES_PER_PHOTO).toFixed(2);
     const video  = (totalBytes / BYTES_PER_MIN).toFixed(2);
+    const mario  = (totalBytes / BYTES_PER_MARIO).toFixed(2);
     document.getElementById('transferPhotos').textContent = `約${photos}`;
     document.getElementById('transferVideo').textContent  = `約${video}`;
+    document.getElementById('transferMario').textContent  = `約${mario}`;
   }
 
   // トグル
